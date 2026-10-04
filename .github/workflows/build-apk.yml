@@ -19,6 +19,9 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
     - name: Copy latest Web files into Android Assets
       run: |
         mkdir -p android/app/src/main/assets
@@ -26,12 +29,13 @@ jobs:
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: "8.2.1"
 
     - name: Build APK with Gradle
       working-directory: ./android
       run: |
-        chmod +x gradlew || gradle wrapper
-        gradle assembleDebug --no-daemon
+        gradle assembleDebug --no-daemon --stacktrace
 
     - name: Rename and Upload APK Artifact
       uses: actions/upload-artifact@v4
