@@ -801,34 +801,55 @@
       color: var(--text-sub);
     }
 
-    /* Toast Notification */
+    /* Toast Notification Top Banner */
     #toastMessage {
       position: fixed;
-      top: 14px;
+      top: 16px;
       left: 50%;
-      transform: translateX(-50%) translateY(-80px);
+      transform: translateX(-50%) translateY(-100px);
       background: #1e293b;
-      border: 1px solid var(--border);
-      padding: 8px 16px;
+      border: 1.5px solid var(--border);
+      padding: 10px 18px;
       border-radius: var(--radius-pill);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       color: #ffffff;
-      z-index: 200;
+      z-index: 99999;
       display: flex;
       align-items: center;
-      gap: 6px;
-      transition: transform 0.2s ease-out;
+      gap: 8px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       pointer-events: none;
+      max-width: 92vw;
+      text-align: center;
     }
 
     #toastMessage.show { transform: translateX(-50%) translateY(0); }
+    
+    #toastMessage.toast-error {
+      background: #4c0519;
+      border-color: #f43f5e;
+      color: #ffe4e6;
+    }
+
+    #toastMessage.toast-warning {
+      background: #451a03;
+      border-color: #f59e0b;
+      color: #fef3c7;
+    }
+
+    #toastMessage.toast-success {
+      background: #064e3b;
+      border-color: #10b981;
+      color: #d1fae5;
+    }
   </style>
 </head>
 <body>
 
   <div id="toastMessage">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+    <svg id="toastIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
     <span id="toastText">Operasi berhasil</span>
   </div>
 
@@ -1323,16 +1344,58 @@
       maximumFractionDigits: 0
     });
 
-    function formatRp(num) {
-      return idrFormat.format(num || 0);
+    let toastTimer = null;
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toastMessage');
+      const icon = document.getElementById('toastIcon');
+      const text = document.getElementById('toastText');
+
+      clearTimeout(toastTimer);
+      toast.classList.remove('show', 'toast-error', 'toast-warning', 'toast-success');
+
+      if (type === 'error') {
+        toast.classList.add('toast-error');
+        icon.setAttribute('stroke', '#f43f5e');
+        icon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
+      } else if (type === 'warning') {
+        toast.classList.add('toast-warning');
+        icon.setAttribute('stroke', '#f59e0b');
+        icon.innerHTML = '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>';
+      } else {
+        toast.classList.add('toast-success');
+        icon.setAttribute('stroke', '#10b981');
+        icon.innerHTML = '<path d="M20 6L9 17l-5-5"/>';
+      }
+
+      text.innerText = msg;
+      void toast.offsetWidth; // Trigger reflow for animation
+      toast.classList.add('show');
+
+      try {
+        if (type === 'error' || type === 'warning') {
+          navigator.vibrate?.([30, 40, 30]);
+        }
+      } catch (e) {}
+
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2600);
     }
 
-    function showToast(msg) {
-      const toast = document.getElementById('toastMessage');
-      document.getElementById('toastText').innerText = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 1800);
-    }
+    // Intersep validasi form agar pesan input kurang langsung muncul melayang di atas
+    document.addEventListener('invalid', (e) => {
+      e.preventDefault();
+      const input = e.target;
+      let label = '';
+      if (input.previousElementSibling && input.previousElementSibling.innerText) {
+        label = input.previousElementSibling.innerText.replace('*', '').trim();
+      } else {
+        label = input.placeholder || 'bidang ini';
+      }
+      showToast(`Harap isi ${label}!`, 'warning');
+      input.focus();
+    }, true);
 
     function switchMainTab(tab) {
       activeTab = tab;
@@ -1509,7 +1572,7 @@
 
     function openCheckoutSheet() {
       if (cart.length === 0) {
-        alert('Keranjang belanja masih kosong');
+        showToast('Keranjang belanja masih kosong!', 'warning');
         return;
       }
       renderCheckoutSheetItems();
@@ -1611,12 +1674,14 @@
       const customerPhone = document.getElementById('inputDebtCustomerPhone').value;
 
       if (checkoutPayType === 'cash' && cashReceived < total) {
-        alert('Nominal uang diterima masih kurang dari total tagihan!');
+        showToast('Uang pembayaran masih kurang dari total belanja!', 'error');
+        document.getElementById('inputCashReceived').focus();
         return;
       }
 
       if (checkoutPayType === 'debt' && (!customerName || customerName.trim() === '')) {
-        alert('Nama pengutang wajib diisi!');
+        showToast('Nama pengutang wajib diisi!', 'warning');
+        document.getElementById('inputDebtCustomerName').focus();
         return;
       }
 
@@ -1644,10 +1709,10 @@
           fetchItemsList();
           loadSummaryData();
         } else {
-          alert(json.error || 'Checkout gagal');
+          showToast(json.error || 'Checkout gagal', 'error');
         }
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     }
 
@@ -1919,10 +1984,10 @@
           fetchItemsList();
           loadSummaryData();
         } else {
-          alert(json.error || 'Gagal menyimpan');
+          showToast(json.error || 'Gagal menyimpan produk', 'error');
         }
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     }
 
@@ -1937,7 +2002,7 @@
           loadSummaryData();
         }
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     }
 
@@ -2065,10 +2130,10 @@
           fetchDebtsList();
           loadSummaryData();
         } else {
-          alert(json.error || 'Gagal menyimpan');
+          showToast(json.error || 'Gagal mencatat kasbon', 'error');
         }
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     }
 
@@ -2090,10 +2155,10 @@
           fetchDebtsList();
           loadSummaryData();
         } else {
-          alert(json.error || 'Gagal memproses pembayaran');
+          showToast(json.error || 'Gagal memproses pembayaran', 'error');
         }
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     }
 
@@ -2108,7 +2173,7 @@
           loadSummaryData();
         }
       } catch (err) {
-        alert(err.message);
+        showToast(err.message, 'error');
       }
     }
 
