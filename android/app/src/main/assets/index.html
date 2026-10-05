@@ -137,6 +137,39 @@
             <span>Kasir POS</span>
           </button>
         </div>
+
+        <!-- Profit & Loss Card -->
+        <div class="profit-loss-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; margin-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-weight: 800; font-size: 14px; color: var(--emerald); display: flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+              <span>Laporan Laba Rugi Riil (HPP)</span>
+            </div>
+            <span id="plMarginPercent" style="background: rgba(0, 245, 155, 0.15); color: var(--emerald); padding: 3px 8px; border-radius: 8px; font-weight: 800; font-size: 11px;">0%</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; margin-bottom: 10px;">
+            <div style="background: var(--bg-surface); padding: 10px; border-radius: 10px;">
+              <span style="color: var(--text-sub); display: block; font-size: 10px;">Total Omset Kotor</span>
+              <span id="plGrossRevenue" style="font-weight: 800; font-size: 14px; color: #fff;">Rp 0</span>
+            </div>
+            <div style="background: var(--bg-surface); padding: 10px; border-radius: 10px;">
+              <span style="color: var(--text-sub); display: block; font-size: 10px;">Modal HPP (Barang)</span>
+              <span id="plCogsTotal" style="font-weight: 800; font-size: 14px; color: var(--amber);">Rp 0</span>
+            </div>
+          </div>
+
+          <div style="background: linear-gradient(135deg, rgba(0, 245, 155, 0.1) 0%, rgba(139, 92, 246, 0.08) 100%); border: 1px solid rgba(0, 245, 155, 0.2); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <span style="font-size: 11px; color: var(--text-sub);">Laba Bersih Riil:</span>
+              <div id="plNetProfit" style="font-weight: 900; font-size: 17px; color: var(--emerald);">Rp 0</div>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 10px; color: var(--text-sub);">Kas Tunai Masuk:</span>
+              <div id="plCashCollected" style="font-weight: 800; font-size: 13px; color: #fff;">Rp 0</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ================= TAB 2: KASIR / STOK ================= -->
@@ -237,7 +270,7 @@
           <div id="sysDbInfo" style="font-size: 13px; color: var(--text-muted);">Database: SQLite WAL Mode</div>
         </div>
 
-        <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px;">
+        <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
           <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 8px;">Backup Database Warung</h3>
           <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.4;">
             Unduh snapshot binary file database <code>warung.db</code> ke memori HP. Data produk, penjualan, dan kasbon aman dari kerusakan atau reset aplikasi.
@@ -246,6 +279,23 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Unduh Snapshot warung.db</span>
           </button>
+        </div>
+
+        <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px;">
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 8px; color: #fff;">Ekspor Spreadsheet (CSV / Excel)</h3>
+          <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.4;">
+            Ekspor data transaksi penjualan dan inventaris stok warung ke format file CSV yang dapat dibuka langsung di Microsoft Excel atau Google Sheets.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn" onclick="exportSalesCsv()" style="background: var(--bg-surface); border: 1px solid var(--border); width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text); padding: 12px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00f59b" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>Unduh Riwayat Penjualan (CSV)</span>
+            </button>
+            <button class="btn" onclick="exportItemsCsv()" style="background: var(--bg-surface); border: 1px solid var(--border); width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text); padding: 12px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+              <span>Unduh Stok & Aset Barang (CSV)</span>
+            </button>
+          </div>
         </div>
       </section>
 

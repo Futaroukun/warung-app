@@ -47,4 +47,19 @@ test('Frontend Store & Utilities', async (t) => {
     assert.equal(store.getCartItemCount(), 0);
     assert.equal(store.getCartTotal(), 0);
   });
+
+  await t.test('generateDebtReminderMessage formats WhatsApp message properly', () => {
+    const { generateDebtReminderMessage } = require('../public/js/tabs/debts');
+    const msg = generateDebtReminderMessage({
+      customer_name: 'Pak Budi',
+      amount: 50000,
+      paid_amount: 20000,
+      notes: 'Rokok & Kopi',
+      created_at: '2026-10-05T07:00:00Z'
+    });
+    assert.ok(msg.includes('Pak Budi'));
+    assert.ok(msg.includes('30.000'));
+    assert.ok(msg.includes('50.000'));
+    assert.ok(msg.includes('Rokok & Kopi'));
+  });
 });

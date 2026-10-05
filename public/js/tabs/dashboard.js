@@ -27,13 +27,46 @@ async function loadDashboard() {
     setTxt('dashTotalItems', `${data.total_items || 0} Produk`);
     setTxt('dashLowStock', `${data.low_stock_count || 0} Menipis`);
     setTxt('dashAssetValue', window.formatRp(data.inventory_asset_value));
+
+    // Also load Profit Loss statement
+    loadProfitLoss();
   } catch (err) {
     console.error('Failed to load dashboard summary:', err);
   }
 }
 
+async function loadProfitLoss() {
+  try {
+    const res = await window.api.get('/reports/profit-loss');
+    if (!res.success) return;
+    const pl = res.data;
+
+    const setTxt = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = val;
+    };
+
+    setTxt('plGrossRevenue', window.formatRp(pl.gross_revenue));
+    setTxt('plCogsTotal', window.formatRp(pl.cogs_total));
+    setTxt('plNetProfit', window.formatRp(pl.net_profit));
+    setTxt('plMarginPercent', `${pl.profit_margin_percent}%`);
+    setTxt('plCashCollected', window.formatRp(pl.cash_collected));
+  } catch (err) {
+    console.error('Failed to load profit loss report:', err);
+  }
+}
+
+function exportSalesCsv() {
+  window.showToast('Mengunduh Laporan Penjualan (CSV)...', 'success');
+  window.location.href = '/api/reports/export/sales';
+}
+
+function exportItemsCsv() {
+  window.showToast('Mengunduh Data Inventaris Stok (CSV)...', 'success');
+  window.location.href = '/api/reports/export/items';
+}
+
 function initDashboard() {
-  // Bind any dashboard specific action buttons
   const btnRefresh = document.getElementById('btnRefreshDash');
   if (btnRefresh) {
     btnRefresh.addEventListener('click', loadDashboard);
@@ -42,9 +75,12 @@ function initDashboard() {
 
 if (typeof window !== 'undefined') {
   window.loadDashboard = loadDashboard;
+  window.loadProfitLoss = loadProfitLoss;
+  window.exportSalesCsv = exportSalesCsv;
+  window.exportItemsCsv = exportItemsCsv;
   window.initDashboard = initDashboard;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadDashboard, initDashboard };
+  module.exports = { loadDashboard, loadProfitLoss, exportSalesCsv, exportItemsCsv, initDashboard };
 }

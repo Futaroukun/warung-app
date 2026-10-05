@@ -50,11 +50,15 @@ function renderDebtCardHtml(debt) {
         </div>
       </div>
 
-      <div class="debt-card-bottom">
+      <div class="debt-card-bottom" style="display: flex; gap: 6px; align-items: center;">
         ${!isLunas ? `
-          <button class="btn-debt-action pay" onclick="openPaySheet(${debt.id})">
+          <button class="btn-debt-action pay" onclick="openPaySheet(${debt.id})" style="flex: 1;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Bayar Cicilan / Lunas</span>
+            <span>Bayar</span>
+          </button>
+          <button class="btn-debt-action wa" onclick="sendDebtReminderWhatsApp(${debt.id})" title="Kirim Pengingat Kasbon via WhatsApp" style="background: rgba(37, 211, 102, 0.15); color: #25d366; border: 1px solid rgba(37, 211, 102, 0.3); padding: 8px 10px; border-radius: 10px; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>Tagih WA</span>
           </button>
         ` : `
           <div class="debt-lunas-text">
@@ -127,12 +131,49 @@ async function deleteDebt(id) {
   }
 }
 
+function generateDebtReminderMessage(debt) {
+  const remaining = Math.max(0, debt.amount - debt.paid_amount);
+  const dateStr = (typeof window !== 'undefined' && window.formatTanggal) ? window.formatTanggal(debt.created_at) : (debt.created_at || '-');
+
+  let text = `Halo Kak *${debt.customer_name}*,\nSalam hangat dari Warung Kami 🙏\n\n`;
+  text += `Berikut rincian catatan kasbon yang tercatat:\n`;
+  text += `• *Sisa Kasbon* : *Rp ${Number(remaining).toLocaleString('id-ID')}*\n`;
+  text += `• *Total Hutang*: Rp ${Number(debt.amount).toLocaleString('id-ID')}\n`;
+  text += `• *Tanggal*     : ${dateStr}\n`;
+  if (debt.notes) text += `• *Keterangan*  : ${debt.notes}\n`;
+  text += `\nJika ada waktu luang, mohon dibantu pelunasannya ya Kak. Terima kasih banyak atas kerjasamanya! 😊`;
+  return text;
+}
+
+function sendDebtReminderWhatsApp(debtId) {
+  const debt = window.appStore.getState().debts.find(d => d.id === debtId);
+  if (!debt) return;
+
+  const text = generateDebtReminderMessage(debt);
+  let cleanPhone = debt.phone ? debt.phone.replace(/[^0-9]/g, '') : '';
+  if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.slice(1);
+
+  if (cleanPhone) {
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  } else {
+    const phoneInput = prompt(`Nomor WhatsApp untuk ${debt.customer_name}:`, '');
+    if (phoneInput) {
+      let p = phoneInput.replace(/[^0-9]/g, '');
+      if (p.startsWith('0')) p = '62' + p.slice(1);
+      window.open(`https://wa.me/${p}?text=${encodeURIComponent(text)}`, '_blank');
+    }
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.loadDebts = loadDebts;
   window.renderDebtsUI = renderDebtsUI;
   window.deleteDebt = deleteDebt;
+  window.generateDebtReminderMessage = generateDebtReminderMessage;
+  window.sendDebtReminderWhatsApp = sendDebtReminderWhatsApp;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadDebts, renderDebtsUI, deleteDebt };
+  module.exports = { loadDebts, renderDebtsUI, deleteDebt, generateDebtReminderMessage, sendDebtReminderWhatsApp };
 }
