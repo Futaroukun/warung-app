@@ -803,6 +803,10 @@ window.updateCheckoutPayerSummary = updateCheckoutPayerSummary;
 window.openSuccessModal = openSuccessModal;
 window.onSuccessModalPrint = onSuccessModalPrint;
 window.onSuccessModalShareWa = onSuccessModalShareWa;
+window.submitCustomWaPrompt = window.submitCustomWaPrompt || submitCustomWaPrompt;
+window.saveDebtTemplateSetting = window.saveDebtTemplateSetting || saveDebtTemplateSetting;
+window.resetDebtTemplateToDefault = window.resetDebtTemplateToDefault || resetDebtTemplateToDefault;
+window.insertReminderTag = window.insertReminderTag || insertReminderTag;
 
 // Click outside handler for dropdowns
 document.addEventListener('click', (e) => {

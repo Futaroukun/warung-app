@@ -150,6 +150,27 @@ class DebtsService {
     }
   }
 
+  update(id, { phone, notes, due_date } = {}) {
+    const debt = this.getById(id);
+    if (!debt) {
+      const err = new Error('Catatan hutang tidak ditemukan');
+      err.status = 404;
+      throw err;
+    }
+
+    const newPhone = phone !== undefined ? phone.trim() : debt.phone;
+    const newNotes = notes !== undefined ? notes.trim() : debt.notes;
+    const newDueDate = due_date !== undefined ? due_date : debt.due_date;
+
+    this.db.prepare(`
+      UPDATE debts
+      SET phone = ?, notes = ?, due_date = ?, updated_at = datetime('now', 'localtime')
+      WHERE id = ?
+    `).run(newPhone, newNotes, newDueDate, id);
+
+    return this.getById(id);
+  }
+
   delete(id) {
     const debt = this.getById(id);
     if (!debt) {

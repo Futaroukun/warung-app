@@ -264,23 +264,88 @@
         <div class="view-header">
           <div>
             <h2 class="view-title">Sistem & Pengaturan</h2>
-            <div class="view-sub">Backup database, status Termux & server</div>
+            <div class="view-sub">Versi APK, kustom pesan tagihan, dan backup database</div>
           </div>
         </div>
 
+        <!-- Kartu 1: Status Aplikasi & Sistem -->
         <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
-          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--emerald);">Kesehatan Server (Termux Android)</h3>
-          <div id="sysMemoryInfo" style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">RAM: Mengambil data...</div>
-          <div id="sysUptimeInfo" style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Uptime: -</div>
-          <div id="sysDbInfo" style="font-size: 13px; color: var(--text-muted);">Database: SQLite WAL Mode</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h3 style="font-size: 15px; font-weight: 800; color: var(--emerald); display: flex; align-items: center; gap: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+              <span>Aplikasi Kasir Warung</span>
+            </h3>
+            <span style="font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 12px; background: rgba(0, 245, 155, 0.15); color: var(--emerald); border: 1px solid rgba(0, 245, 155, 0.3);">APK v1.2.0</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+              <div style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Status Operasional</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--emerald); margin-top: 3px; display: flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--emerald);"></span>
+                <span>Aktif & Siap Kasir</span>
+              </div>
+            </div>
+            <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+              <div style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Mode Jaringan</div>
+              <div style="font-size: 13px; font-weight: 800; color: #ffffff; margin-top: 3px;">Offline-First</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+              <div style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Mesin Database</div>
+              <div id="sysDbInfo" style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-top: 3px;">SQLite WAL Mode</div>
+            </div>
+            <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+              <div style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Alokasi Memori</div>
+              <div id="sysMemoryInfo" style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-top: 3px;">Memuat...</div>
+            </div>
+          </div>
+          <div id="sysUptimeInfo" style="font-size: 11px; color: var(--text-sub); margin-top: 10px; text-align: right;">Sesi Aktif: -</div>
         </div>
 
+        <!-- Kartu 2: Custom Teks Tagihan WhatsApp -->
+        <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 6px; color: #25d366; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Kustom Teks Tagihan WhatsApp</span>
+          </h3>
+          <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 10px; line-height: 1.4;">
+            Sesuaikan pesan tagihan kasbon yang dikirim ke pelanggan melalui WhatsApp.
+          </p>
+
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;">Tag Variabel (Klik untuk masukkan):</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+              <button type="button" class="btn-preset-mini" style="font-size: 10px; padding: 4px 8px;" onclick="insertReminderTag('{nama}')">{nama}</button>
+              <button type="button" class="btn-preset-mini" style="font-size: 10px; padding: 4px 8px;" onclick="insertReminderTag('{sisa}')">{sisa}</button>
+              <button type="button" class="btn-preset-mini" style="font-size: 10px; padding: 4px 8px;" onclick="insertReminderTag('{total}')">{total}</button>
+              <button type="button" class="btn-preset-mini" style="font-size: 10px; padding: 4px 8px;" onclick="insertReminderTag('{tanggal}')">{tanggal}</button>
+              <button type="button" class="btn-preset-mini" style="font-size: 10px; padding: 4px 8px;" onclick="insertReminderTag('{rincian}')">{rincian}</button>
+              <button type="button" class="btn-preset-mini" style="font-size: 10px; padding: 4px 8px;" onclick="insertReminderTag('{toko}')">{toko}</button>
+            </div>
+          </div>
+
+          <textarea id="settingDebtTemplateText" class="input-box" rows="7" style="width: 100%; font-family: monospace; font-size: 12px; line-height: 1.4; padding: 10px 12px; margin-bottom: 12px; resize: vertical;" placeholder="Tulis format template pesan tagihan..."></textarea>
+
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn" onclick="resetDebtTemplateToDefault()" style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted); padding: 11px 16px; font-size: 12px;">
+              Reset Default
+            </button>
+            <button type="button" class="btn btn-primary" onclick="saveDebtTemplateSetting()" style="flex: 1; padding: 11px 16px; font-size: 12px; font-weight: 800;">
+              Simpan Template Tagihan
+            </button>
+          </div>
+        </div>
+
+        <!-- Kartu 3: Backup Database Warung -->
         <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
           <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 8px;">Backup Database Warung</h3>
           <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.4;">
             Unduh snapshot binary file database <code>warung.db</code> ke memori HP. Data produk, penjualan, dan kasbon aman dari kerusakan atau reset aplikasi.
           </p>
-          <button class="btn btn-primary" onclick="downloadDatabaseBackup()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <button class="btn btn-primary" onclick="downloadDatabaseBackup()" style="width: 100%; padding: 15px 20px; font-size: 14px; font-weight: 800; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; gap: 10px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Unduh Snapshot warung.db</span>
           </button>
@@ -698,6 +763,53 @@
         <button class="btn" onclick="closeBarcodeScanner()" style="background: var(--bg-surface); border: 1px solid var(--border); width: 100%; padding: 12px; color: #fff;">
           Tutup Kamera
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHEET: CUSTOM TAGIH WA PROMPT -->
+  <div class="sheet-backdrop" id="sheetCustomWaPrompt">
+    <div class="sheet-box" style="max-width: 420px;">
+      <div class="sheet-pull-bar"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" style="display: flex; align-items: center; gap: 8px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#25d366" stroke-width="2.3"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span>Tagih Kasbon via WhatsApp</span>
+        </div>
+        <button class="btn-icon-subtle" onclick="closeSheet('sheetCustomWaPrompt')">✕</button>
+      </div>
+
+      <div class="sheet-body">
+        <div style="background: var(--bg-surface); padding: 12px 14px; border-radius: var(--radius-sm); margin-bottom: 14px; border: 1px solid var(--border);">
+          <div style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Pelanggan Kasbon</div>
+          <div id="waPromptCustomerName" style="font-size: 16px; font-weight: 800; color: #fff; margin-top: 2px;">-</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 12px;">
+            <span style="color: var(--text-sub);">Sisa Kasbon:</span>
+            <span id="waPromptRemainingDebt" style="font-weight: 800; color: var(--rose);">Rp 0</span>
+          </div>
+        </div>
+
+        <input type="hidden" id="waPromptDebtId">
+
+        <label class="form-label" style="font-size: 11px; font-weight: 700;">Nomor WhatsApp Tujuan *</label>
+        <div style="position: relative; margin-bottom: 12px;">
+          <input type="tel" id="waPromptPhoneInput" class="input-box" placeholder="Contoh: 08123456789" style="font-size: 14px; font-weight: 700; padding: 12px 14px;">
+        </div>
+
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 18px; cursor: pointer;">
+          <input type="checkbox" id="waPromptSavePhoneCheck" checked style="accent-color: var(--emerald); width: 16px; height: 16px;">
+          <span>Simpan nomor ini ke data kasbon pelanggan</span>
+        </label>
+
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn" onclick="closeSheet('sheetCustomWaPrompt')" style="flex: 1; padding: 14px; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted);">
+            Batal
+          </button>
+          <button type="button" class="btn" onclick="submitCustomWaPrompt()" style="flex: 2; padding: 14px; background: #25d366; color: #04180f; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>Kirim Pesan WA</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

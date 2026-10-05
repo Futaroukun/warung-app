@@ -50,6 +50,12 @@ test('DebtsService: tracking, installment payments, and status update', async (t
     assert.ok(debt2.notes.includes('Minyak 1L'));
   });
 
+  await t.test('Updates debt phone and notes successfully', () => {
+    const updated = service.update(debtId, { phone: '08987654321', notes: 'Catatan diperbarui' });
+    assert.equal(updated.phone, '08987654321');
+    assert.equal(updated.notes, 'Catatan diperbarui');
+  });
+
   db.close();
   if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
   ['wal', 'shm'].forEach(ext => {

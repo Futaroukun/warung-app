@@ -40,6 +40,15 @@ class DebtsController {
     }
   };
 
+  update = (req, res, next) => {
+    try {
+      const updated = this.service.update(req.params.id, req.body);
+      res.json({ success: true, data: updated });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   delete = (req, res, next) => {
     try {
       const result = this.service.delete(req.params.id);

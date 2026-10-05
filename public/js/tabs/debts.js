@@ -150,15 +150,37 @@ async function deleteDebt(id) {
 function generateDebtReminderMessage(debt) {
   const remaining = Math.max(0, debt.amount - debt.paid_amount);
   const dateStr = (typeof window !== 'undefined' && window.formatTanggal) ? window.formatTanggal(debt.created_at) : (debt.created_at || '-');
+  const storeName = (typeof window !== 'undefined' && window.appStore?.getState()?.storeInfo?.name) || 'Warung Kami';
 
-  let text = `Halo Kak *${debt.customer_name}*,\nSalam hangat dari Warung Kami 🙏\n\n`;
-  text += `Berikut rincian catatan kasbon yang tercatat:\n`;
-  text += `• *Sisa Kasbon* : *Rp ${Number(remaining).toLocaleString('id-ID')}*\n`;
-  text += `• *Total Hutang*: Rp ${Number(debt.amount).toLocaleString('id-ID')}\n`;
-  text += `• *Tanggal*     : ${dateStr}\n`;
-  if (debt.notes) text += `• *Keterangan*  : ${debt.notes}\n`;
-  text += `\nJika ada waktu luang, mohon dibantu pelunasannya ya Kak. Terima kasih banyak atas kerjasamanya! 😊`;
-  return text;
+  const defaultTemplate = 
+`Halo Kak *{nama}*,
+Salam hangat dari {toko} 🙏
+
+Berikut rincian catatan kasbon yang tercatat:
+• *Sisa Kasbon* : *{sisa}*
+• *Total Kasbon*: {total}
+• *Tanggal*     : {tanggal}
+• *Keterangan*  : {rincian}
+
+Jika ada waktu luang, mohon dibantu pelunasannya ya Kak. Terima kasih banyak atas kerjasamanya! 😊`;
+
+  let tmpl = defaultTemplate;
+  if (typeof localStorage !== 'undefined') {
+    const saved = localStorage.getItem('custom_debt_reminder_template');
+    if (saved && saved.trim()) tmpl = saved.trim();
+  }
+
+  const sisaStr = `Rp ${Number(remaining).toLocaleString('id-ID')}`;
+  const totalStr = `Rp ${Number(debt.amount).toLocaleString('id-ID')}`;
+  const rincianStr = debt.notes ? debt.notes : '-';
+
+  return tmpl
+    .replace(/{nama}/g, debt.customer_name || 'Pelanggan')
+    .replace(/{sisa}/g, sisaStr)
+    .replace(/{total}/g, totalStr)
+    .replace(/{tanggal}/g, dateStr)
+    .replace(/{rincian}/g, rincianStr)
+    .replace(/{toko}/g, storeName);
 }
 
 function sendDebtReminderWhatsApp(debtId) {
@@ -173,13 +195,70 @@ function sendDebtReminderWhatsApp(debtId) {
     const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   } else {
-    const phoneInput = prompt(`Nomor WhatsApp untuk ${debt.customer_name}:`, '');
-    if (phoneInput) {
-      let p = phoneInput.replace(/[^0-9]/g, '');
-      if (p.startsWith('0')) p = '62' + p.slice(1);
-      window.open(`https://wa.me/${p}?text=${encodeURIComponent(text)}`, '_blank');
+    // Open Custom WhatsApp Reminder Modal Sheet
+    const remaining = Math.max(0, debt.amount - debt.paid_amount);
+    const idEl = document.getElementById('waPromptDebtId');
+    const nameEl = document.getElementById('waPromptCustomerName');
+    const remainEl = document.getElementById('waPromptRemainingDebt');
+    const inputEl = document.getElementById('waPromptPhoneInput');
+
+    if (idEl) idEl.value = debt.id;
+    if (nameEl) nameEl.innerText = debt.customer_name;
+    if (remainEl) remainEl.innerText = window.formatRp ? window.formatRp(remaining) : `Rp ${remaining.toLocaleString('id-ID')}`;
+    if (inputEl) {
+      inputEl.value = '';
+      setTimeout(() => inputEl.focus(), 200);
+    }
+
+    if (window.openSheet) {
+      window.openSheet('sheetCustomWaPrompt');
     }
   }
+}
+
+async function submitCustomWaPrompt() {
+  const idEl = document.getElementById('waPromptDebtId');
+  const inputEl = document.getElementById('waPromptPhoneInput');
+  const saveCheckEl = document.getElementById('waPromptSavePhoneCheck');
+
+  const debtId = Number(idEl?.value);
+  const rawPhone = (inputEl?.value || '').trim();
+  const shouldSave = saveCheckEl ? saveCheckEl.checked : true;
+
+  if (!rawPhone) {
+    window.showToast?.('Ketik nomor WhatsApp tujuan', 'warning');
+    inputEl?.focus();
+    return;
+  }
+
+  let cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+  if (!cleanPhone) {
+    window.showToast?.('Nomor WhatsApp tidak valid', 'warning');
+    return;
+  }
+  if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.slice(1);
+
+  const debt = window.appStore?.getState()?.debts?.find(d => d.id === debtId);
+  if (!debt) {
+    window.closeSheet?.('sheetCustomWaPrompt');
+    return;
+  }
+
+  // Persist phone number into database
+  if (shouldSave && debtId) {
+    try {
+      await window.api?.put(`/debts/${debtId}`, { phone: rawPhone });
+      debt.phone = rawPhone;
+      renderDebtsUI?.();
+    } catch (err) {
+      console.warn('Gagal menyimpan nomor HP ke database:', err);
+    }
+  }
+
+  const text = generateDebtReminderMessage(debt);
+  window.closeSheet?.('sheetCustomWaPrompt');
+  const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
 }
 
 function toggleDirectDebtDropdown(e) {
@@ -426,6 +505,7 @@ if (typeof window !== 'undefined') {
   window.submitDirectDebt = submitDirectDebt;
   window.generateDebtReminderMessage = generateDebtReminderMessage;
   window.sendDebtReminderWhatsApp = sendDebtReminderWhatsApp;
+  window.submitCustomWaPrompt = submitCustomWaPrompt;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -446,6 +526,7 @@ if (typeof module !== 'undefined' && module.exports) {
     openDirectDebtSheet,
     submitDirectDebt,
     generateDebtReminderMessage,
-    sendDebtReminderWhatsApp
+    sendDebtReminderWhatsApp,
+    submitCustomWaPrompt
   };
 }
