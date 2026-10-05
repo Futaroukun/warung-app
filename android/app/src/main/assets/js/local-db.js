@@ -798,6 +798,14 @@ class LocalDatabase {
       };
     }
 
+    if (cleanPath === '/system/reset' && method === 'POST') {
+      await this.clearAllData();
+      return {
+        success: true,
+        message: 'Database lokal berhasil direset bersih'
+      };
+    }
+
     // 2. Summary
     if (cleanPath === '/summary' || cleanPath === '/reports/summary') {
       const summary = await this.getSummary();
