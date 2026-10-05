@@ -210,7 +210,12 @@
             <h2 class="view-title">Buku Kasbon</h2>
             <div class="view-sub" id="debtSummaryCount">0 Orang Belum Lunas</div>
           </div>
-          <div class="debt-total-capsule" id="debtSummaryTotal">Rp 0</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="debt-total-capsule" id="debtSummaryTotal">Rp 0</div>
+            <button class="btn-add-circle" onclick="openDirectDebtSheet()" title="Tambah Kasbon Baru">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
         </div>
 
         <div class="search-bar-wrap">
@@ -486,6 +491,39 @@
 
         <button class="btn btn-primary" onclick="submitPayDebt()" style="width: 100%; padding: 14px; font-weight: 800;">
           Simpan Pembayaran
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHEET: TAMBAH KASBON MANUAL / LANGSUNG -->
+  <div class="sheet-backdrop" id="sheetDirectDebt">
+    <div class="sheet-box">
+      <div class="sheet-pull-bar"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Catat Kasbon Baru</div>
+        <button class="btn-icon-subtle" onclick="closeSheet('sheetDirectDebt')">✕</button>
+      </div>
+
+      <div class="sheet-body">
+        <label class="form-label">Nama Pelanggan *</label>
+        <input type="text" id="directDebtName" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 12px;" required>
+
+        <label class="form-label">Nomor WhatsApp / HP (Opsional)</label>
+        <input type="tel" id="directDebtPhone" class="input-box" placeholder="Contoh: 08123456789" style="margin-bottom: 12px;">
+
+        <label class="form-label">Nominal Kasbon (Rp) *</label>
+        <input type="number" id="directDebtAmount" class="input-box" placeholder="0" style="font-size: 16px; font-weight: 800; margin-bottom: 12px;" required>
+
+        <label class="form-label">Rincian Barang / Catatan</label>
+        <input type="text" id="directDebtNotes" class="input-box" placeholder="Contoh: Rokok Surya 1 bks, Kopi 2 sachet" style="margin-bottom: 16px;">
+
+        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 8px; padding: 10px; margin-bottom: 16px; font-size: 11px; color: #93c5fd;">
+          💡 <b>Otomatis Menggabung</b>: Jika nama pelanggan sudah punya kasbon aktif, nominal dan rincian barang otomatis ditambahkan ke kasbon yang sudah ada tanpa membuat kartu baru.
+        </div>
+
+        <button class="btn btn-primary" onclick="submitDirectDebt()" style="width: 100%; padding: 14px; font-weight: 800;">
+          Simpan Data Kasbon
         </button>
       </div>
     </div>

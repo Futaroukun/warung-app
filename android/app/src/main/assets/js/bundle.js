@@ -964,6 +964,22 @@ function renderDebtCardHtml(debt) {
             <div class="price-modal">${window.formatRp(debt.amount)}</div>
           </div>
         </div>
+        ${debt.items && debt.items.length > 0 ? `
+          <div class="debt-items-list" style="background: #090e18; border-radius: 8px; padding: 8px 10px; margin-top: 4px;">
+            <div style="font-size: 10px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin-bottom: 4px; display: flex; justify-content: space-between;">
+              <span>Rincian Barang Kasbon:</span>
+              <span>${debt.items.length} Item</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; max-height: 120px; overflow-y: auto;">
+              ${debt.items.map(it => `
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                  <span style="color: var(--text);">${it.qty}x ${it.item_name} <span style="color: var(--text-sub); font-size: 10px;">(@${window.formatRp(it.sell_price)})</span></span>
+                  <span style="font-weight: 700; color: #fff;">${window.formatRp(it.subtotal)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
       </div>
 
       <div class="debt-card-bottom" style="display: flex; gap: 6px; align-items: center;">
@@ -1082,16 +1098,66 @@ function sendDebtReminderWhatsApp(debtId) {
   }
 }
 
+function openDirectDebtSheet() {
+  const nameEl = document.getElementById('directDebtName');
+  const phoneEl = document.getElementById('directDebtPhone');
+  const amountEl = document.getElementById('directDebtAmount');
+  const notesEl = document.getElementById('directDebtNotes');
+
+  if (nameEl) nameEl.value = '';
+  if (phoneEl) phoneEl.value = '';
+  if (amountEl) amountEl.value = '';
+  if (notesEl) notesEl.value = '';
+
+  window.openSheet('sheetDirectDebt');
+}
+
+async function submitDirectDebt() {
+  const name = (document.getElementById('directDebtName')?.value || '').trim();
+  const phone = (document.getElementById('directDebtPhone')?.value || '').trim();
+  const amount = Number(document.getElementById('directDebtAmount')?.value);
+  const notes = (document.getElementById('directDebtNotes')?.value || '').trim();
+
+  if (!name) {
+    window.showToast('Nama pelanggan wajib diisi', 'warning');
+    return;
+  }
+  if (!amount || amount <= 0) {
+    window.showToast('Nominal kasbon harus lebih dari 0', 'warning');
+    return;
+  }
+
+  try {
+    const res = await window.api.post('/debts', {
+      customer_name: name,
+      phone,
+      amount,
+      notes
+    });
+
+    if (res.success) {
+      window.closeSheet('sheetDirectDebt');
+      window.showToast(`Kasbon ${res.data.customer_name} berhasil disimpan!`, 'success');
+      loadDebts();
+      if (window.loadDashboard) window.loadDashboard();
+    }
+  } catch (err) {
+    window.showToast(err.message || 'Gagal menyimpan kasbon', 'error');
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.loadDebts = loadDebts;
   window.renderDebtsUI = renderDebtsUI;
   window.deleteDebt = deleteDebt;
+  window.openDirectDebtSheet = openDirectDebtSheet;
+  window.submitDirectDebt = submitDirectDebt;
   window.generateDebtReminderMessage = generateDebtReminderMessage;
   window.sendDebtReminderWhatsApp = sendDebtReminderWhatsApp;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadDebts, renderDebtsUI, deleteDebt, generateDebtReminderMessage, sendDebtReminderWhatsApp };
+  module.exports = { loadDebts, renderDebtsUI, deleteDebt, openDirectDebtSheet, submitDirectDebt, generateDebtReminderMessage, sendDebtReminderWhatsApp };
 }
 
 

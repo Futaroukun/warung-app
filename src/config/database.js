@@ -83,6 +83,8 @@ function initIndices(db) {
     CREATE UNIQUE INDEX IF NOT EXISTS idx_items_barcode ON items(barcode) WHERE barcode IS NOT NULL;
     CREATE INDEX IF NOT EXISTS idx_items_category ON items(category);
     CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
+    CREATE INDEX IF NOT EXISTS idx_sales_debt_id ON sales(debt_id);
+    CREATE INDEX IF NOT EXISTS idx_debts_status ON debts(status);
     CREATE INDEX IF NOT EXISTS idx_sales_invoice ON sales(invoice_no);
     CREATE INDEX IF NOT EXISTS idx_sale_items_sale_id ON sale_items(sale_id);
     CREATE INDEX IF NOT EXISTS idx_sale_items_item_id ON sale_items(item_id);
@@ -123,6 +125,18 @@ function runSafeMigrations(db) {
   const saleItemCols = getColumns('sale_items');
   if (saleItemCols.length && !saleItemCols.includes('buy_price')) {
     db.exec('ALTER TABLE sale_items ADD COLUMN buy_price INTEGER DEFAULT 0;');
+  }
+  if (saleItemCols.length && !saleItemCols.includes('sell_price')) {
+    db.exec('ALTER TABLE sale_items ADD COLUMN sell_price INTEGER DEFAULT 0;');
+    if (saleItemCols.includes('price')) {
+      db.exec('UPDATE sale_items SET sell_price = price WHERE sell_price = 0 OR sell_price IS NULL;');
+    }
+  }
+  if (saleItemCols.length && !saleItemCols.includes('price')) {
+    db.exec('ALTER TABLE sale_items ADD COLUMN price INTEGER DEFAULT 0;');
+    if (saleItemCols.includes('sell_price')) {
+      db.exec('UPDATE sale_items SET price = sell_price WHERE price = 0 OR price IS NULL;');
+    }
   }
 
   const debtCols = getColumns('debts');

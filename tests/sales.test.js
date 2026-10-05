@@ -52,6 +52,26 @@ test('SalesService: atomic transaction and stock deduction', async (t) => {
     assert.equal(currentItem1.stock, 3);
   });
 
+  await t.test('Merges multiple POS debt transactions for same customer into one active debt', () => {
+    const sale1 = salesService.createTransaction({
+      items: [{ id: item2.id, qty: 1 }],
+      payment_type: 'debt',
+      customer_name: 'Pak RT'
+    });
+
+    const sale2 = salesService.createTransaction({
+      items: [{ id: item2.id, qty: 2 }],
+      payment_type: 'debt',
+      customer_name: 'Pak RT'
+    });
+
+    assert.equal(sale1.debt_id, sale2.debt_id);
+    const debtsService = new (require('../src/services/debts.service').DebtsService)(db);
+    const debt = debtsService.getById(sale1.debt_id);
+    assert.equal(debt.amount, 18000 + 36000);
+    assert.equal(debt.items.length, 2);
+  });
+
   db.close();
   if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
   ['wal', 'shm'].forEach(ext => {

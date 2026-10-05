@@ -41,6 +41,15 @@ test('DebtsService: tracking, installment payments, and status update', async (t
     assert.equal(updated.payments.length, 2);
   });
 
+  await t.test('Merges new kasbon into existing active debt for same customer', () => {
+    const debt1 = service.create({ customer_name: 'Ibu Siti', amount: 30000, notes: 'Beras 3kg' });
+    const debt2 = service.create({ customer_name: 'Ibu Siti', amount: 20000, notes: 'Minyak 1L' });
+    assert.equal(debt1.id, debt2.id);
+    assert.equal(debt2.amount, 50000);
+    assert.ok(debt2.notes.includes('Beras 3kg'));
+    assert.ok(debt2.notes.includes('Minyak 1L'));
+  });
+
   db.close();
   if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
   ['wal', 'shm'].forEach(ext => {

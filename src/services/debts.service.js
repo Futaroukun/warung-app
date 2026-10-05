@@ -19,13 +19,22 @@ class DebtsService {
       params.push(`%${search.trim()}%`, `%${search.trim()}%`);
     }
 
-    query += " ORDER BY CASE WHEN status = 'belum_lunas' THEN 0 ELSE 1 END, created_at DESC";
+    query += " ORDER BY CASE WHEN status = 'belum_lunas' THEN 0 ELSE 1 END, updated_at DESC";
     const debts = this.db.prepare(query).all(...params);
 
     const getPayments = this.db.prepare('SELECT * FROM debt_payments WHERE debt_id = ? ORDER BY payment_date DESC');
+    const getItems = this.db.prepare(`
+      SELECT si.id, si.item_name, COALESCE(si.sell_price, si.price, 0) AS sell_price, si.qty, si.subtotal, s.invoice_no, s.created_at
+      FROM sale_items si
+      JOIN sales s ON si.sale_id = s.id
+      WHERE s.debt_id = ?
+      ORDER BY s.created_at ASC
+    `);
+
     return debts.map(d => ({
       ...d,
-      payments: getPayments.all(d.id)
+      payments: getPayments.all(d.id),
+      items: getItems.all(d.id)
     }));
   }
 
@@ -34,6 +43,13 @@ class DebtsService {
     if (!debt) return null;
 
     debt.payments = this.db.prepare('SELECT * FROM debt_payments WHERE debt_id = ? ORDER BY payment_date DESC').all(id);
+    debt.items = this.db.prepare(`
+      SELECT si.id, si.item_name, COALESCE(si.sell_price, si.price, 0) AS sell_price, si.qty, si.subtotal, s.invoice_no, s.created_at
+      FROM sale_items si
+      JOIN sales s ON si.sale_id = s.id
+      WHERE s.debt_id = ?
+      ORDER BY s.created_at ASC
+    `).all(id);
     return debt;
   }
 
@@ -51,13 +67,34 @@ class DebtsService {
       throw err;
     }
 
+    const cleanCustName = toTitleCase(customer_name);
+
+    // Check if customer already has an active (belum_lunas) debt
+    const existing = this.db.prepare(`
+      SELECT id, amount, notes, phone FROM debts
+      WHERE LOWER(TRIM(customer_name)) = LOWER(TRIM(?)) AND status = 'belum_lunas'
+      ORDER BY id DESC LIMIT 1
+    `).get(cleanCustName);
+
+    if (existing) {
+      const combinedAmount = existing.amount + numAmount;
+      const combinedNotes = [existing.notes, notes ? notes.trim() : ''].filter(Boolean).join('; ');
+      const cleanPhone = phone ? phone.trim() : existing.phone;
+      this.db.prepare(`
+        UPDATE debts
+        SET amount = ?, notes = ?, phone = ?, updated_at = datetime('now', 'localtime')
+        WHERE id = ?
+      `).run(combinedAmount, combinedNotes, cleanPhone, existing.id);
+      return this.getById(existing.id);
+    }
+
     const stmt = this.db.prepare(`
       INSERT INTO debts (customer_name, phone, amount, paid_amount, notes, status, due_date, created_at, updated_at)
       VALUES (?, ?, ?, 0, ?, 'belum_lunas', ?, datetime('now', 'localtime'), datetime('now', 'localtime'))
     `);
 
     const result = stmt.run(
-      toTitleCase(customer_name),
+      cleanCustName,
       phone ? phone.trim() : '',
       numAmount,
       notes ? notes.trim() : '',

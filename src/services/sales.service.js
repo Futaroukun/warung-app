@@ -102,18 +102,39 @@ class SalesService {
         }
         cashChange = cashReceivedNum - totalAmount;
       } else if (payment_type === 'debt') {
-        if (!customer_name || !customer_name.trim()) {
+        const cleanCustName = customer_name ? customer_name.trim() : '';
+        if (!cleanCustName) {
           const err = new Error('Nama pelanggan wajib diisi untuk transaksi kasbon / hutang');
           err.status = 400;
           throw err;
         }
 
-        const insertDebt = this.db.prepare(`
-          INSERT INTO debts (customer_name, amount, paid_amount, notes, status, created_at, updated_at)
-          VALUES (?, ?, 0, ?, 'belum_lunas', datetime('now', 'localtime'), datetime('now', 'localtime'))
-        `);
-        const debtResult = insertDebt.run(customer_name.trim(), totalAmount, notes ? notes.trim() : 'Transaksi Kasir');
-        debtId = debtResult.lastInsertRowid;
+        const itemsSummary = preparedItems.map(it => `${it.qty}x ${it.name}`).join(', ');
+
+        // Check if customer already has an active (belum_lunas) debt
+        const existingDebt = this.db.prepare(`
+          SELECT id, customer_name, amount, notes FROM debts
+          WHERE LOWER(TRIM(customer_name)) = LOWER(TRIM(?)) AND status = 'belum_lunas'
+          ORDER BY id DESC LIMIT 1
+        `).get(cleanCustName);
+
+        if (existingDebt) {
+          debtId = existingDebt.id;
+          const newTotalAmount = existingDebt.amount + totalAmount;
+          const combinedNotes = [existingDebt.notes, itemsSummary].filter(Boolean).join('; ');
+          this.db.prepare(`
+            UPDATE debts
+            SET amount = ?, notes = ?, updated_at = datetime('now', 'localtime')
+            WHERE id = ?
+          `).run(newTotalAmount, combinedNotes, debtId);
+        } else {
+          const insertDebt = this.db.prepare(`
+            INSERT INTO debts (customer_name, amount, paid_amount, notes, status, created_at, updated_at)
+            VALUES (?, ?, 0, ?, 'belum_lunas', datetime('now', 'localtime'), datetime('now', 'localtime'))
+          `);
+          const debtResult = insertDebt.run(cleanCustName, totalAmount, notes ? notes.trim() : itemsSummary);
+          debtId = debtResult.lastInsertRowid;
+        }
       }
 
       const invoiceNo = this.generateInvoiceNo();
@@ -137,8 +158,8 @@ class SalesService {
 
       // Insert sale items and deduct inventory
       const insertSaleItem = this.db.prepare(`
-        INSERT INTO sale_items (sale_id, item_id, item_name, buy_price, sell_price, qty, subtotal)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO sale_items (sale_id, item_id, item_name, buy_price, price, sell_price, qty, subtotal)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `);
       const deductStock = this.db.prepare(`
         UPDATE items
@@ -147,7 +168,7 @@ class SalesService {
       `);
 
       for (const pItem of preparedItems) {
-        insertSaleItem.run(saleId, pItem.itemId, pItem.name, pItem.buyPrice, pItem.sellPrice, pItem.qty, pItem.subtotal);
+        insertSaleItem.run(saleId, pItem.itemId, pItem.name, pItem.buyPrice, pItem.sellPrice, pItem.sellPrice, pItem.qty, pItem.subtotal);
         deductStock.run(pItem.qty, pItem.itemId);
       }
 
