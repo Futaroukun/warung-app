@@ -724,22 +724,33 @@ async function deleteCurrentItem() {
   const name = document.getElementById('itemNameField')?.value || 'produk ini';
   if (!id) return;
 
-  if (!confirm(`Hapus produk "${name}" dari katalog?`)) {
-    return;
-  }
-
-  try {
-    const res = await window.api.delete(`/items/${id}`);
-    if (res.success) {
-      window.closeSheet('sheetItem');
-      window.showToast(`Produk "${name}" berhasil dihapus`, 'success');
-      window.appStore.removeFromCart(Number(id));
-      window.loadItems?.();
-      window.loadDashboard?.();
-      triggerRealtimeSync('item_deleted');
+  const executeDelete = async () => {
+    try {
+      const res = await window.api.delete(`/items/${id}`);
+      if (res.success) {
+        window.closeSheet('sheetItem');
+        window.showToast(`Produk "${name}" berhasil dihapus`, 'success');
+        window.appStore.removeFromCart(Number(id));
+        window.loadItems?.();
+        window.loadDashboard?.();
+        triggerRealtimeSync('item_deleted');
+      }
+    } catch (err) {
+      window.showToast(err.message || 'Gagal menghapus produk', 'error');
     }
-  } catch (err) {
-    window.showToast(err.message || 'Gagal menghapus produk', 'error');
+  };
+
+  if (window.showConfirmModal) {
+    window.showConfirmModal({
+      title: 'Hapus Produk',
+      message: `Apakah Anda yakin ingin menghapus produk "${name}" dari katalog?`,
+      confirmText: 'Ya, Hapus Produk',
+      onConfirm: executeDelete
+    });
+  } else {
+    if (confirm(`Hapus produk "${name}" dari katalog?`)) {
+      executeDelete();
+    }
   }
 }
 

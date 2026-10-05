@@ -1242,10 +1242,29 @@ function initSheetBackdrops() {
   });
 }
 
+function showConfirmModal({ title = 'Konfirmasi', message, confirmText = 'Ya, Hapus', onConfirm }) {
+  const titleEl = document.getElementById('confirmDialogTitle');
+  const msgEl = document.getElementById('confirmDialogMessage');
+  const btnAction = document.getElementById('btnConfirmDialogAction');
+
+  if (titleEl) titleEl.innerText = title;
+  if (msgEl) msgEl.innerText = message;
+  if (btnAction) {
+    btnAction.innerText = confirmText;
+    btnAction.onclick = () => {
+      closeSheet('sheetConfirmDialog');
+      if (typeof onConfirm === 'function') onConfirm();
+    };
+  }
+
+  openSheet('sheetConfirmDialog');
+}
+
 if (typeof window !== 'undefined') {
   window.openSheet = openSheet;
   window.closeSheet = closeSheet;
   window.initSheetBackdrops = initSheetBackdrops;
+  window.showConfirmModal = showConfirmModal;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -2059,19 +2078,33 @@ function renderDebtsUI() {
 }
 
 async function deleteDebt(id) {
-  if (!confirm('Hapus catatan kasbon ini?')) return;
-  try {
-    const res = await window.api.delete(`/debts/${id}`);
-    if (res.success) {
-      window.appStore.setState({
-        debts: window.appStore.getState().debts.filter(d => d.id !== id)
-      });
-      renderDebtsUI();
-      window.showToast('Catatan kasbon dihapus', 'success');
-      window.triggerRealtimeSync?.('debt_deleted');
+  const executeDelete = async () => {
+    try {
+      const res = await window.api.delete(`/debts/${id}`);
+      if (res.success) {
+        window.appStore.setState({
+          debts: window.appStore.getState().debts.filter(d => d.id !== id)
+        });
+        renderDebtsUI();
+        window.showToast('Catatan kasbon dihapus', 'success');
+        window.triggerRealtimeSync?.('debt_deleted');
+      }
+    } catch (err) {
+      window.showToast(err.message || 'Gagal menghapus kasbon', 'error');
     }
-  } catch (err) {
-    window.showToast(err.message || 'Gagal menghapus kasbon', 'error');
+  };
+
+  if (window.showConfirmModal) {
+    window.showConfirmModal({
+      title: 'Hapus Kasbon',
+      message: 'Apakah Anda yakin ingin menghapus catatan kasbon ini?',
+      confirmText: 'Ya, Hapus Kasbon',
+      onConfirm: executeDelete
+    });
+  } else {
+    if (confirm('Hapus catatan kasbon ini?')) {
+      executeDelete();
+    }
   }
 }
 
@@ -3458,22 +3491,33 @@ async function deleteCurrentItem() {
   const name = document.getElementById('itemNameField')?.value || 'produk ini';
   if (!id) return;
 
-  if (!confirm(`Hapus produk "${name}" dari katalog?`)) {
-    return;
-  }
-
-  try {
-    const res = await window.api.delete(`/items/${id}`);
-    if (res.success) {
-      window.closeSheet('sheetItem');
-      window.showToast(`Produk "${name}" berhasil dihapus`, 'success');
-      window.appStore.removeFromCart(Number(id));
-      window.loadItems?.();
-      window.loadDashboard?.();
-      triggerRealtimeSync('item_deleted');
+  const executeDelete = async () => {
+    try {
+      const res = await window.api.delete(`/items/${id}`);
+      if (res.success) {
+        window.closeSheet('sheetItem');
+        window.showToast(`Produk "${name}" berhasil dihapus`, 'success');
+        window.appStore.removeFromCart(Number(id));
+        window.loadItems?.();
+        window.loadDashboard?.();
+        triggerRealtimeSync('item_deleted');
+      }
+    } catch (err) {
+      window.showToast(err.message || 'Gagal menghapus produk', 'error');
     }
-  } catch (err) {
-    window.showToast(err.message || 'Gagal menghapus produk', 'error');
+  };
+
+  if (window.showConfirmModal) {
+    window.showConfirmModal({
+      title: 'Hapus Produk',
+      message: `Apakah Anda yakin ingin menghapus produk "${name}" dari katalog?`,
+      confirmText: 'Ya, Hapus Produk',
+      onConfirm: executeDelete
+    });
+  } else {
+    if (confirm(`Hapus produk "${name}" dari katalog?`)) {
+      executeDelete();
+    }
   }
 }
 

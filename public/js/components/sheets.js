@@ -27,10 +27,29 @@ function initSheetBackdrops() {
   });
 }
 
+function showConfirmModal({ title = 'Konfirmasi', message, confirmText = 'Ya, Hapus', onConfirm }) {
+  const titleEl = document.getElementById('confirmDialogTitle');
+  const msgEl = document.getElementById('confirmDialogMessage');
+  const btnAction = document.getElementById('btnConfirmDialogAction');
+
+  if (titleEl) titleEl.innerText = title;
+  if (msgEl) msgEl.innerText = message;
+  if (btnAction) {
+    btnAction.innerText = confirmText;
+    btnAction.onclick = () => {
+      closeSheet('sheetConfirmDialog');
+      if (typeof onConfirm === 'function') onConfirm();
+    };
+  }
+
+  openSheet('sheetConfirmDialog');
+}
+
 if (typeof window !== 'undefined') {
   window.openSheet = openSheet;
   window.closeSheet = closeSheet;
   window.initSheetBackdrops = initSheetBackdrops;
+  window.showConfirmModal = showConfirmModal;
 }
 
 if (typeof module !== 'undefined' && module.exports) {

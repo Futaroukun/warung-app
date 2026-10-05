@@ -132,19 +132,33 @@ function renderDebtsUI() {
 }
 
 async function deleteDebt(id) {
-  if (!confirm('Hapus catatan kasbon ini?')) return;
-  try {
-    const res = await window.api.delete(`/debts/${id}`);
-    if (res.success) {
-      window.appStore.setState({
-        debts: window.appStore.getState().debts.filter(d => d.id !== id)
-      });
-      renderDebtsUI();
-      window.showToast('Catatan kasbon dihapus', 'success');
-      window.triggerRealtimeSync?.('debt_deleted');
+  const executeDelete = async () => {
+    try {
+      const res = await window.api.delete(`/debts/${id}`);
+      if (res.success) {
+        window.appStore.setState({
+          debts: window.appStore.getState().debts.filter(d => d.id !== id)
+        });
+        renderDebtsUI();
+        window.showToast('Catatan kasbon dihapus', 'success');
+        window.triggerRealtimeSync?.('debt_deleted');
+      }
+    } catch (err) {
+      window.showToast(err.message || 'Gagal menghapus kasbon', 'error');
     }
-  } catch (err) {
-    window.showToast(err.message || 'Gagal menghapus kasbon', 'error');
+  };
+
+  if (window.showConfirmModal) {
+    window.showConfirmModal({
+      title: 'Hapus Kasbon',
+      message: 'Apakah Anda yakin ingin menghapus catatan kasbon ini?',
+      confirmText: 'Ya, Hapus Kasbon',
+      onConfirm: executeDelete
+    });
+  } else {
+    if (confirm('Hapus catatan kasbon ini?')) {
+      executeDelete();
+    }
   }
 }
 
