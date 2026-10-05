@@ -44,6 +44,12 @@ test('ItemsService: CRUD and validation', async (t) => {
     assert.equal(updated.stock, 20);
   });
 
+  await t.test('Clamps stock to minimum of 0 on excessive decrement', () => {
+    const item = service.getByBarcode('8991234567890');
+    const updated = service.updateStock(item.id, -100);
+    assert.equal(updated.stock, 0);
+  });
+
   db.close();
   if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
   ['wal', 'shm'].forEach(ext => {

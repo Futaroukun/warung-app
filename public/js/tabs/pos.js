@@ -190,6 +190,12 @@ function updateCartBar() {
 }
 
 async function fastAdjustStock(id, delta) {
+  const currentItem = (window.appStore.getState().items || []).find(it => it.id === id);
+  if (currentItem && currentItem.stock <= 0 && delta < 0) {
+    window.showToast(`Stok ${currentItem.name} sudah 0`, 'warning');
+    return;
+  }
+
   try {
     const res = await window.api.patch(`/items/${id}/stock`, { qty: delta });
     if (res.success) {

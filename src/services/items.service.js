@@ -73,7 +73,7 @@ class ItemsService {
       toTitleCase(category || 'Umum'),
       Number(buy_price) || 0,
       Number(sell_price) || 0,
-      Number(stock) || 0,
+      Math.max(0, Number(stock) || 0),
       Number(min_stock) >= 0 ? Number(min_stock) : 3,
       unit ? unit.trim().toLowerCase() : 'pcs'
     );
@@ -120,7 +120,7 @@ class ItemsService {
       toTitleCase(category || existing.category),
       buy_price !== undefined ? Number(buy_price) : existing.buy_price,
       sell_price !== undefined ? Number(sell_price) : existing.sell_price,
-      stock !== undefined ? Number(stock) : existing.stock,
+      stock !== undefined ? Math.max(0, Number(stock)) : existing.stock,
       min_stock !== undefined ? Number(min_stock) : existing.min_stock,
       unit !== undefined ? unit.trim().toLowerCase() : existing.unit,
       id
@@ -137,7 +137,7 @@ class ItemsService {
       throw err;
     }
 
-    const newStock = item.stock + Number(diffQty);
+    const newStock = Math.max(0, item.stock + Number(diffQty));
     this.db.prepare("UPDATE items SET stock = ?, updated_at = datetime('now', 'localtime') WHERE id = ?").run(newStock, id);
     return this.getById(id);
   }
