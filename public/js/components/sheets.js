@@ -21,7 +21,11 @@ function initSheetBackdrops() {
   document.querySelectorAll('.sheet-backdrop').forEach(sheet => {
     sheet.addEventListener('click', (e) => {
       if (e.target === sheet) {
-        closeSheet(sheet.id);
+        if (sheet.id === 'sheetScanner') {
+          window.closeBarcodeScanner ? window.closeBarcodeScanner() : closeSheet(sheet.id);
+        } else {
+          closeSheet(sheet.id);
+        }
       }
     });
   });

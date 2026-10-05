@@ -72,21 +72,19 @@ async function startScanner(videoEl, onResult) {
       if (videoEl.readyState === videoEl.HAVE_ENOUGH_DATA) {
         try {
           const barcodes = await barcodeDetector.detect(videoEl);
-          if (barcodes && barcodes.length > 0) {
-            const rawValue = barcodes[0].rawValue;
-            const now = Date.now();
-
-            // Throttle duplicate reads within 1.5 seconds
-            if (rawValue !== lastDetectedCode || now - lastDetectedTime > 1500) {
-              lastDetectedCode = rawValue;
-              lastDetectedTime = now;
+          if (barcodes && barcodes.length > 0 && isScanning) {
+            const rawValue = String(barcodes[0].rawValue || '').trim();
+            if (rawValue) {
+              // Hentikan kamera dan loop secara instan agar tidak terjadi double-scan
+              stopScanner();
               playBeep();
-              navigator.vibrate?.([50]);
+              navigator.vibrate?.([60]);
               onResult(rawValue);
+              return;
             }
           }
         } catch (err) {
-          // Frame detection glitch, continue next frame
+          // Frame glitch, abaikan dan lanjut frame berikutnya
         }
       }
 

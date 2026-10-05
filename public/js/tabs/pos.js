@@ -209,23 +209,55 @@ async function fastAdjustStock(id, delta) {
   }
 }
 
-// Scanner Hook
-function handleBarcodeScanned(barcode) {
-  const items = window.appStore.getState().items || [];
-  const found = items.find(it => it.barcode === barcode);
+// Scanner Hook with Debounce & Fallback Lookup
+let lastBarcodeScanTimestamp = 0;
+
+async function handleBarcodeScanned(barcode) {
+  const now = Date.now();
+  const cleanBarcode = String(barcode || '').trim();
+  if (!cleanBarcode) return;
+
+  // Proteksi debounce: cegah eksekusi berulang dalam rentang 1.2 detik
+  if (now - lastBarcodeScanTimestamp < 1200) {
+    return;
+  }
+  lastBarcodeScanTimestamp = now;
+
+  // Tutup scanner dan matikan stream kamera secara instan
+  if (window.closeBarcodeScanner) {
+    window.closeBarcodeScanner();
+  } else {
+    window.stopScanner?.();
+    window.closeSheet('sheetScanner');
+  }
+
+  let items = window.appStore.getState().items || [];
+  // Fallback: Jika cache items di memory belum termuat, ambil dari database
+  if (items.length === 0 && window.api) {
+    try {
+      const res = await window.api.get('/items');
+      if (res && res.success && Array.isArray(res.data)) {
+        items = res.data;
+        window.appStore.setState({ items });
+      }
+    } catch (e) {}
+  }
+
+  // Pencarian barcode fleksibel (abaikan whitespace & case)
+  const found = items.find(it => it.is_active !== 0 && String(it.barcode || '').trim() === cleanBarcode);
 
   if (found) {
     try {
-      window.appStore.addToCart(found);
+      window.appStore.addToCart(found, 1);
       window.showToast(`[Barcode] +1 ${found.name}`, 'success');
-      window.closeSheet('sheetScanner');
+      window.updateCartBar?.();
+      window.renderItemsUI?.();
     } catch (err) {
       window.showToast(err.message, 'warning');
     }
   } else {
-    window.closeSheet('sheetScanner');
-    window.openItemSheet({ barcode, name: '' });
-    window.showToast(`Barcode ${barcode} belum terdaftar. Silakan lengkapi produk baru.`, 'warning');
+    window.openItemSheet({ barcode: cleanBarcode, name: '' });
+    window.showToast(`Barcode ${cleanBarcode} belum terdaftar. Silakan lengkapi produk.`, 'warning');
   }
 }
 
