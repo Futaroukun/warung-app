@@ -36,17 +36,18 @@ function renderMasterBarcodesUI() {
     if (!matchesSearch) return false;
 
     // Chip filter
+    if (barcodeFilter === 'all') return it.is_active !== 0;
     if (barcodeFilter === 'instock') return it.is_active !== 0 && (it.stock || 0) > 0;
-    if (barcodeFilter === 'empty') return it.is_active === 0 || (it.stock || 0) <= 0;
+    if (barcodeFilter === 'empty') return (it.is_active !== 0 && (it.stock || 0) <= 0) || it.is_active === 0;
     return true;
   });
 
   filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
   // Update stat counts
-  const totalCount = masterBarcodes.length;
+  const totalCount = masterBarcodes.filter(it => it.is_active !== 0).length;
   const inStockCount = masterBarcodes.filter(it => it.is_active !== 0 && (it.stock || 0) > 0).length;
-  const emptyCount = masterBarcodes.filter(it => it.is_active === 0 || (it.stock || 0) <= 0).length;
+  const emptyCount = masterBarcodes.filter(it => it.is_active !== 0 && (it.stock || 0) <= 0).length;
 
   const countTotalEl = document.getElementById('barcodeCountTotal');
   const countInStockEl = document.getElementById('barcodeCountInStock');
@@ -216,13 +217,16 @@ function deleteMasterBarcode(id, name) {
   if (window.showConfirmModal) {
     window.showConfirmModal({
       title: 'Hapus Data Barcode',
-      message: `Hapus barcode untuk "${name}"? Produk ini akan dinonaktifkan dari katalog.`,
+      message: `Hapus produk "${name}" dari katalog barcode?`,
       confirmText: 'Ya, Hapus',
       onConfirm: async () => {
         try {
-          const res = await window.api.delete(`/items/${id}`);
+          const res = await window.api.delete(`/items/${id}?permanent=true`);
           if (res && res.success) {
-            window.showToast(`Barcode "${name}" berhasil dihapus`, 'success');
+            window.showToast(`Produk "${name}" berhasil dihapus`, 'success');
+            masterBarcodes = masterBarcodes.filter(i => Number(i.id) !== Number(id));
+            renderMasterBarcodesUI();
+            window.appStore?.removeFromCart?.(Number(id));
             loadMasterBarcodes();
             window.loadItems?.();
             window.loadDashboard?.();
@@ -235,7 +239,9 @@ function deleteMasterBarcode(id, name) {
     });
   } else {
     if (confirm(`Hapus barcode "${name}"?`)) {
-      window.api.delete(`/items/${id}`).then(() => {
+      window.api.delete(`/items/${id}?permanent=true`).then(() => {
+        masterBarcodes = masterBarcodes.filter(i => Number(i.id) !== Number(id));
+        renderMasterBarcodesUI();
         loadMasterBarcodes();
         window.loadItems?.();
       });

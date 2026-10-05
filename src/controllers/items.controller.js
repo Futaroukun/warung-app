@@ -64,7 +64,8 @@ class ItemsController {
 
   delete = (req, res, next) => {
     try {
-      const result = this.service.delete(req.params.id);
+      const permanent = req.query.permanent === 'true' || req.query.permanent === true;
+      const result = this.service.delete(req.params.id, permanent);
       res.json({ success: true, data: result });
     } catch (err) {
       next(err);

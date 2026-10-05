@@ -280,13 +280,22 @@ class LocalDatabase {
     return item;
   }
 
-  async deleteItem(id) {
+  async deleteItem(id, permanent = false) {
     const item = await this.getOne('items', id);
     if (!item) throw new Error('Barang tidak ditemukan');
-    item.is_active = 0;
-    item.updated_at = this.now();
-    await this.put('items', item);
-    return { id: Number(id), deleted: true };
+
+    const saleItems = await this.getAll('sale_items');
+    const isUsed = saleItems.some(si => Number(si.item_id) === Number(id));
+
+    if (!isUsed || permanent) {
+      await this.delete('items', id);
+      return { id: Number(id), deleted: true, permanent: true };
+    } else {
+      item.is_active = 0;
+      item.updated_at = this.now();
+      await this.put('items', item);
+      return { id: Number(id), deleted: true, permanent: false };
+    }
   }
 
   // ── Debts API ─────────────────────────────────────────────────────────────
@@ -823,7 +832,8 @@ class LocalDatabase {
         return { success: true, data: updated };
       }
       if (method === 'DELETE') {
-        const res = await this.deleteItem(id);
+        const permanent = query && (query.permanent === 'true' || query.permanent === true);
+        const res = await this.deleteItem(id, permanent);
         return { success: true, data: res };
       }
     }

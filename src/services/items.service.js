@@ -163,17 +163,22 @@ class ItemsService {
     return this.db.prepare('SELECT * FROM items WHERE id = ?').get(id);
   }
 
-  delete(id) {
-    const existing = this.getById(id);
+  delete(id, permanent = false) {
+    const existing = this.db.prepare('SELECT * FROM items WHERE id = ?').get(id);
     if (!existing) {
       const err = new Error('Barang tidak ditemukan');
       err.status = 404;
       throw err;
     }
 
-    // Soft delete to protect relational sales history
-    this.db.prepare("UPDATE items SET is_active = 0, updated_at = datetime('now', 'localtime') WHERE id = ?").run(id);
-    return { id: Number(id), deleted: true };
+    const isUsed = this.db.prepare('SELECT COUNT(*) as count FROM sale_items WHERE item_id = ?').get(id)?.count > 0;
+    if (!isUsed || permanent) {
+      this.db.prepare('DELETE FROM items WHERE id = ?').run(id);
+      return { id: Number(id), deleted: true, permanent: true };
+    } else {
+      this.db.prepare("UPDATE items SET is_active = 0, updated_at = datetime('now', 'localtime') WHERE id = ?").run(id);
+      return { id: Number(id), deleted: true, permanent: false };
+    }
   }
 }
 

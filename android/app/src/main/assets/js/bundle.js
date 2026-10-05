@@ -53,39 +53,48 @@ async function fetchOnlineBarcodeProduct(barcode) {
   if (!barcode || String(barcode).trim().length < 6) return null;
   const clean = String(barcode).trim();
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-  const timeoutId = controller ? setTimeout(() => controller.abort(), 2800) : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
+
+  const endpoints = [
+    `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(clean)}.json`,
+    `https://world.openproductsfacts.org/api/v2/product/${encodeURIComponent(clean)}.json`,
+    `https://world.openbeautyfacts.org/api/v2/product/${encodeURIComponent(clean)}.json`
+  ];
 
   try {
-    const fetchOpts = {
-      headers: { 'User-Agent': 'KasirWarung - Android/Web - Version 1.0' }
-    };
-    if (controller) fetchOpts.signal = controller.signal;
+    const fetchPromises = endpoints.map(async (url) => {
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'KasirWarung - Android/Web - Version 1.0' },
+        signal: controller ? controller.signal : undefined
+      });
+      if (!res.ok) throw new Error('Not ok');
+      const data = await res.json();
+      if (data && data.status === 1 && data.product) {
+        const p = data.product;
+        const rawName = p.product_name_id || p.product_name || p.product_name_en || '';
+        if (!rawName) throw new Error('No name');
+        const brand = p.brands ? p.brands.split(',')[0].trim() : '';
+        let category = 'Umum';
+        if (p.categories) {
+          const catFirst = p.categories.split(',')[0].trim();
+          if (catFirst) category = toTitleCase(catFirst.replace(/^[a-z]{2}:/, ''));
+        }
+        let finalName = rawName.trim();
+        if (brand && !finalName.toLowerCase().includes(brand.toLowerCase())) {
+          finalName = `${brand} ${finalName}`;
+        }
+        return {
+          name: toTitleCase(finalName),
+          category: category || 'Umum',
+          brand: brand ? toTitleCase(brand) : ''
+        };
+      }
+      throw new Error('Not found');
+    });
 
-    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(clean)}.json`, fetchOpts);
+    const result = await Promise.any(fetchPromises);
     if (timeoutId) clearTimeout(timeoutId);
-    if (!res || !res.ok) return null;
-    const data = await res.json();
-    if (data && data.status === 1 && data.product) {
-      const p = data.product;
-      const rawName = p.product_name_id || p.product_name || p.product_name_en || '';
-      if (!rawName) return null;
-      const brand = p.brands ? p.brands.split(',')[0].trim() : '';
-      let category = 'Umum';
-      if (p.categories) {
-        const catFirst = p.categories.split(',')[0].trim();
-        if (catFirst) category = toTitleCase(catFirst.replace(/^[a-z]{2}:/, ''));
-      }
-      let finalName = rawName.trim();
-      if (brand && !finalName.toLowerCase().includes(brand.toLowerCase())) {
-        finalName = `${brand} ${finalName}`;
-      }
-      return {
-        name: toTitleCase(finalName),
-        category: category || 'Umum',
-        brand: brand ? toTitleCase(brand) : ''
-      };
-    }
-    return null;
+    return result;
   } catch (err) {
     if (timeoutId) clearTimeout(timeoutId);
     return null;
@@ -518,13 +527,22 @@ class LocalDatabase {
     return item;
   }
 
-  async deleteItem(id) {
+  async deleteItem(id, permanent = false) {
     const item = await this.getOne('items', id);
     if (!item) throw new Error('Barang tidak ditemukan');
-    item.is_active = 0;
-    item.updated_at = this.now();
-    await this.put('items', item);
-    return { id: Number(id), deleted: true };
+
+    const saleItems = await this.getAll('sale_items');
+    const isUsed = saleItems.some(si => Number(si.item_id) === Number(id));
+
+    if (!isUsed || permanent) {
+      await this.delete('items', id);
+      return { id: Number(id), deleted: true, permanent: true };
+    } else {
+      item.is_active = 0;
+      item.updated_at = this.now();
+      await this.put('items', item);
+      return { id: Number(id), deleted: true, permanent: false };
+    }
   }
 
   // ── Debts API ─────────────────────────────────────────────────────────────
@@ -1061,7 +1079,8 @@ class LocalDatabase {
         return { success: true, data: updated };
       }
       if (method === 'DELETE') {
-        const res = await this.deleteItem(id);
+        const permanent = query && (query.permanent === 'true' || query.permanent === true);
+        const res = await this.deleteItem(id, permanent);
         return { success: true, data: res };
       }
     }
@@ -2219,17 +2238,18 @@ function renderMasterBarcodesUI() {
     if (!matchesSearch) return false;
 
     // Chip filter
+    if (barcodeFilter === 'all') return it.is_active !== 0;
     if (barcodeFilter === 'instock') return it.is_active !== 0 && (it.stock || 0) > 0;
-    if (barcodeFilter === 'empty') return it.is_active === 0 || (it.stock || 0) <= 0;
+    if (barcodeFilter === 'empty') return (it.is_active !== 0 && (it.stock || 0) <= 0) || it.is_active === 0;
     return true;
   });
 
   filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
   // Update stat counts
-  const totalCount = masterBarcodes.length;
+  const totalCount = masterBarcodes.filter(it => it.is_active !== 0).length;
   const inStockCount = masterBarcodes.filter(it => it.is_active !== 0 && (it.stock || 0) > 0).length;
-  const emptyCount = masterBarcodes.filter(it => it.is_active === 0 || (it.stock || 0) <= 0).length;
+  const emptyCount = masterBarcodes.filter(it => it.is_active !== 0 && (it.stock || 0) <= 0).length;
 
   const countTotalEl = document.getElementById('barcodeCountTotal');
   const countInStockEl = document.getElementById('barcodeCountInStock');
@@ -2399,13 +2419,16 @@ function deleteMasterBarcode(id, name) {
   if (window.showConfirmModal) {
     window.showConfirmModal({
       title: 'Hapus Data Barcode',
-      message: `Hapus barcode untuk "${name}"? Produk ini akan dinonaktifkan dari katalog.`,
+      message: `Hapus produk "${name}" dari katalog barcode?`,
       confirmText: 'Ya, Hapus',
       onConfirm: async () => {
         try {
-          const res = await window.api.delete(`/items/${id}`);
+          const res = await window.api.delete(`/items/${id}?permanent=true`);
           if (res && res.success) {
-            window.showToast(`Barcode "${name}" berhasil dihapus`, 'success');
+            window.showToast(`Produk "${name}" berhasil dihapus`, 'success');
+            masterBarcodes = masterBarcodes.filter(i => Number(i.id) !== Number(id));
+            renderMasterBarcodesUI();
+            window.appStore?.removeFromCart?.(Number(id));
             loadMasterBarcodes();
             window.loadItems?.();
             window.loadDashboard?.();
@@ -2418,7 +2441,9 @@ function deleteMasterBarcode(id, name) {
     });
   } else {
     if (confirm(`Hapus barcode "${name}"?`)) {
-      window.api.delete(`/items/${id}`).then(() => {
+      window.api.delete(`/items/${id}?permanent=true`).then(() => {
+        masterBarcodes = masterBarcodes.filter(i => Number(i.id) !== Number(id));
+        renderMasterBarcodesUI();
         loadMasterBarcodes();
         window.loadItems?.();
       });
@@ -4225,7 +4250,7 @@ async function deleteCurrentItem() {
 
   const executeDelete = async () => {
     try {
-      const res = await window.api.delete(`/items/${id}`);
+      const res = await window.api.delete(`/items/${id}?permanent=true`);
       if (res.success) {
         window.closeSheet('sheetConfirmDialog');
         window.closeSheet('sheetItem');

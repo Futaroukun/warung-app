@@ -878,7 +878,7 @@ async function deleteCurrentItem() {
 
   const executeDelete = async () => {
     try {
-      const res = await window.api.delete(`/items/${id}`);
+      const res = await window.api.delete(`/items/${id}?permanent=true`);
       if (res.success) {
         window.closeSheet('sheetConfirmDialog');
         window.closeSheet('sheetItem');

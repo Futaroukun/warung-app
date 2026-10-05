@@ -50,39 +50,48 @@ async function fetchOnlineBarcodeProduct(barcode) {
   if (!barcode || String(barcode).trim().length < 6) return null;
   const clean = String(barcode).trim();
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-  const timeoutId = controller ? setTimeout(() => controller.abort(), 2800) : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
+
+  const endpoints = [
+    `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(clean)}.json`,
+    `https://world.openproductsfacts.org/api/v2/product/${encodeURIComponent(clean)}.json`,
+    `https://world.openbeautyfacts.org/api/v2/product/${encodeURIComponent(clean)}.json`
+  ];
 
   try {
-    const fetchOpts = {
-      headers: { 'User-Agent': 'KasirWarung - Android/Web - Version 1.0' }
-    };
-    if (controller) fetchOpts.signal = controller.signal;
+    const fetchPromises = endpoints.map(async (url) => {
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'KasirWarung - Android/Web - Version 1.0' },
+        signal: controller ? controller.signal : undefined
+      });
+      if (!res.ok) throw new Error('Not ok');
+      const data = await res.json();
+      if (data && data.status === 1 && data.product) {
+        const p = data.product;
+        const rawName = p.product_name_id || p.product_name || p.product_name_en || '';
+        if (!rawName) throw new Error('No name');
+        const brand = p.brands ? p.brands.split(',')[0].trim() : '';
+        let category = 'Umum';
+        if (p.categories) {
+          const catFirst = p.categories.split(',')[0].trim();
+          if (catFirst) category = toTitleCase(catFirst.replace(/^[a-z]{2}:/, ''));
+        }
+        let finalName = rawName.trim();
+        if (brand && !finalName.toLowerCase().includes(brand.toLowerCase())) {
+          finalName = `${brand} ${finalName}`;
+        }
+        return {
+          name: toTitleCase(finalName),
+          category: category || 'Umum',
+          brand: brand ? toTitleCase(brand) : ''
+        };
+      }
+      throw new Error('Not found');
+    });
 
-    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(clean)}.json`, fetchOpts);
+    const result = await Promise.any(fetchPromises);
     if (timeoutId) clearTimeout(timeoutId);
-    if (!res || !res.ok) return null;
-    const data = await res.json();
-    if (data && data.status === 1 && data.product) {
-      const p = data.product;
-      const rawName = p.product_name_id || p.product_name || p.product_name_en || '';
-      if (!rawName) return null;
-      const brand = p.brands ? p.brands.split(',')[0].trim() : '';
-      let category = 'Umum';
-      if (p.categories) {
-        const catFirst = p.categories.split(',')[0].trim();
-        if (catFirst) category = toTitleCase(catFirst.replace(/^[a-z]{2}:/, ''));
-      }
-      let finalName = rawName.trim();
-      if (brand && !finalName.toLowerCase().includes(brand.toLowerCase())) {
-        finalName = `${brand} ${finalName}`;
-      }
-      return {
-        name: toTitleCase(finalName),
-        category: category || 'Umum',
-        brand: brand ? toTitleCase(brand) : ''
-      };
-    }
-    return null;
+    return result;
   } catch (err) {
     if (timeoutId) clearTimeout(timeoutId);
     return null;
