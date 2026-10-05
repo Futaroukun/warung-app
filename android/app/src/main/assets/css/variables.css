@@ -1,0 +1,63 @@
+/* ============================================================
+   WARUNGPRO - BESPOKE CYBER-FINTECH LUXE DESIGN SYSTEM
+   Design Tokens & CSS Variables
+   ============================================================ */
+:root {
+  /* Palette Canvas */
+  --bg-base: #07090e;
+  --bg-surface: #10141f;
+  --bg-card: #131826;
+  --bg-elevated: #182032;
+  --bg-inset: #090c14;
+  
+  /* Glass Borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-focus: #00f59b;
+  
+  /* Typography */
+  --text: #ffffff;
+  --text-muted: #cbd5e1;
+  --text-sub: #64748b;
+  
+  /* Neon Mint (Primary / Money / Success) */
+  --emerald: #00f59b;
+  --emerald-light: #46ffb8;
+  --emerald-glow: rgba(0, 245, 155, 0.3);
+  --emerald-dark: #04180f;
+  
+  /* Electric Amethyst / Indigo */
+  --primary: #8b5cf6;
+  --primary-light: #a78bfa;
+  --primary-glow: rgba(139, 92, 246, 0.3);
+  
+  /* Solar Gold (Warning) */
+  --amber: #ffaa00;
+  --amber-light: #ffc107;
+  --amber-glow: rgba(255, 170, 0, 0.25);
+  
+  /* Neon Coral Flame (Debt / Danger) */
+  --rose: #ff3b5c;
+  --rose-light: #ff6680;
+  --rose-glow: rgba(255, 59, 92, 0.25);
+  
+  /* Border Radii */
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 30px;
+  --radius-pill: 9999px;
+  
+  /* Shadows */
+  --shadow-card: 0 10px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --shadow-floating: 0 16px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}

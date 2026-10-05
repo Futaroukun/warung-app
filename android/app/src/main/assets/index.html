@@ -5,2189 +5,505 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>WarungPro - Kasir, Stok & Kasbon</title>
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0b0f19">
+  <meta name="theme-color" content="#080c14">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" type="image/png" href="/icon.png">
-  
-  <style>
-    :root {
-      --bg-base: #0b0f19;
-      --bg-surface: #131b2e;
-      --bg-elevated: #1e293b;
-      --border: #222f47;
-      
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-sub: #64748b;
-      
-      --primary: #3b82f6;
-      --primary-light: #60a5fa;
-      --emerald: #10b981;
-      --amber: #f59e0b;
-      --rose: #f43f5e;
-      
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 18px;
-      --radius-pill: 9999px;
-      
-      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: var(--font-stack);
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html, body {
-      background-color: var(--bg-base);
-      color: var(--text);
-      overscroll-behavior-y: none;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    body {
-      padding-bottom: 84px;
-      min-height: 100vh;
-    }
-
-    .app-viewport {
-      max-width: 600px;
-      margin: 0 auto;
-      min-height: 100vh;
-      position: relative;
-    }
-
-    /* Fixed Header - Solid Background (No Blur = 60 FPS) */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      background: #0b0f19;
-      border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transform: translateZ(0);
-    }
-
-    .brand-wrap {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .brand-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: var(--radius-sm);
-      background: #2563eb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      flex-shrink: 0;
-    }
-
-    .brand-text h1 {
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
-      line-height: 1.2;
-    }
-
-    .brand-text span {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--emerald);
-    }
-
-    .btn-icon-ghost {
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius-sm);
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    .content-area {
-      padding: 14px 16px;
-    }
-
-    /* Stat Cards Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .stat-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      contain: content;
-    }
-
-    .stat-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-
-    .stat-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-    }
-
-    .stat-badge {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg-elevated);
-      color: var(--stat-color, var(--text-muted));
-    }
-
-    .stat-value {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--stat-color, var(--text));
-    }
-
-    .stat-sub {
-      font-size: 11px;
-      color: var(--text-sub);
-      margin-top: 3px;
-      font-weight: 500;
-    }
-
-    /* Action Banner */
-    .quick-actions-bar {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-
-    .btn-action {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 10px 6px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      color: var(--text);
-      font-size: 11px;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .btn-action:active {
-      background: var(--bg-elevated);
-    }
-
-    .btn-action-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-    }
-
-    /* Section Titles */
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-
-    .section-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 0.3px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Search Toolbar - Solid (No Blur) */
-    .search-toolbar {
-      margin-bottom: 10px;
-    }
-
-    .search-box-wrap {
-      position: relative;
-      margin-bottom: 8px;
-    }
-
-    .search-box-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-sub);
-      pointer-events: none;
-    }
-
-    .search-input {
-      width: 100%;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 11px 12px 11px 38px;
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 500;
-      outline: none;
-    }
-
-    .search-input:focus {
-      border-color: var(--primary);
-    }
-
-    .filter-scroll {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .filter-scroll::-webkit-scrollbar { display: none; }
-
-    .chip {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: var(--radius-pill);
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      white-space: nowrap;
-      user-select: none;
-    }
-
-    .chip.active {
-      background: var(--primary);
-      color: #ffffff;
-      border-color: var(--primary);
-    }
-
-    /* Cards Stack */
-    .cards-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .product-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      content-visibility: auto;
-      contain-intrinsic-size: 0 110px;
-    }
-
-    .product-card.border-warning { border-left: 3px solid var(--amber); }
-    .product-card.border-danger { border-left: 3px solid var(--rose); }
-
-    .product-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .product-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #ffffff;
-      line-height: 1.25;
-    }
-
-    .product-cat {
-      display: inline-block;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      background: var(--bg-elevated);
-      color: var(--primary-light);
-      padding: 2px 6px;
-      border-radius: 4px;
-      margin-top: 3px;
-    }
-
-    .badge-stock {
-      padding: 3px 8px;
-      border-radius: var(--radius-pill);
-      font-size: 11px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .badge-stock.safe { background: #064e3b; color: #34d399; }
-    .badge-stock.warning { background: #78350f; color: #fde68a; }
-    .badge-stock.danger { background: #881337; color: #fecdd3; }
-
-    .product-prices {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #090e18;
-      padding: 6px 10px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-    }
-
-    .price-tag { font-weight: 700; color: #ffffff; }
-    .profit-tag { font-size: 11px; font-weight: 600; color: var(--emerald); }
-
-    .product-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 2px;
-    }
-
-    .stepper-wrap {
-      display: flex;
-      align-items: center;
-      background: var(--bg-elevated);
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-
-    .step-btn {
-      width: 32px;
-      height: 30px;
-      background: transparent;
-      border: none;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-weight: 700;
-    }
-
-    .step-btn:active { background: var(--primary); }
-
-    .step-count {
-      min-width: 28px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-
-    .btn-buy {
-      background: #059669;
-      color: white;
-      border: none;
-      padding: 7px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-    }
-
-    .btn-buy:active { background: #047857; }
-    .btn-buy.in-cart { background: #2563eb; }
-
-    /* Debt Card */
-    .debt-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      content-visibility: auto;
-      contain-intrinsic-size: 0 120px;
-    }
-
-    .debt-card.unpaid { border-left: 3px solid var(--rose); }
-    .debt-card.paid { border-left: 3px solid var(--emerald); opacity: 0.8; }
-
-    .debt-person {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .debt-name { font-size: 15px; font-weight: 700; color: #ffffff; }
-
-    .debt-phone {
-      font-size: 11px;
-      color: var(--primary-light);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      text-decoration: none;
-      margin-top: 2px;
-      font-weight: 600;
-    }
-
-    .debt-amount-box {
-      background: #090e18;
-      border-radius: var(--radius-sm);
-      padding: 8px 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    /* Sales Tx Card */
-    .tx-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      content-visibility: auto;
-      contain-intrinsic-size: 0 70px;
-    }
-
-    .tx-item-pill {
-      font-size: 11px;
-      background: var(--bg-elevated);
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: var(--text-muted);
-      display: inline-block;
-      margin-right: 4px;
-      margin-bottom: 2px;
-    }
-
-    /* Floating Cart Bar - Solid Background */
-    .floating-cart-bar {
-      position: fixed;
-      bottom: 74px;
-      left: 14px;
-      right: 14px;
-      max-width: 572px;
-      margin: 0 auto;
-      background: #111827;
-      border: 1.5px solid var(--primary);
-      border-radius: var(--radius-md);
-      padding: 10px 14px;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 45;
-      transform: translateZ(0);
-    }
-
-    .floating-cart-bar.active { display: flex; }
-
-    .cart-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .cart-badge-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      background: var(--primary);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .cart-count-bubble {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: var(--rose);
-      color: white;
-      font-size: 10px;
-      font-weight: 800;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .cart-text-total { font-size: 15px; font-weight: 800; color: #ffffff; }
-    .cart-text-sub { font-size: 11px; color: var(--text-muted); }
-
-    .btn-checkout-now {
-      background: #059669;
-      color: white;
-      border: none;
-      padding: 9px 16px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .btn-checkout-now:active { background: #047857; }
-
-    /* Bottom Navigation Bar - Solid Background */
-    .bottom-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 64px;
-      background: #0b0f19;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      z-index: 50;
-      transform: translateZ(0);
-    }
-
-    .nav-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      background: none;
-      border: none;
-      color: var(--text-sub);
-      cursor: pointer;
-      user-select: none;
-      height: 100%;
-    }
-
-    .nav-btn.active { color: var(--primary-light); }
-    .nav-text { font-size: 11px; font-weight: 700; letter-spacing: 0.2px; }
-
-    /* Modal Sheet - Solid Dark Overlay */
-    .sheet-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 100;
-      justify-content: center;
-      align-items: flex-end;
-    }
-
-    .sheet-backdrop.show { display: flex; }
-
-    .sheet-box {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-      width: 100%;
-      max-width: 600px;
-      padding: 20px 18px 28px 18px;
-      max-height: 90vh;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-    }
-
-    .sheet-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-
-    .sheet-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .sheet-close {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: var(--bg-elevated);
-      border: none;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    /* Cart Items in Checkout Sheet */
-    .cart-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 14px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .cart-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #090e18;
-      padding: 10px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-    }
-
-    .cart-row-title { font-size: 13px; font-weight: 700; color: #ffffff; }
-    .cart-row-price { font-size: 11px; color: var(--text-muted); }
-
-    /* Payment Switch Tabs */
-    .pay-mode-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-
-    .pay-mode-btn {
-      padding: 10px;
-      border-radius: var(--radius-sm);
-      border: 1.5px solid var(--border);
-      background: var(--bg-elevated);
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 700;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .pay-mode-btn.active {
-      border-color: var(--primary);
-      background: #1e3a8a;
-      color: #ffffff;
-    }
-
-    .pay-mode-btn.active.mode-debt {
-      border-color: var(--rose);
-      background: #881337;
-      color: #ffffff;
-    }
-
-    /* Form Inputs */
-    .field-group { margin-bottom: 12px; }
-    .field-label {
-      display: block;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      margin-bottom: 5px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    .field-input, .field-textarea {
-      width: 100%;
-      background: var(--bg-base);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 10px 12px;
-      color: #ffffff;
-      font-size: 14px;
-      font-weight: 500;
-      outline: none;
-    }
-
-    .field-input:focus, .field-textarea:focus { border-color: var(--primary); }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
-    /* Solid Buttons */
-    .btn-solid {
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: var(--radius-sm);
-      font-size: 13px;
-      font-weight: 700;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .btn-solid-primary { background: #2563eb; color: #ffffff; }
-    .btn-solid-rose { background: #e11d48; color: #ffffff; }
-    .btn-solid-emerald { background: #059669; color: #ffffff; }
-    .btn-solid-dark { background: var(--bg-elevated); color: var(--text-muted); border: 1px solid var(--border); }
-
-    .btn-link-action {
-      background: none;
-      border: none;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 4px;
-    }
-
-    /* Empty Placeholder */
-    .empty-box {
-      text-align: center;
-      padding: 36px 16px;
-      color: var(--text-sub);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .empty-icon-wrap {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-sub);
-    }
-
-    /* Toast Notification Top Banner */
-    #toastMessage {
-      position: fixed;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: #1e293b;
-      border: 1.5px solid var(--border);
-      padding: 10px 18px;
-      border-radius: var(--radius-pill);
-      font-size: 13px;
-      font-weight: 700;
-      color: #ffffff;
-      z-index: 99999;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      pointer-events: none;
-      max-width: 92vw;
-      text-align: center;
-    }
-
-    #toastMessage.show { transform: translateX(-50%) translateY(0); }
-    
-    #toastMessage.toast-error {
-      background: #4c0519;
-      border-color: #f43f5e;
-      color: #ffe4e6;
-    }
-
-    #toastMessage.toast-warning {
-      background: #451a03;
-      border-color: #f59e0b;
-      color: #fef3c7;
-    }
-
-    #toastMessage.toast-success {
-      background: #064e3b;
-      border-color: #10b981;
-      color: #d1fae5;
-    }
-  </style>
+  <!-- Modular Stylesheets -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/print.css">
 </head>
 <body>
-
-  <div id="toastMessage">
-    <svg id="toastIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-    <span id="toastText">Operasi berhasil</span>
-  </div>
-
   <div class="app-viewport">
     
-    <!-- Top Header Bar -->
+    <!-- Top Header -->
     <header>
       <div class="brand-wrap">
         <div class="brand-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
-            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-            <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
-            <path d="M2 7h20"/>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
           </svg>
         </div>
         <div class="brand-text">
           <h1>WarungPro</h1>
-          <span>Kasir & Stok Siap</span>
+          <div class="brand-status">
+            <span class="pulse-dot"></span>
+            <span>Kasir & Stok Online</span>
+          </div>
         </div>
       </div>
-
-      <button class="btn-icon-ghost" onclick="refreshCurrentView()" title="Muat Ulang Data">
-        <svg id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-        </svg>
-      </button>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-icon-ghost" onclick="openBarcodeScanner()" title="Scan Barcode Kamera">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <line x1="7" y1="12" x2="17" y2="12"/>
+          </svg>
+        </button>
+        <button class="btn-icon-ghost" onclick="switchMainTab('system')" title="Pengaturan & Backup">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
     </header>
 
-    <!-- Content Pages -->
+    <!-- CONTENT AREA -->
     <main class="content-area">
 
-      <!-- TAB 1: DASHBOARD -->
-      <section id="pageDashboard">
-        <div class="stats-grid">
-          <div class="stat-card" style="--stat-color: var(--emerald);">
-            <div class="stat-head">
-              <span class="stat-label">Omset Hari Ini</span>
-              <div class="stat-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="dashTodayOmset">Rp 0</div>
-            <div class="stat-sub" id="dashTodayTx">0 Transaksi Kasir</div>
+      <!-- ================= TAB 1: DASHBOARD ================= -->
+      <section class="tab-pane active" id="tab_dashboard">
+        <!-- Hero Revenue Card -->
+        <div class="hero-revenue-card">
+          <div class="hero-card-header">
+            <span class="hero-label">Penjualan Hari Ini</span>
+            <span class="hero-tag" id="dashTodayCount">0 Trx</span>
           </div>
-
-          <div class="stat-card" style="--stat-color: var(--rose);">
-            <div class="stat-head">
-              <span class="stat-label">Kasbon Aktif</span>
-              <div class="stat-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/></svg>
-              </div>
+          <div class="hero-amount" id="dashTodayTotal">Rp 0</div>
+          <div class="hero-sub-row">
+            <div>
+              <span class="hero-sub-label">Estimasi Laba Bersih</span>
+              <div class="hero-sub-val" id="dashTodayProfit">Rp 0</div>
             </div>
-            <div class="stat-value" id="dashTotalDebt">Rp 0</div>
-            <div class="stat-sub" id="dashActiveDebtors">0 Pengutang</div>
-          </div>
-
-          <div class="stat-card" style="--stat-color: var(--primary-light);">
-            <div class="stat-head">
-              <span class="stat-label">Total Stok</span>
-              <div class="stat-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>
-              </div>
+            <div style="text-align: right;">
+              <span class="hero-sub-label">Total Bulan Ini</span>
+              <div class="hero-sub-val" id="dashMonthTotal">Rp 0</div>
             </div>
-            <div class="stat-value" id="dashTotalUnits">0</div>
-            <div class="stat-sub" id="dashTotalProducts">0 Macam Produk</div>
-          </div>
-
-          <div class="stat-card" style="--stat-color: var(--amber);">
-            <div class="stat-head">
-              <span class="stat-label">Stok Kritis</span>
-              <div class="stat-badge">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
-              </div>
-            </div>
-            <div class="stat-value" id="dashLowStockCount">0</div>
-            <div class="stat-sub">Perlu Restok Segera</div>
           </div>
         </div>
 
-        <!-- Quick Action Shortcuts -->
+        <!-- 4 Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="stat-card" onclick="switchMainTab('debts')">
+            <div class="stat-card-top">
+              <span class="stat-card-title">Total Kasbon</span>
+              <div class="stat-card-icon red">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-val" id="dashTotalDebt">Rp 0</div>
+            <div class="stat-card-sub" id="dashDebtCount">0 Orang</div>
+          </div>
+
+          <div class="stat-card" onclick="switchMainTab('pos')">
+            <div class="stat-card-top">
+              <span class="stat-card-title">Stok Menipis</span>
+              <div class="stat-card-icon amber">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-val" id="dashLowStock">0 Menipis</div>
+            <div class="stat-card-sub" id="dashTotalItems">0 Total Produk</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-top">
+              <span class="stat-card-title">Nilai Aset Stok</span>
+              <div class="stat-card-icon purple">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-val" id="dashAssetValue">Rp 0</div>
+            <div class="stat-card-sub">Modal Tertanam</div>
+          </div>
+
+          <div class="stat-card" onclick="switchMainTab('history')">
+            <div class="stat-card-top">
+              <span class="stat-card-title">Bulan Ini</span>
+              <div class="stat-card-icon green">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+            </div>
+            <div class="stat-card-val" id="dashMonthProfit">Rp 0</div>
+            <div class="stat-card-sub" id="dashMonthCount">0 Trx</div>
+          </div>
+        </div>
+
+        <!-- Quick Touch Actions -->
         <div class="quick-actions-bar">
-          <button class="btn-action" onclick="switchMainTab('items')">
-            <div class="btn-action-icon" style="background: #059669;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-            </div>
-            <span>Kasir / Jual</span>
+          <button class="btn-quick-touch" onclick="openItemSheet()">
+            <div class="quick-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+            <span>+ Produk Baru</span>
           </button>
-
-          <button class="btn-action" onclick="openItemSheet()">
-            <div class="btn-action-icon" style="background: #2563eb;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            </div>
-            <span>+ Barang</span>
+          <button class="btn-quick-touch" onclick="openBarcodeScanner()">
+            <div class="quick-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg></div>
+            <span>Scan Barcode</span>
           </button>
-
-          <button class="btn-action" onclick="openDebtSheet()">
-            <div class="btn-action-icon" style="background: #e11d48;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-            </div>
-            <span>+ Kasbon</span>
+          <button class="btn-quick-touch" onclick="switchMainTab('pos')">
+            <div class="quick-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></div>
+            <span>Kasir POS</span>
           </button>
         </div>
-
-        <!-- Warning Critical Stock Feed -->
-        <div class="section-header">
-          <div class="section-title">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
-            <span>Peringatan Stok Menipis</span>
-          </div>
-          <button class="btn-link-action" onclick="navigateToTab('items', 'low')">
-            <span>Lihat Semua</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-        </div>
-
-        <div id="dashCriticalContainer" class="cards-stack"></div>
-
-        <!-- Riwayat Transaksi Kasir Hari Ini -->
-        <div class="section-header" style="margin-top: 20px;">
-          <div class="section-title">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span>Riwayat Penjualan Terbaru</span>
-          </div>
-        </div>
-        <div id="dashSalesHistory" class="cards-stack"></div>
       </section>
 
-      <!-- TAB 2: STOK BARANG / KASIR -->
-      <section id="pageItems" style="display: none;">
-        <div class="search-toolbar">
-          <div class="search-box-wrap">
-            <div class="search-box-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </div>
-            <input type="text" id="itemSearchField" class="search-input" placeholder="Cari nama barang untuk kasir..." oninput="debouncedFilterItems()">
+      <!-- ================= TAB 2: KASIR / STOK ================= -->
+      <section class="tab-pane" id="tab_pos">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Katalog & Kasir</h2>
+            <div class="view-sub">Pilih produk atau scan barcode</div>
           </div>
-
-          <div class="filter-scroll">
-            <div class="chip active" onclick="changeItemFilter('all', this)">Semua Produk</div>
-            <div class="chip" onclick="changeItemFilter('low', this)">Stok Menipis</div>
-            <div class="chip" onclick="changeItemFilter('out', this)">Stok Habis (0)</div>
-          </div>
+          <button class="btn-add-circle" onclick="openItemSheet()" title="Tambah produk baru">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
         </div>
 
-        <div id="itemsListContainer" class="cards-stack"></div>
+        <!-- Search Bar -->
+        <div class="search-bar-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="itemSearchField" class="search-input" placeholder="Cari nama barang / barcode..." oninput="window.renderItemsUI()">
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="filter-chips-row">
+          <button class="filter-chip active" id="chipItem_all" onclick="window.appStore.setState({ itemFilter: 'all' }); renderItemsUI();">Semua (<span id="itemsStatTotal">0</span>)</button>
+          <button class="filter-chip" id="chipItem_low" onclick="window.appStore.setState({ itemFilter: 'low' }); renderItemsUI();">Menipis (<span id="itemsStatCritical">0</span>)</button>
+          <button class="filter-chip" id="chipItem_out" onclick="window.appStore.setState({ itemFilter: 'out' }); renderItemsUI();">Habis (<span id="itemsStatOut">0</span>)</button>
+        </div>
+
+        <!-- Product Cards Container -->
+        <div class="items-list-grid" id="itemsListContainer">
+          <!-- Dynamic rendering by pos.js -->
+        </div>
       </section>
 
-      <!-- TAB 3: BUKU HUTANG -->
-      <section id="pageDebts" style="display: none;">
-        <div class="search-toolbar">
-          <div class="search-box-wrap">
-            <div class="search-box-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </div>
-            <input type="text" id="debtSearchField" class="search-input" placeholder="Cari nama pelanggan / catatan..." oninput="debouncedFilterDebts()">
+      <!-- ================= TAB 3: KASBON ================= -->
+      <section class="tab-pane" id="tab_debts">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Buku Kasbon</h2>
+            <div class="view-sub" id="debtSummaryCount">0 Orang Belum Lunas</div>
           </div>
+          <div class="debt-total-capsule" id="debtSummaryTotal">Rp 0</div>
+        </div>
 
-          <div class="filter-scroll">
-            <div class="chip active" onclick="changeDebtFilter('all', this)">Semua Kasbon</div>
-            <div class="chip" onclick="changeDebtFilter('belum_lunas', this)">Belum Lunas</div>
-            <div class="chip" onclick="changeDebtFilter('lunas', this)">Sudah Lunas</div>
+        <div class="search-bar-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="debtSearchField" class="search-input" placeholder="Cari nama pelanggan / no telp..." oninput="window.renderDebtsUI()">
+        </div>
+
+        <div class="filter-chips-row">
+          <button class="filter-chip active" onclick="window.appStore.setState({ debtFilter: 'belum_lunas' }); renderDebtsUI();">Belum Lunas</button>
+          <button class="filter-chip" onclick="window.appStore.setState({ debtFilter: 'lunas' }); renderDebtsUI();">Lunas</button>
+          <button class="filter-chip" onclick="window.appStore.setState({ debtFilter: '' }); renderDebtsUI();">Semua</button>
+        </div>
+
+        <div class="debts-list-wrap" id="debtsListContainer">
+          <!-- Dynamic rendering by debts.js -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: RIWAYAT ================= -->
+      <section class="tab-pane" id="tab_history">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Riwayat Transaksi</h2>
+            <div class="view-sub" id="historyPeriodCount">0 Transaksi</div>
+          </div>
+          <div class="history-total-capsule" id="historyPeriodTotal">Rp 0</div>
+        </div>
+
+        <div class="search-bar-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="historySearchField" class="search-input" placeholder="Cari invoice / pelanggan..." oninput="window.renderHistoryUI()">
+        </div>
+
+        <div class="filter-chips-row">
+          <button class="filter-chip active" onclick="window.appStore.setState({ historyPeriod: 'today' }); renderHistoryUI();">Hari Ini</button>
+          <button class="filter-chip" onclick="window.appStore.setState({ historyPeriod: 'all' }); renderHistoryUI();">Semua Waktu</button>
+        </div>
+
+        <div class="history-list-wrap" id="historyListContainer">
+          <!-- Dynamic rendering by history.js -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: SYSTEM / PENGATURAN ================= -->
+      <section class="tab-pane" id="tab_system">
+        <div class="view-header">
+          <div>
+            <h2 class="view-title">Sistem & Pengaturan</h2>
+            <div class="view-sub">Backup database, status Termux & server</div>
           </div>
         </div>
 
-        <div id="debtsListContainer" class="cards-stack"></div>
+        <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 12px; color: var(--emerald);">Kesehatan Server (Termux Android)</h3>
+          <div id="sysMemoryInfo" style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">RAM: Mengambil data...</div>
+          <div id="sysUptimeInfo" style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Uptime: -</div>
+          <div id="sysDbInfo" style="font-size: 13px; color: var(--text-muted);">Database: SQLite WAL Mode</div>
+        </div>
+
+        <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px;">
+          <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 8px;">Backup Database Warung</h3>
+          <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px; line-height: 1.4;">
+            Unduh snapshot binary file database <code>warung.db</code> ke memori HP. Data produk, penjualan, dan kasbon aman dari kerusakan atau reset aplikasi.
+          </p>
+          <button class="btn btn-primary" onclick="downloadDatabaseBackup()" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Unduh Snapshot warung.db</span>
+          </button>
+        </div>
       </section>
 
     </main>
 
-    <!-- Floating Cart Bar -->
-    <div class="floating-cart-bar" id="floatingCart">
-      <div class="cart-info">
-        <div class="cart-badge-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-          <div class="cart-count-bubble" id="cartItemCount">0</div>
+    <!-- FLOATING CART DOCK -->
+    <div class="cart-bar" id="cartBar" onclick="openCheckoutSheet()">
+      <div class="cart-bar-content">
+        <div class="cart-info">
+          <span class="cart-badge" id="cartBadge">0 item</span>
+          <span class="cart-total" id="cartBarTotal">Rp 0</span>
         </div>
-        <div>
-          <div class="cart-text-total" id="cartTotalDisplay">Rp 0</div>
-          <div class="cart-text-sub" id="cartSubDisplay">0 macam barang</div>
-        </div>
+        <button class="cart-pay-btn" type="button">
+          <span>Bayar</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
       </div>
-      <button class="btn-checkout-now" onclick="openCheckoutSheet()">
-        <span>Checkout</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-      </button>
     </div>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- BOTTOM NAVIGATION BAR -->
     <nav class="bottom-bar">
-      <button class="nav-btn active" id="btnNavDash" onclick="switchMainTab('dashboard')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect width="7" height="9" x="3" y="3" rx="1"/>
-          <rect width="7" height="5" x="14" y="3" rx="1"/>
-          <rect width="7" height="9" x="14" y="12" rx="1"/>
-          <rect width="7" height="5" x="3" y="16" rx="1"/>
+      <button class="nav-btn active" id="btnNav_dashboard" onclick="switchMainTab('dashboard')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <rect width="7" height="9" x="3" y="3" rx="1.5"/><rect width="7" height="5" x="14" y="3" rx="1.5"/><rect width="7" height="9" x="14" y="12" rx="1.5"/><rect width="7" height="5" x="3" y="16" rx="1.5"/>
         </svg>
         <span class="nav-text">Ringkasan</span>
       </button>
 
-      <button class="nav-btn" id="btnNavItems" onclick="switchMainTab('items')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
-          <path d="m3.3 7 8.7 5 8.7-5"/>
-          <path d="M12 22V12"/>
+      <button class="nav-btn" id="btnNav_pos" onclick="switchMainTab('pos')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>
         </svg>
-        <span class="nav-text">Kasir & Stok</span>
+        <span class="nav-text">Kasir/Stok</span>
       </button>
 
-      <button class="nav-btn" id="btnNavDebts" onclick="switchMainTab('debts')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-          <path d="M6 6h10"/><path d="M6 10h10"/><path d="m9 16 2 2 4-4"/>
+      <button class="nav-btn" id="btnNav_debts" onclick="switchMainTab('debts')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/><path d="m9 16 2 2 4-4"/>
         </svg>
-        <span class="nav-text">Buku Hutang</span>
+        <span class="nav-text">Kasbon</span>
+      </button>
+
+      <button class="nav-btn" id="btnNav_history" onclick="switchMainTab('history')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span class="nav-text">Riwayat</span>
       </button>
     </nav>
 
   </div>
 
-  <!-- MODAL BOTTOM SHEET: CHECKOUT KASIR -->
+  <!-- ================= MODALS & BOTTOM SHEETS ================= -->
+
+  <!-- SHEET: CHECKOUT KASIR -->
   <div class="sheet-backdrop" id="sheetCheckout">
     <div class="sheet-box">
+      <div class="sheet-pull-bar"></div>
       <div class="sheet-header">
-        <div class="sheet-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.2"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-          <span>Keranjang & Pembayaran</span>
-        </div>
-        <button class="sheet-close" onclick="closeSheet('sheetCheckout')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
+        <div class="sheet-title">Pembayaran Kasir</div>
+        <button class="btn-icon-subtle" onclick="closeSheet('sheetCheckout')">✕</button>
       </div>
 
-      <div class="cart-list" id="checkoutCartItems"></div>
+      <div class="sheet-body">
+        <div id="checkoutCartItemsList" style="max-height: 180px; overflow-y: auto; margin-bottom: 12px;"></div>
 
-      <div style="background: #090e18; border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 14px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <span style="font-size: 11px; color: var(--text-muted);">Total Tagihan:</span>
-          <div style="font-size: 20px; font-weight: 800; color: var(--emerald);" id="checkoutTotalAmount">Rp 0</div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px;">
+          <span style="font-size: 13px; color: var(--text-sub);">Total Belanja</span>
+          <span style="font-size: 20px; font-weight: 900; color: var(--emerald);" id="checkoutGrandTotal">Rp 0</span>
         </div>
-        <button class="btn-link-action" style="color: var(--rose);" onclick="clearCart()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
-          <span>Kosongkan</span>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <button type="button" class="btn-pay-mode active" id="btnPayMode_cash" onclick="setCheckoutPaymentType('cash')" style="flex: 1; padding: 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: #fff; font-weight: 700; cursor: pointer;">Tunai</button>
+          <button type="button" class="btn-pay-mode" id="btnPayMode_debt" onclick="setCheckoutPaymentType('debt')" style="flex: 1; padding: 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: #fff; font-weight: 700; cursor: pointer;">Kasbon / Hutang</button>
+        </div>
+
+        <div id="checkoutCashSection">
+          <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Uang Tunai Diterima</label>
+          <input type="number" id="checkoutCashReceived" class="input-box" placeholder="0" style="font-size: 18px; font-weight: 800; margin-bottom: 10px;">
+          
+          <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+            <button type="button" class="btn-preset-mini" onclick="setQuickCash('exact')">Uang Pas</button>
+            <button type="button" class="btn-preset-mini" onclick="setQuickCash(20000)">20rb</button>
+            <button type="button" class="btn-preset-mini" onclick="setQuickCash(50000)">50rb</button>
+            <button type="button" class="btn-preset-mini" onclick="setQuickCash(100000)">100rb</button>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 16px;">
+            <span style="color: var(--text-sub);">Kembalian:</span>
+            <span style="font-weight: 800;" id="checkoutChangeVal">Rp 0</span>
+          </div>
+        </div>
+
+        <div id="checkoutDebtSection" style="display: none;">
+          <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Nama Pelanggan (Wajib)</label>
+          <input type="text" id="checkoutCustomerName" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 16px;">
+        </div>
+
+        <button class="btn btn-primary" onclick="submitCheckout()" style="width: 100%; padding: 14px; font-weight: 800; font-size: 15px;">
+          Proses Transaksi Selesai
         </button>
       </div>
-
-      <div class="field-label">Pilih Cara Pembayaran:</div>
-      <div class="pay-mode-grid">
-        <button type="button" class="pay-mode-btn active" id="btnPayCash" onclick="setCheckoutPaymentType('cash')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/></svg>
-          <span>Bayar Tunai</span>
-        </button>
-
-        <button type="button" class="pay-mode-btn mode-debt" id="btnPayDebt" onclick="setCheckoutPaymentType('debt')">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/></svg>
-          <span>Catat Kasbon</span>
-        </button>
-      </div>
-
-      <form id="formCheckout" onsubmit="submitCheckout(event)">
-        <div id="sectionPayCash">
-          <div class="field-group">
-            <label class="field-label">Uang Diterima dari Pembeli (Rp) *</label>
-            <input type="number" id="inputCashReceived" class="field-input" placeholder="0" min="0" inputmode="numeric" oninput="calculateCashChange()">
-          </div>
-
-          <div style="display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px;">
-            <button type="button" class="chip" onclick="setQuickCash('exact')">Uang Pas</button>
-            <button type="button" class="chip" onclick="setQuickCash(10000)">10 Rb</button>
-            <button type="button" class="chip" onclick="setQuickCash(20000)">20 Rb</button>
-            <button type="button" class="chip" onclick="setQuickCash(50000)">50 Rb</button>
-            <button type="button" class="chip" onclick="setQuickCash(100000)">100 Rb</button>
-          </div>
-
-          <div style="background: #090e18; border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 14px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Uang Kembalian:</span>
-            <span style="font-size: 16px; font-weight: 800; color: var(--primary-light);" id="displayCashChange">Rp 0</span>
-          </div>
-        </div>
-
-        <div id="sectionPayDebt" style="display: none;">
-          <div class="field-group">
-            <label class="field-label">Nama Pengutang / Pelanggan *</label>
-            <input type="text" id="inputDebtCustomerName" class="field-input" placeholder="Contoh: Bu Siti, Mas Budi" autocomplete="off">
-          </div>
-          <div class="field-group">
-            <label class="field-label">No. WhatsApp (Opsional)</label>
-            <input type="tel" id="inputDebtCustomerPhone" class="field-input" placeholder="08xxxxxxxxxx" inputmode="tel">
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px;">
-          <button type="button" class="btn-solid btn-solid-dark" onclick="closeSheet('sheetCheckout')">Batal</button>
-          <button type="submit" class="btn-solid btn-solid-emerald" id="btnConfirmCheckout">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Selesaikan Transaksi</span>
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 
-  <!-- MODAL STRUK SUKSES / NOTA DIGITAL -->
-  <div class="sheet-backdrop" id="sheetReceipt">
-    <div class="sheet-box">
-      <div style="text-align: center; margin-bottom: 14px;">
-        <div style="width: 44px; height: 44px; border-radius: 50%; background: #064e3b; color: #34d399; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 6px;">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <h3 style="font-size: 17px; font-weight: 800; color: #ffffff;">Transaksi Berhasil!</h3>
-        <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="receiptTimestamp">-</p>
-      </div>
-
-      <div style="background: #090e18; border-radius: var(--radius-sm); padding: 12px; border: 1px solid var(--border); margin-bottom: 14px;">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
-          <span style="color: var(--text-muted);">Tipe Pembayaran:</span>
-          <span style="font-weight: 700; color: #ffffff;" id="receiptPaymentType">Tunai</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
-          <span style="color: var(--text-muted);">Pelanggan:</span>
-          <span style="font-weight: 700; color: #ffffff;" id="receiptCustomerName">Umum</span>
-        </div>
-        <div style="border-top: 1px dashed var(--border); margin: 6px 0; padding-top: 6px;">
-          <div id="receiptItemsList" style="font-size: 12px; color: var(--text-muted); line-height: 1.5;"></div>
-        </div>
-        <div style="border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 700; color: #ffffff; font-size: 12px;">TOTAL BELANJA:</span>
-          <span style="font-size: 17px; font-weight: 800; color: var(--emerald);" id="receiptTotalAmount">Rp 0</span>
-        </div>
-        <div id="receiptChangeRow" style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 4px;">
-          <span style="color: var(--text-muted);">Kembalian:</span>
-          <span style="font-weight: 700; color: var(--primary-light);" id="receiptChangeAmount">Rp 0</span>
-        </div>
-      </div>
-
-      <button type="button" class="btn-solid btn-solid-primary" onclick="closeSheet('sheetReceipt')">
-        <span>Transaksi Baru</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- MODAL BOTTOM SHEET: Tambah / Edit Barang -->
+  <!-- SHEET: TAMBAH / EDIT ITEM -->
   <div class="sheet-backdrop" id="sheetItem">
     <div class="sheet-box">
+      <div class="sheet-pull-bar"></div>
       <div class="sheet-header">
-        <div class="sheet-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>
-          <span id="sheetItemTitle">Tambah Barang Baru</span>
-        </div>
-        <button class="sheet-close" onclick="closeSheet('sheetItem')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
+        <div class="sheet-title" id="itemSheetTitle">Tambah Produk Baru</div>
+        <button class="btn-icon-subtle" onclick="closeSheet('sheetItem')">✕</button>
       </div>
 
-      <form id="formItem" onsubmit="submitSaveItem(event)">
-        <input type="hidden" id="inputItemId">
-        <div class="field-group">
-          <label class="field-label">Nama Barang / Produk *</label>
-          <input type="text" id="inputItemName" class="field-input" placeholder="Misal: Beras Ramos 5kg, Telur 1kg" required autocomplete="off">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Kategori</label>
-          <input type="text" id="inputItemCategory" class="field-input" placeholder="Sembako, Rokok, Minuman, Sabun" value="Sembako">
-        </div>
-        <div class="grid-2">
-          <div class="field-group">
-            <label class="field-label">Harga Beli / Modal</label>
-            <input type="number" id="inputItemBuyPrice" class="field-input" placeholder="0" min="0" inputmode="numeric">
-          </div>
-          <div class="field-group">
-            <label class="field-label">Harga Jual</label>
-            <input type="number" id="inputItemSellPrice" class="field-input" placeholder="0" min="0" inputmode="numeric">
-          </div>
-        </div>
-        <div class="grid-2">
-          <div class="field-group">
-            <label class="field-label">Stok Saat Ini</label>
-            <input type="number" id="inputItemStock" class="field-input" placeholder="0" min="0" value="0" inputmode="numeric">
-          </div>
-          <div class="field-group">
-            <label class="field-label">Batas Peringatan (Min)</label>
-            <input type="number" id="inputItemMinStock" class="field-input" placeholder="3" min="0" value="3" inputmode="numeric">
-          </div>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 12px;">
-          <button type="button" class="btn-solid btn-solid-dark" onclick="closeSheet('sheetItem')">Batal</button>
-          <button type="submit" class="btn-solid btn-solid-primary">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
-            <span>Simpan Produk</span>
+      <form id="formItem" class="sheet-body">
+        <input type="hidden" id="itemIdField">
+        
+        <label class="form-label">Barcode (Opsional)</label>
+        <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+          <input type="text" id="itemBarcodeField" class="input-box" placeholder="Scan atau ketik kode barcode">
+          <button type="button" class="btn-icon-ghost" onclick="openBarcodeScanner()" title="Scan Kamera">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
           </button>
         </div>
+
+        <label class="form-label">Nama Barang *</label>
+        <input type="text" id="itemNameField" class="input-box" placeholder="Contoh: Kopi Kapal Api Special" required style="margin-bottom: 12px;">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div>
+            <label class="form-label">Kategori</label>
+            <input type="text" id="itemCategoryField" class="input-box" placeholder="Umum">
+          </div>
+          <div>
+            <label class="form-label">Stok Saat Ini *</label>
+            <input type="number" id="itemStockField" class="input-box" placeholder="0" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div>
+            <label class="form-label">Modal Beli (Rp)</label>
+            <input type="number" id="itemBuyPriceField" class="input-box" placeholder="0">
+          </div>
+          <div>
+            <label class="form-label">Harga Jual (Rp) *</label>
+            <input type="number" id="itemSellPriceField" class="input-box" placeholder="0" required>
+          </div>
+        </div>
+
+        <input type="hidden" id="itemMinStockField" value="3">
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-weight: 800; margin-top: 8px;">
+          Simpan Data Produk
+        </button>
       </form>
     </div>
   </div>
 
-  <!-- MODAL BOTTOM SHEET: Catat Kasbon / Hutang -->
-  <div class="sheet-backdrop" id="sheetDebt">
-    <div class="sheet-box">
-      <div class="sheet-header">
-        <div class="sheet-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2.2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/></svg>
-          <span>Catat Kasbon Baru</span>
-        </div>
-        <button class="sheet-close" onclick="closeSheet('sheetDebt')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <form id="formDebt" onsubmit="submitSaveDebt(event)">
-        <div class="field-group">
-          <label class="field-label">Nama Pelanggan *</label>
-          <input type="text" id="inputDebtCustomer" class="field-input" placeholder="Contoh: Bu Siti, Mas Budi" required autocomplete="off">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Nomor WhatsApp (Opsional)</label>
-          <input type="tel" id="inputDebtPhone" class="field-input" placeholder="08xxxxxxxxxx" inputmode="tel">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Total Hutang (Rp) *</label>
-          <input type="number" id="inputDebtAmount" class="field-input" placeholder="0" min="100" required inputmode="numeric">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Barang / Catatan Belanja</label>
-          <textarea id="inputDebtNotes" class="field-textarea" rows="2" placeholder="Contoh: Beras Ramos 5kg, Telur 1kg"></textarea>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 12px;">
-          <button type="button" class="btn-solid btn-solid-dark" onclick="closeSheet('sheetDebt')">Batal</button>
-          <button type="submit" class="btn-solid btn-solid-rose">
-            <span>Catat Kasbon</span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL BOTTOM SHEET: Bayar / Cicil Kasbon -->
+  <!-- SHEET: BAYAR KASBON -->
   <div class="sheet-backdrop" id="sheetPay">
     <div class="sheet-box">
+      <div class="sheet-pull-bar"></div>
       <div class="sheet-header">
-        <div class="sheet-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-          <span>Bayar / Cicil Kasbon</span>
-        </div>
-        <button class="sheet-close" onclick="closeSheet('sheetPay')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
+        <div class="sheet-title">Bayar Kasbon</div>
+        <button class="btn-icon-subtle" onclick="closeSheet('sheetPay')">✕</button>
       </div>
 
-      <form id="formPay" onsubmit="submitPayDebt(event)">
-        <input type="hidden" id="inputPayDebtId">
-        <div style="background: #090e18; border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px; border: 1px solid var(--border);">
-          <div style="font-size: 12px; color: var(--text-muted);" id="payTargetName">Pelanggan: -</div>
-          <div style="font-size: 18px; font-weight: 800; color: var(--rose); margin-top: 3px;" id="payTargetRemaining">Rp 0</div>
-          <div style="font-size: 11px; color: var(--text-sub); margin-top: 2px;">Sisa Kasbon Tertagih</div>
+      <div class="sheet-body">
+        <div style="background: var(--bg-surface); padding: 12px; border-radius: 12px; margin-bottom: 14px;">
+          <div style="font-size: 11px; color: var(--text-sub);">Pelanggan</div>
+          <div style="font-weight: 800; font-size: 15px;" id="payDebtCustomerName">-</div>
+          <div style="font-size: 12px; color: var(--text-sub); margin-top: 4px;">Sisa Hutang: <b id="payDebtRemaining" style="color: var(--rose);">Rp 0</b></div>
         </div>
-        <div class="field-group">
-          <label class="field-label">Nominal Pembayaran (Rp) *</label>
-          <input type="number" id="inputPayAmount" class="field-input" placeholder="0" min="1" required inputmode="numeric">
+
+        <label class="form-label">Nominal Pembayaran</label>
+        <input type="number" id="payDebtAmount" class="input-box" placeholder="0" style="font-size: 18px; font-weight: 800; margin-bottom: 10px;">
+
+        <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+          <button type="button" class="btn-preset-mini" onclick="setPayPreset('lunas')">Lunasi Semua</button>
+          <button type="button" class="btn-preset-mini" onclick="setPayPreset(10000)">10rb</button>
+          <button type="button" class="btn-preset-mini" onclick="setPayPreset(20000)">20rb</button>
+          <button type="button" class="btn-preset-mini" onclick="setPayPreset(50000)">50rb</button>
         </div>
-        <div style="display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px;">
-          <button type="button" class="chip" onclick="setPayPreset('full')">Bayar Lunas Semua</button>
-          <button type="button" class="chip" onclick="setPayPreset(10000)">+10 Rb</button>
-          <button type="button" class="chip" onclick="setPayPreset(20000)">+20 Rb</button>
-          <button type="button" class="chip" onclick="setPayPreset(50000)">+50 Rb</button>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px;">
-          <button type="button" class="btn-solid btn-solid-dark" onclick="closeSheet('sheetPay')">Batal</button>
-          <button type="submit" class="btn-solid btn-solid-emerald">
-            <span>Konfirmasi Bayar</span>
-          </button>
-        </div>
-      </form>
+
+        <label class="form-label">Catatan Pembayaran (Opsional)</label>
+        <input type="text" id="payDebtNotes" class="input-box" placeholder="Contoh: Titip lewat tetangga" style="margin-bottom: 16px;">
+
+        <button class="btn btn-primary" onclick="submitPayDebt()" style="width: 100%; padding: 14px; font-weight: 800;">
+          Simpan Pembayaran
+        </button>
+      </div>
     </div>
   </div>
 
-  <script>
-    let activeTab = 'dashboard';
-    let itemFilterState = 'all';
-    let debtFilterState = 'all';
-    let cachedItems = [];
-    let cachedDebts = [];
-    let selectedPayDebt = null;
-    let debounceTimer = null;
+  <!-- SHEET: SCANNER BARCODE KAMERA -->
+  <div class="sheet-backdrop" id="sheetScanner">
+    <div class="sheet-box">
+      <div class="sheet-pull-bar"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">Pemindai Barcode Produk</div>
+        <button class="btn-icon-subtle" onclick="closeBarcodeScanner()">✕</button>
+      </div>
 
-    let cart = [];
-    let checkoutPayType = 'cash';
-
-    const idrFormat = new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    });
-
-    let toastTimer = null;
-
-    function showToast(msg, type = 'success') {
-      const toast = document.getElementById('toastMessage');
-      const icon = document.getElementById('toastIcon');
-      const text = document.getElementById('toastText');
-
-      clearTimeout(toastTimer);
-      toast.classList.remove('show', 'toast-error', 'toast-warning', 'toast-success');
-
-      if (type === 'error') {
-        toast.classList.add('toast-error');
-        icon.setAttribute('stroke', '#f43f5e');
-        icon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
-      } else if (type === 'warning') {
-        toast.classList.add('toast-warning');
-        icon.setAttribute('stroke', '#f59e0b');
-        icon.innerHTML = '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>';
-      } else {
-        toast.classList.add('toast-success');
-        icon.setAttribute('stroke', '#10b981');
-        icon.innerHTML = '<path d="M20 6L9 17l-5-5"/>';
-      }
-
-      text.innerText = msg;
-      void toast.offsetWidth; // Trigger reflow for animation
-      toast.classList.add('show');
-
-      try {
-        if (type === 'error' || type === 'warning') {
-          navigator.vibrate?.([30, 40, 30]);
-        }
-      } catch (e) {}
-
-      toastTimer = setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2600);
-    }
-
-    // Intersep validasi form agar pesan input kurang langsung muncul melayang di atas
-    document.addEventListener('invalid', (e) => {
-      e.preventDefault();
-      const input = e.target;
-      let label = '';
-      if (input.previousElementSibling && input.previousElementSibling.innerText) {
-        label = input.previousElementSibling.innerText.replace('*', '').trim();
-      } else {
-        label = input.placeholder || 'bidang ini';
-      }
-      showToast(`Harap isi ${label}!`, 'warning');
-      input.focus();
-    }, true);
-
-    function switchMainTab(tab) {
-      activeTab = tab;
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-      const activeBtnId = tab === 'dashboard' ? 'btnNavDash' : (tab === 'items' ? 'btnNavItems' : 'btnNavDebts');
-      document.getElementById(activeBtnId).classList.add('active');
-
-      document.getElementById('pageDashboard').style.display = tab === 'dashboard' ? 'block' : 'none';
-      document.getElementById('pageItems').style.display = tab === 'items' ? 'block' : 'none';
-      document.getElementById('pageDebts').style.display = tab === 'debts' ? 'block' : 'none';
-
-      if (tab === 'dashboard') loadSummaryData();
-      else if (tab === 'items') fetchItemsList();
-      else if (tab === 'debts') fetchDebtsList();
-
-      window.scrollTo(0, 0);
-    }
-
-    function navigateToTab(tab, filter = 'all') {
-      switchMainTab(tab);
-      if (tab === 'items' && filter !== 'all') {
-        const chips = document.querySelectorAll('#pageItems .chip');
-        if (filter === 'low' && chips[1]) changeItemFilter('low', chips[1]);
-      }
-    }
-
-    function refreshCurrentView() {
-      loadSummaryData();
-      if (activeTab === 'items') fetchItemsList();
-      if (activeTab === 'debts') fetchDebtsList();
-      showToast('Data dimuat ulang');
-    }
-
-    function openSheet(id) { document.getElementById(id).classList.add('show'); }
-    function closeSheet(id) { document.getElementById(id).classList.remove('show'); }
-
-    function openItemSheet(item = null) {
-      const form = document.getElementById('formItem');
-      form.reset();
-      if (item) {
-        document.getElementById('sheetItemTitle').innerText = 'Edit Produk';
-        document.getElementById('inputItemId').value = item.id;
-        document.getElementById('inputItemName').value = item.name;
-        document.getElementById('inputItemCategory').value = item.category || 'Sembako';
-        document.getElementById('inputItemBuyPrice').value = item.buy_price || 0;
-        document.getElementById('inputItemSellPrice').value = item.sell_price || 0;
-        document.getElementById('inputItemStock').value = item.stock || 0;
-        document.getElementById('inputItemMinStock').value = item.min_stock !== undefined ? item.min_stock : 3;
-      } else {
-        document.getElementById('sheetItemTitle').innerText = 'Tambah Produk Baru';
-        document.getElementById('inputItemId').value = '';
-      }
-      openSheet('sheetItem');
-    }
-
-    function openDebtSheet() {
-      document.getElementById('formDebt').reset();
-      openSheet('sheetDebt');
-    }
-
-    function openPaySheet(debt) {
-      selectedPayDebt = debt;
-      document.getElementById('inputPayDebtId').value = debt.id;
-      document.getElementById('payTargetName').innerText = 'Pelanggan: ' + debt.customer_name;
-      const sisa = Math.max(0, Number(debt.amount) - Number(debt.paid_amount));
-      document.getElementById('payTargetRemaining').innerText = formatRp(sisa);
-      document.getElementById('inputPayAmount').value = sisa;
-      openSheet('sheetPay');
-    }
-
-    function setPayPreset(val) {
-      if (!selectedPayDebt) return;
-      const sisa = Math.max(0, Number(selectedPayDebt.amount) - Number(selectedPayDebt.paid_amount));
-      if (val === 'full') {
-        document.getElementById('inputPayAmount').value = sisa;
-      } else {
-        const cur = Number(document.getElementById('inputPayAmount').value) || 0;
-        document.getElementById('inputPayAmount').value = Math.min(sisa, cur + val);
-      }
-    }
-
-    function changeItemFilter(filter, el) {
-      itemFilterState = filter;
-      document.querySelectorAll('#pageItems .chip').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      renderItemsUI();
-    }
-
-    function changeDebtFilter(filter, el) {
-      debtFilterState = filter;
-      document.querySelectorAll('#pageDebts .chip').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
-      renderDebtsUI();
-    }
-
-    function debouncedFilterItems() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => renderItemsUI(), 100);
-    }
-
-    function debouncedFilterDebts() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => renderDebtsUI(), 100);
-    }
-
-    function addToCart(item) {
-      const existing = cart.find(c => c.id === item.id);
-      if (existing) {
-        existing.qty += 1;
-      } else {
-        cart.push({
-          id: item.id,
-          name: item.name,
-          price: Number(item.sell_price) || 0,
-          qty: 1,
-          stock: item.stock
-        });
-      }
-      updateCartBar();
-      renderItemsUI();
-      showToast(`+1 ${item.name} ke keranjang`);
-    }
-
-    function changeCartQty(id, delta) {
-      const item = cart.find(c => c.id === id);
-      if (!item) return;
-
-      item.qty += delta;
-      if (item.qty <= 0) {
-        cart = cart.filter(c => c.id !== id);
-      }
-      updateCartBar();
-      renderCheckoutSheetItems();
-      renderItemsUI();
-    }
-
-    function removeFromCart(id) {
-      cart = cart.filter(c => c.id !== id);
-      updateCartBar();
-      renderCheckoutSheetItems();
-      renderItemsUI();
-    }
-
-    function clearCart() {
-      cart = [];
-      updateCartBar();
-      closeSheet('sheetCheckout');
-      renderItemsUI();
-      showToast('Keranjang dikosongkan');
-    }
-
-    function getCartTotal() {
-      return cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    }
-
-    function getCartItemCount() {
-      return cart.reduce((sum, item) => sum + item.qty, 0);
-    }
-
-    function updateCartBar() {
-      const bar = document.getElementById('floatingCart');
-      const totalUnits = getCartItemCount();
-      const totalAmount = getCartTotal();
-
-      if (totalUnits > 0) {
-        bar.classList.add('active');
-        document.getElementById('cartItemCount').innerText = totalUnits;
-        document.getElementById('cartTotalDisplay').innerText = formatRp(totalAmount);
-        document.getElementById('cartSubDisplay').innerText = `${cart.length} macam produk`;
-      } else {
-        bar.classList.remove('active');
-      }
-    }
-
-    function openCheckoutSheet() {
-      if (cart.length === 0) {
-        showToast('Keranjang belanja masih kosong!', 'warning');
-        return;
-      }
-      renderCheckoutSheetItems();
-      setCheckoutPaymentType('cash');
-      setQuickCash('exact');
-      openSheet('sheetCheckout');
-    }
-
-    function renderCheckoutSheetItems() {
-      const container = document.getElementById('checkoutCartItems');
-      const totalAmount = getCartTotal();
-      document.getElementById('checkoutTotalAmount').innerText = formatRp(totalAmount);
-
-      if (cart.length === 0) {
-        closeSheet('sheetCheckout');
-        return;
-      }
-
-      container.innerHTML = cart.map(item => `
-        <div class="cart-row">
-          <div>
-            <div class="cart-row-title">${escapeXml(item.name)}</div>
-            <div class="cart-row-price">${formatRp(item.price)} x ${item.qty} = <b style="color: #ffffff;">${formatRp(item.price * item.qty)}</b></div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div class="stepper-wrap">
-              <button type="button" class="step-btn" onclick="changeCartQty(${item.id}, -1)">-</button>
-              <span class="step-count">${item.qty}</span>
-              <button type="button" class="step-btn" onclick="changeCartQty(${item.id}, 1)">+</button>
-            </div>
-            <button type="button" class="btn-link-action" style="color: var(--rose);" onclick="removeFromCart(${item.id})">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
-            </button>
-          </div>
+      <div class="sheet-body" style="text-align: center;">
+        <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 12px;">Arahkan kamera ke garis barcode pada kemasan barang</p>
+        
+        <div style="position: relative; width: 100%; max-width: 320px; height: 240px; margin: 0 auto 16px; border-radius: 16px; overflow: hidden; background: #000; border: 2px solid var(--emerald);">
+          <video id="scannerVideo" style="width: 100%; height: 100%; object-fit: cover;" playsinline></video>
+          <div style="position: absolute; top: 50%; left: 10%; right: 10%; height: 2px; background: rgba(0, 245, 155, 0.8); box-shadow: 0 0 8px #00f59b; animation: scanLine 2s infinite ease-in-out;"></div>
         </div>
-      `).join('');
 
-      calculateCashChange();
+        <button class="btn" onclick="closeBarcodeScanner()" style="background: var(--bg-surface); border: 1px solid var(--border); width: 100%; padding: 12px; color: #fff;">
+          Tutup Kamera
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Print Area (Off-screen / Print only) -->
+  <div id="receiptPrintArea"></div>
+
+  <!-- Core Modular JS Application -->
+  <script src="/js/utils.js"></script>
+  <script src="/js/store.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/components/toast.js"></script>
+  <script src="/js/components/sheets.js"></script>
+  <script src="/js/components/printer.js"></script>
+  <script src="/js/components/scanner.js"></script>
+  <script src="/js/tabs/dashboard.js"></script>
+  <script src="/js/tabs/pos.js"></script>
+  <script src="/js/tabs/debts.js"></script>
+  <script src="/js/tabs/history.js"></script>
+  <script src="/js/tabs/system.js"></script>
+  <script src="/js/app.js"></script>
+
+  <style>
+    @keyframes scanLine {
+      0%, 100% { transform: translateY(-70px); opacity: 0.3; }
+      50% { transform: translateY(70px); opacity: 1; }
     }
-
-    function setCheckoutPaymentType(type) {
-      checkoutPayType = type;
-      const btnCash = document.getElementById('btnPayCash');
-      const btnDebt = document.getElementById('btnPayDebt');
-      const secCash = document.getElementById('sectionPayCash');
-      const secDebt = document.getElementById('sectionPayDebt');
-      const btnConfirm = document.getElementById('btnConfirmCheckout');
-
-      if (type === 'cash') {
-        btnCash.classList.add('active');
-        btnDebt.classList.remove('active');
-        secCash.style.display = 'block';
-        secDebt.style.display = 'none';
-        btnConfirm.className = 'btn-solid btn-solid-emerald';
-        btnConfirm.querySelector('span').innerText = 'Selesaikan Transaksi (Tunai)';
-      } else {
-        btnDebt.classList.add('active');
-        btnCash.classList.remove('active');
-        secCash.style.display = 'none';
-        secDebt.style.display = 'block';
-        btnConfirm.className = 'btn-solid btn-solid-rose';
-        btnConfirm.querySelector('span').innerText = 'Catat ke Kasbon';
-      }
+    .btn-preset-mini {
+      flex: 1;
+      padding: 7px 4px;
+      font-size: 11px;
+      font-weight: 750;
+      border-radius: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
     }
-
-    function setQuickCash(val) {
-      const total = getCartTotal();
-      const input = document.getElementById('inputCashReceived');
-      if (val === 'exact') {
-        input.value = total;
-      } else {
-        input.value = Math.max(total, val);
-      }
-      calculateCashChange();
+    .btn-preset-mini:active {
+      background: var(--emerald-glow);
+      color: var(--emerald);
+      border-color: var(--emerald);
     }
-
-    function calculateCashChange() {
-      const total = getCartTotal();
-      const received = Number(document.getElementById('inputCashReceived').value) || 0;
-      const change = received - total;
-      const display = document.getElementById('displayCashChange');
-
-      if (change >= 0) {
-        display.innerText = formatRp(change);
-        display.style.color = 'var(--emerald)';
-      } else {
-        display.innerText = 'Kurang ' + formatRp(Math.abs(change));
-        display.style.color = 'var(--rose)';
-      }
-    }
-
-    async function submitCheckout(e) {
-      e.preventDefault();
-      if (cart.length === 0) return;
-
-      const total = getCartTotal();
-      const cashReceived = Number(document.getElementById('inputCashReceived').value) || 0;
-      const customerName = document.getElementById('inputDebtCustomerName').value;
-      const customerPhone = document.getElementById('inputDebtCustomerPhone').value;
-
-      if (checkoutPayType === 'cash' && cashReceived < total) {
-        showToast('Uang pembayaran masih kurang dari total belanja!', 'error');
-        document.getElementById('inputCashReceived').focus();
-        return;
-      }
-
-      if (checkoutPayType === 'debt' && (!customerName || customerName.trim() === '')) {
-        showToast('Nama pengutang wajib diisi!', 'warning');
-        document.getElementById('inputDebtCustomerName').focus();
-        return;
-      }
-
-      const payload = {
-        items: cart,
-        payment_type: checkoutPayType,
-        cash_received: cashReceived,
-        customer_name: customerName,
-        customer_phone: customerPhone
-      };
-
-      try {
-        const res = await fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const json = await res.json();
-
-        if (json.success) {
-          closeSheet('sheetCheckout');
-          showReceipt(json);
-          cart = [];
-          updateCartBar();
-          fetchItemsList();
-          loadSummaryData();
-        } else {
-          showToast(json.error || 'Checkout gagal', 'error');
-        }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    function showReceipt(data) {
-      document.getElementById('receiptTimestamp').innerText = new Date().toLocaleString('id-ID');
-      document.getElementById('receiptPaymentType').innerText = data.payment_type === 'cash' ? 'Tunai (Lunas)' : 'Kasbon / Hutang';
-      document.getElementById('receiptCustomerName').innerText = data.customer_name || 'Umum';
-      document.getElementById('receiptTotalAmount').innerText = formatRp(data.total_amount);
-
-      const changeRow = document.getElementById('receiptChangeRow');
-      if (data.payment_type === 'cash') {
-        changeRow.style.display = 'flex';
-        document.getElementById('receiptChangeAmount').innerText = formatRp(data.cash_change);
-      } else {
-        changeRow.style.display = 'none';
-      }
-
-      const itemsContainer = document.getElementById('receiptItemsList');
-      itemsContainer.innerHTML = data.items.map(it => `
-        <div style="display: flex; justify-content: space-between;">
-          <span>${escapeXml(it.name)} x${it.qty}</span>
-          <span>${formatRp(it.subtotal)}</span>
-        </div>
-      `).join('');
-
-      openSheet('sheetReceipt');
-    }
-
-    async function loadSummaryData() {
-      try {
-        const res = await fetch('/api/summary');
-        const json = await res.json();
-        if (json.success) {
-          const d = json.data;
-          document.getElementById('dashTodayOmset').innerText = formatRp(d.today_omset);
-          document.getElementById('dashTodayTx').innerText = (d.today_tx || 0) + ' Transaksi Kasir';
-          document.getElementById('dashTotalUnits').innerText = (d.total_units || 0) + ' pcs';
-          document.getElementById('dashTotalProducts').innerText = (d.total_items || 0) + ' Macam Produk';
-          document.getElementById('dashTotalDebt').innerText = formatRp(d.total_unpaid_debt);
-          document.getElementById('dashActiveDebtors').innerText = (d.active_debtors || 0) + ' Pengutang';
-          document.getElementById('dashLowStockCount').innerText = d.low_stock_count || 0;
-        }
-
-        const resLow = await fetch('/api/items?low_stock=true');
-        const jsonLow = await resLow.json();
-        const container = document.getElementById('dashCriticalContainer');
-        if (jsonLow.success && jsonLow.data.length > 0) {
-          container.innerHTML = jsonLow.data.slice(0, 4).map(item => `
-            <div class="product-card ${item.stock === 0 ? 'border-danger' : 'border-warning'}">
-              <div class="product-head">
-                <div>
-                  <div class="product-title">${escapeXml(item.name)}</div>
-                  <span class="product-cat">${escapeXml(item.category || 'Umum')}</span>
-                </div>
-                <div class="badge-stock ${item.stock === 0 ? 'danger' : 'warning'}">
-                  ${item.stock === 0 ? 'Habis (0)' : 'Sisa ' + item.stock}
-                </div>
-              </div>
-              <div class="product-footer">
-                <span style="font-size: 13px; font-weight: 700; color: #ffffff;">${formatRp(item.sell_price)}</span>
-                <div class="stepper-wrap">
-                  <button class="step-btn" title="Tambah 1" onclick="fastAdjustStock(${item.id}, 1)">+1</button>
-                  <button class="step-btn" title="Tambah 5" onclick="fastAdjustStock(${item.id}, 5)">+5</button>
-                </div>
-              </div>
-            </div>
-          `).join('');
-        } else {
-          container.innerHTML = `
-            <div class="empty-box">
-              <div class="empty-icon-wrap">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-              </div>
-              <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Semua stok barang tercukupi & aman!</div>
-            </div>
-          `;
-        }
-
-        const resSales = await fetch('/api/sales');
-        const jsonSales = await resSales.json();
-        const salesContainer = document.getElementById('dashSalesHistory');
-        if (jsonSales.success && jsonSales.data.length > 0) {
-          salesContainer.innerHTML = jsonSales.data.slice(0, 5).map(s => `
-            <div class="tx-card">
-              <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <div>
-                  <b style="color: #ffffff; font-size: 13px;">${formatRp(s.total_amount)}</b>
-                  <span style="font-size: 10px; margin-left: 6px; padding: 2px 5px; border-radius: 4px; font-weight: 700; ${s.payment_type === 'cash' ? 'background: #064e3b; color: #34d399;' : 'background: #881337; color: #fecdd3;'}">
-                    ${s.payment_type === 'cash' ? 'Tunai' : 'Kasbon (' + escapeXml(s.customer_name) + ')'}
-                  </span>
-                </div>
-                <span style="font-size: 10px; color: var(--text-sub);">${s.created_at}</span>
-              </div>
-              <div>
-                ${(s.items || []).map(i => `<span class="tx-item-pill">${escapeXml(i.item_name)} (${i.qty}x)</span>`).join('')}
-              </div>
-            </div>
-          `).join('');
-        } else {
-          salesContainer.innerHTML = '<div style="font-size: 12px; color: var(--text-sub); text-align: center; padding: 12px 0;">Belum ada riwayat transaksi kasir hari ini.</div>';
-        }
-
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    async function fetchItemsList() {
-      try {
-        const res = await fetch('/api/items');
-        const json = await res.json();
-        if (json.success) {
-          cachedItems = json.data;
-          renderItemsUI();
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    function renderItemsUI() {
-      const container = document.getElementById('itemsListContainer');
-      const search = (document.getElementById('itemSearchField').value || '').toLowerCase().trim();
-      
-      let list = cachedItems.filter(item => {
-        const matchSearch = !search || item.name.toLowerCase().includes(search) || (item.category && item.category.toLowerCase().includes(search));
-        if (!matchSearch) return false;
-
-        if (itemFilterState === 'low') return item.stock <= item.min_stock && item.stock > 0;
-        if (itemFilterState === 'out') return item.stock === 0;
-        return true;
-      });
-
-      if (list.length === 0) {
-        container.innerHTML = `
-          <div class="empty-box">
-            <div class="empty-icon-wrap">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </div>
-            <div style="font-size: 12px; font-weight: 600;">Tidak ada produk yang cocok</div>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = list.map(item => {
-        let borderClass = '';
-        let badgeType = 'safe';
-        let badgeLabel = `Stok ${item.stock}`;
-
-        if (item.stock === 0) {
-          borderClass = 'border-danger';
-          badgeType = 'danger';
-          badgeLabel = 'Habis';
-        } else if (item.stock <= item.min_stock) {
-          borderClass = 'border-warning';
-          badgeType = 'warning';
-          badgeLabel = `Kritis (${item.stock})`;
-        }
-
-        const margin = Math.max(0, Number(item.sell_price) - Number(item.buy_price));
-        const inCartItem = cart.find(c => c.id === item.id);
-        const inCartQty = inCartItem ? inCartItem.qty : 0;
-
-        return `
-          <div class="product-card ${borderClass}" id="card-item-${item.id}">
-            <div class="product-head">
-              <div>
-                <div class="product-title">${escapeXml(item.name)}</div>
-                <span class="product-cat">${escapeXml(item.category || 'Umum')}</span>
-              </div>
-              <div class="badge-stock ${badgeType}">
-                <span>${badgeLabel}</span>
-              </div>
-            </div>
-
-            <div class="product-prices">
-              <div>
-                <span style="font-size: 11px; color: var(--text-sub);">Jual: </span>
-                <span class="price-tag">${formatRp(item.sell_price)}</span>
-              </div>
-              <div>
-                <span style="font-size: 11px; color: var(--text-sub);">Beli: </span>
-                <span style="color: var(--text-muted); font-weight: 600;">${formatRp(item.buy_price)}</span>
-              </div>
-              <div class="profit-tag">Laba: +${formatRp(margin)}</div>
-            </div>
-
-            <div class="product-footer">
-              <div style="display: flex; gap: 2px;">
-                <button class="btn-link-action" onclick='openItemSheet(${JSON.stringify(item)})'>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-                  <span>Edit</span>
-                </button>
-                <button class="btn-link-action" style="color: var(--rose);" onclick="deleteItemAction(${item.id})">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
-                  <span>Hapus</span>
-                </button>
-              </div>
-
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <div class="stepper-wrap">
-                  <button class="step-btn" title="Kurang stok" onclick="fastAdjustStock(${item.id}, -1)">-</button>
-                  <span class="step-count" id="stock-val-${item.id}">${item.stock}</span>
-                  <button class="step-btn" title="Tambah stok" onclick="fastAdjustStock(${item.id}, 1)">+</button>
-                </div>
-
-                <button class="btn-buy ${inCartQty > 0 ? 'in-cart' : ''}" onclick='addToCart(${JSON.stringify(item)})'>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-                  <span>${inCartQty > 0 ? `Beli (${inCartQty})` : '+ Beli'}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function fastAdjustStock(id, delta) {
-      const item = cachedItems.find(i => i.id === id);
-      if (item) {
-        item.stock = Math.max(0, Number(item.stock) + Number(delta));
-        const valElem = document.getElementById(`stock-val-${id}`);
-        if (valElem) valElem.innerText = item.stock;
-      }
-
-      try {
-        const res = await fetch(`/api/items/${id}/adjust-stock`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ delta })
-        });
-        const json = await res.json();
-        if (json.success && item) {
-          item.stock = json.newStock;
-          renderItemsUI();
-          loadSummaryData();
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    async function submitSaveItem(e) {
-      e.preventDefault();
-      const id = document.getElementById('inputItemId').value;
-      const payload = {
-        name: document.getElementById('inputItemName').value,
-        category: document.getElementById('inputItemCategory').value,
-        buy_price: document.getElementById('inputItemBuyPrice').value,
-        sell_price: document.getElementById('inputItemSellPrice').value,
-        stock: document.getElementById('inputItemStock').value,
-        min_stock: document.getElementById('inputItemMinStock').value
-      };
-
-      const url = id ? `/api/items/${id}` : '/api/items';
-      const method = id ? 'PUT' : 'POST';
-
-      try {
-        const res = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const json = await res.json();
-        if (json.success) {
-          closeSheet('sheetItem');
-          showToast(id ? 'Produk diperbarui' : 'Produk ditambahkan');
-          fetchItemsList();
-          loadSummaryData();
-        } else {
-          showToast(json.error || 'Gagal menyimpan produk', 'error');
-        }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    async function deleteItemAction(id) {
-      if (!confirm('Hapus produk ini dari daftar stok?')) return;
-      try {
-        const res = await fetch(`/api/items/${id}`, { method: 'DELETE' });
-        const json = await res.json();
-        if (json.success) {
-          showToast('Produk dihapus');
-          fetchItemsList();
-          loadSummaryData();
-        }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    async function fetchDebtsList() {
-      try {
-        const res = await fetch('/api/debts');
-        const json = await res.json();
-        if (json.success) {
-          cachedDebts = json.data;
-          renderDebtsUI();
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-
-    function renderDebtsUI() {
-      const container = document.getElementById('debtsListContainer');
-      const search = (document.getElementById('debtSearchField').value || '').toLowerCase().trim();
-
-      let list = cachedDebts.filter(d => {
-        const matchSearch = !search || d.customer_name.toLowerCase().includes(search) || (d.notes && d.notes.toLowerCase().includes(search)) || (d.phone && d.phone.includes(search));
-        if (!matchSearch) return false;
-
-        if (debtFilterState === 'belum_lunas') return d.status !== 'lunas';
-        if (debtFilterState === 'lunas') return d.status === 'lunas';
-        return true;
-      });
-
-      if (list.length === 0) {
-        container.innerHTML = `
-          <div class="empty-box">
-            <div class="empty-icon-wrap">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/></svg>
-            </div>
-            <div style="font-size: 12px; font-weight: 600;">Tidak ada catatan kasbon</div>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = list.map(d => {
-        const isLunas = d.status === 'lunas';
-        const sisa = Math.max(0, Number(d.amount) - Number(d.paid_amount));
-        const cleanPhone = (d.phone || '').replace(/[^0-9]/g, '');
-        const waLink = cleanPhone ? (cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone) : null;
-
-        return `
-          <div class="debt-card ${isLunas ? 'paid' : 'unpaid'}">
-            <div class="debt-person">
-              <div>
-                <div class="debt-name">${escapeXml(d.customer_name)}</div>
-                ${waLink ? `
-                  <a href="https://wa.me/${waLink}" target="_blank" class="debt-phone">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    <span>${escapeXml(d.phone)}</span>
-                  </a>
-                ` : ''}
-              </div>
-              <div class="badge-stock ${isLunas ? 'safe' : 'danger'}">
-                <span>${isLunas ? 'Lunas' : 'Belum Lunas'}</span>
-              </div>
-            </div>
-
-            ${d.notes ? `
-              <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">
-                <b style="color: var(--text-sub);">Barang:</b> ${escapeXml(d.notes)}
-              </div>
-            ` : ''}
-
-            <div class="debt-amount-box">
-              <div>
-                <div style="font-size: 10px; color: var(--text-sub);">Total Belanja</div>
-                <div style="font-size: 13px; font-weight: 700;">${formatRp(d.amount)}</div>
-              </div>
-              <div style="text-align: right;">
-                <div style="font-size: 10px; color: var(--text-sub);">Sisa Kasbon</div>
-                <div style="font-size: 15px; font-weight: 800; color: ${isLunas ? 'var(--emerald)' : 'var(--rose)'};">
-                  ${formatRp(sisa)}
-                </div>
-              </div>
-            </div>
-
-            <div class="product-footer">
-              <button class="btn-link-action" style="color: var(--rose);" onclick="deleteDebtAction(${d.id})">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
-                <span>Hapus</span>
-              </button>
-
-              <div>
-                ${!isLunas ? `
-                  <button class="btn-solid btn-solid-emerald" style="padding: 6px 12px; font-size: 11px; width: auto;" onclick='openPaySheet(${JSON.stringify(d)})'>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                    <span>Bayar / Cicil</span>
-                  </button>
-                ` : `
-                  <span style="font-size: 11px; font-weight: 700; color: var(--emerald);">Lunas Selesai</span>
-                `}
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function submitSaveDebt(e) {
-      e.preventDefault();
-      const payload = {
-        customer_name: document.getElementById('inputDebtCustomer').value,
-        phone: document.getElementById('inputDebtPhone').value,
-        amount: document.getElementById('inputDebtAmount').value,
-        notes: document.getElementById('inputDebtNotes').value
-      };
-
-      try {
-        const res = await fetch('/api/debts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const json = await res.json();
-        if (json.success) {
-          closeSheet('sheetDebt');
-          showToast('Kasbon berhasil dicatat');
-          fetchDebtsList();
-          loadSummaryData();
-        } else {
-          showToast(json.error || 'Gagal mencatat kasbon', 'error');
-        }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    async function submitPayDebt(e) {
-      e.preventDefault();
-      const id = document.getElementById('inputPayDebtId').value;
-      const pay_amount = document.getElementById('inputPayAmount').value;
-
-      try {
-        const res = await fetch(`/api/debts/${id}/pay`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pay_amount })
-        });
-        const json = await res.json();
-        if (json.success) {
-          closeSheet('sheetPay');
-          showToast(json.status === 'lunas' ? 'Kasbon telah Lunas!' : 'Pembayaran cicilan dicatat');
-          fetchDebtsList();
-          loadSummaryData();
-        } else {
-          showToast(json.error || 'Gagal memproses pembayaran', 'error');
-        }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    async function deleteDebtAction(id) {
-      if (!confirm('Hapus riwayat kasbon ini?')) return;
-      try {
-        const res = await fetch(`/api/debts/${id}`, { method: 'DELETE' });
-        const json = await res.json();
-        if (json.success) {
-          showToast('Catatan kasbon dihapus');
-          fetchDebtsList();
-          loadSummaryData();
-        }
-      } catch (err) {
-        showToast(err.message, 'error');
-      }
-    }
-
-    function escapeXml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
-
-    loadSummaryData();
-  </script>
+  </style>
 </body>
 </html>

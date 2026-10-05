@@ -1,0 +1,138 @@
+async function loadDebts() {
+  try {
+    const res = await window.api.get('/debts');
+    if (res.success) {
+      window.appStore.setState({ debts: res.data });
+      renderDebtsUI();
+    }
+  } catch (err) {
+    console.error('Failed to load debts:', err);
+  }
+}
+
+function renderDebtCardHtml(debt) {
+  const isLunas = debt.status === 'lunas';
+  const remaining = Math.max(0, debt.amount - debt.paid_amount);
+  const percent = debt.amount > 0 ? Math.min(100, Math.round((debt.paid_amount / debt.amount) * 100)) : 100;
+  const initialChar = (debt.customer_name || 'U').trim().charAt(0).toUpperCase();
+
+  return `
+    <div class="debt-card ${isLunas ? 'status-lunas' : 'status-unpaid'}" id="card-debt-${debt.id}">
+      <div class="debt-card-top">
+        <div class="debt-avatar">
+          <span>${initialChar}</span>
+        </div>
+        <div class="debt-meta">
+          <div class="debt-title-row">
+            <span class="debt-customer-name">${debt.customer_name}</span>
+            <span class="badge-debt ${isLunas ? 'lunas' : 'unpaid'}">${isLunas ? 'Lunas' : 'Belum Lunas'}</span>
+          </div>
+          <div class="debt-sub-row">
+            ${debt.phone ? `<span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> ${debt.phone}</span>` : ''}
+            <span>${debt.notes || 'Kasbon'}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="debt-card-mid">
+        <div class="debt-progress-wrap">
+          <div class="debt-progress-bar" style="width: ${percent}%;"></div>
+        </div>
+        <div class="debt-amount-row">
+          <div>
+            <div class="price-label">Sisa Kasbon</div>
+            <div class="debt-remaining-val">${window.formatRp(remaining)}</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="price-label">Total Hutang</div>
+            <div class="price-modal">${window.formatRp(debt.amount)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="debt-card-bottom">
+        ${!isLunas ? `
+          <button class="btn-debt-action pay" onclick="openPaySheet(${debt.id})">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Bayar Cicilan / Lunas</span>
+          </button>
+        ` : `
+          <div class="debt-lunas-text">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00f59b" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>Sudah Lunas</span>
+          </div>
+        `}
+        <button class="btn-icon-subtle" onclick="deleteDebt(${debt.id})" title="Hapus catatan">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderDebtsUI() {
+  const container = document.getElementById('debtsListContainer');
+  const searchInput = document.getElementById('debtSearchField');
+  const search = (searchInput ? searchInput.value : '').toLowerCase().trim();
+  const state = window.appStore.getState();
+  const debts = state.debts || [];
+  const filter = state.debtFilter || 'belum_lunas';
+
+  const totalUnpaid = debts.filter(d => d.status === 'belum_lunas').reduce((sum, d) => sum + (d.amount - d.paid_amount), 0);
+  const unpaidCount = debts.filter(d => d.status === 'belum_lunas').length;
+
+  const totalUnpaidEl = document.getElementById('debtSummaryTotal');
+  if (totalUnpaidEl) totalUnpaidEl.innerText = window.formatRp(totalUnpaid);
+  const countEl = document.getElementById('debtSummaryCount');
+  if (countEl) countEl.innerText = `${unpaidCount} Orang Belum Lunas`;
+
+  const filtered = debts.filter(d => {
+    const matchSearch = !search ||
+      d.customer_name.toLowerCase().includes(search) ||
+      (d.phone && d.phone.includes(search));
+    if (!matchSearch) return false;
+
+    if (filter === 'belum_lunas') return d.status === 'belum_lunas';
+    if (filter === 'lunas') return d.status === 'lunas';
+    return true;
+  });
+
+  if (container) {
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="empty-box" style="text-align: center; padding: 40px 20px; color: var(--text-sub);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin-bottom: 8px; opacity: 0.5;"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/></svg>
+          <div style="font-size: 13px; font-weight: 600;">Tidak ada catatan kasbon</div>
+        </div>
+      `;
+    } else {
+      container.innerHTML = filtered.map(d => renderDebtCardHtml(d)).join('');
+    }
+  }
+}
+
+async function deleteDebt(id) {
+  if (!confirm('Hapus catatan kasbon ini?')) return;
+  try {
+    const res = await window.api.delete(`/debts/${id}`);
+    if (res.success) {
+      window.appStore.setState({
+        debts: window.appStore.getState().debts.filter(d => d.id !== id)
+      });
+      renderDebtsUI();
+      window.showToast('Catatan kasbon dihapus', 'success');
+    }
+  } catch (err) {
+    window.showToast(err.message || 'Gagal menghapus kasbon', 'error');
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.loadDebts = loadDebts;
+  window.renderDebtsUI = renderDebtsUI;
+  window.deleteDebt = deleteDebt;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { loadDebts, renderDebtsUI, deleteDebt };
+}
