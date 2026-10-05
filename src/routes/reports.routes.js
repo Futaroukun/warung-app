@@ -9,6 +9,9 @@ function createReportsRouter(db) {
 
   router.get('/summary', controller.getSummary);
   router.get('/sales', controller.getSalesReport);
+  router.get('/profit-loss', controller.getProfitLoss);
+  router.get('/export/sales', controller.exportSalesCsv);
+  router.get('/export/items', controller.exportItemsCsv);
 
   return router;
 }
