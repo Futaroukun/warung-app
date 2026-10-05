@@ -740,6 +740,7 @@ async function submitPayDebt() {
       window.closeSheet('sheetPay');
       window.loadDebts?.();
       window.loadDashboard?.();
+      window.loadHistory?.();
       openSuccessModal({ ...res.data, paidAmount: amount }, 'debt_payment');
     }
   } catch (err) {

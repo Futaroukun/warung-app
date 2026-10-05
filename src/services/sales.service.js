@@ -10,15 +10,33 @@ class SalesService {
   }
 
   getAll({ limit = 50, offset = 0, date } = {}) {
-    let query = 'SELECT * FROM sales';
+    let query = `
+      SELECT s.*, 
+             COALESCE(
+               d.status,
+               (SELECT d2.status FROM debts d2 WHERE LOWER(TRIM(d2.customer_name)) = LOWER(TRIM(s.customer_name)) ORDER BY d2.id DESC LIMIT 1)
+             ) AS debt_status,
+             COALESCE(
+               d.paid_amount,
+               (SELECT d2.paid_amount FROM debts d2 WHERE LOWER(TRIM(d2.customer_name)) = LOWER(TRIM(s.customer_name)) ORDER BY d2.id DESC LIMIT 1),
+               0
+             ) AS debt_paid_amount,
+             COALESCE(
+               d.amount,
+               (SELECT d2.amount FROM debts d2 WHERE LOWER(TRIM(d2.customer_name)) = LOWER(TRIM(s.customer_name)) ORDER BY d2.id DESC LIMIT 1),
+               0
+             ) AS debt_total_amount
+      FROM sales s
+      LEFT JOIN debts d ON s.debt_id = d.id
+    `;
     const params = [];
 
     if (date) {
-      query += " WHERE date(created_at) = date(?)";
+      query += " WHERE date(s.created_at) = date(?)";
       params.push(date);
     }
 
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    query += ' ORDER BY s.created_at DESC LIMIT ? OFFSET ?';
     params.push(Number(limit), Number(offset));
 
     const sales = this.db.prepare(query).all(...params);
@@ -32,7 +50,26 @@ class SalesService {
   }
 
   getById(id) {
-    const sale = this.db.prepare('SELECT * FROM sales WHERE id = ?').get(id);
+    const sale = this.db.prepare(`
+      SELECT s.*, 
+             COALESCE(
+               d.status,
+               (SELECT d2.status FROM debts d2 WHERE LOWER(TRIM(d2.customer_name)) = LOWER(TRIM(s.customer_name)) ORDER BY d2.id DESC LIMIT 1)
+             ) AS debt_status,
+             COALESCE(
+               d.paid_amount,
+               (SELECT d2.paid_amount FROM debts d2 WHERE LOWER(TRIM(d2.customer_name)) = LOWER(TRIM(s.customer_name)) ORDER BY d2.id DESC LIMIT 1),
+               0
+             ) AS debt_paid_amount,
+             COALESCE(
+               d.amount,
+               (SELECT d2.amount FROM debts d2 WHERE LOWER(TRIM(d2.customer_name)) = LOWER(TRIM(s.customer_name)) ORDER BY d2.id DESC LIMIT 1),
+               0
+             ) AS debt_total_amount
+      FROM sales s
+      LEFT JOIN debts d ON s.debt_id = d.id
+      WHERE s.id = ?
+    `).get(id);
     if (!sale) return null;
 
     sale.items = this.db.prepare('SELECT * FROM sale_items WHERE sale_id = ?').all(id);

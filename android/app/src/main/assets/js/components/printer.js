@@ -16,7 +16,13 @@ function formatReceiptHtml(sale, storeInfo = {}) {
     `;
   }
 
-  const payTypeStr = sale.payment_type === 'cash' ? 'TUNAI' : (sale.payment_type === 'debt' ? 'KASBON / HUTANG' : sale.payment_type.toUpperCase());
+  const isDebt = sale.payment_type === 'debt';
+  const isDebtLunas = isDebt && sale.debt_status === 'lunas';
+  const payTypeStr = sale.payment_type === 'cash' 
+    ? 'TUNAI' 
+    : (isDebt 
+        ? (isDebtLunas ? 'KASBON (LUNAS)' : 'KASBON (BELUM LUNAS)') 
+        : sale.payment_type.toUpperCase());
 
   return `
     <div class="receipt-header">
@@ -78,9 +84,17 @@ function generateWhatsAppReceiptText(sale) {
     text += `  ${item.qty} x Rp ${Number(item.sell_price || item.price).toLocaleString('id-ID')} = Rp ${Number(item.subtotal).toLocaleString('id-ID')}\n`;
   }
 
+  const isDebt = sale.payment_type === 'debt';
+  const isDebtLunas = isDebt && sale.debt_status === 'lunas';
+  const payTypeLabel = sale.payment_type === 'cash' 
+    ? 'Tunai' 
+    : (isDebt 
+        ? (isDebtLunas ? 'Kasbon (Lunas)' : 'Kasbon (Belum Lunas)') 
+        : sale.payment_type.toUpperCase());
+
   text += `───────────────────────\n`;
   text += `• *TOTAL*     : *Rp ${Number(sale.total_amount).toLocaleString('id-ID')}*\n`;
-  text += `• *PEMBAYARAN*: ${sale.payment_type === 'cash' ? 'Tunai' : (sale.payment_type === 'debt' ? 'Kasbon/Hutang' : sale.payment_type.toUpperCase())}\n`;
+  text += `• *PEMBAYARAN*: ${payTypeLabel}\n`;
   if (sale.payment_type === 'cash') {
     text += `• *DITERIMA*  : Rp ${Number(sale.cash_received || 0).toLocaleString('id-ID')}\n`;
     text += `• *KEMBALI*   : Rp ${Number(sale.cash_change || 0).toLocaleString('id-ID')}\n`;

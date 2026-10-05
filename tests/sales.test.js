@@ -72,6 +72,29 @@ test('SalesService: atomic transaction and stock deduction', async (t) => {
     assert.equal(debt.items.length, 2);
   });
 
+  await t.test('Updates debt_status automatically in sales history from belum_lunas to lunas when debt is paid', () => {
+    const debtsService = new (require('../src/services/debts.service').DebtsService)(db);
+
+    // Initial check: status must be belum_lunas
+    const salesBefore = salesService.getAll();
+    const rtSale = salesBefore.find(s => s.customer_name === 'Pak RT');
+    assert.ok(rtSale);
+    assert.equal(rtSale.debt_status, 'belum_lunas');
+
+    // Pay full debt
+    debtsService.recordPayment(rtSale.debt_id, { amount: 54000 });
+
+    // Check sales list again: debt_status must automatically be 'lunas'
+    const salesAfter = salesService.getAll();
+    const rtSalePaid = salesAfter.find(s => s.customer_name === 'Pak RT');
+    assert.ok(rtSalePaid);
+    assert.equal(rtSalePaid.debt_status, 'lunas');
+
+    // Also verify getById
+    const singleSale = salesService.getById(rtSale.id);
+    assert.equal(singleSale.debt_status, 'lunas');
+  });
+
   db.close();
   if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
   ['wal', 'shm'].forEach(ext => {

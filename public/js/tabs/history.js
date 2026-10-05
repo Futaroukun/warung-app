@@ -16,6 +16,20 @@ function renderSaleCardHtml(sale) {
   const items = sale.items || [];
   const itemCount = items.reduce((s, it) => s + (it.qty || 1), 0);
   const isDebt = sale.payment_type === 'debt';
+  const isDebtLunas = isDebt && sale.debt_status === 'lunas';
+
+  let badgeClass = 'cash';
+  let badgeText = 'Tunai';
+
+  if (isDebt) {
+    if (isDebtLunas) {
+      badgeClass = 'debt-lunas';
+      badgeText = 'Kasbon (Lunas)';
+    } else {
+      badgeClass = 'debt';
+      badgeText = 'Kasbon (Belum Lunas)';
+    }
+  }
 
   let itemsSummary = items.slice(0, 3).map(it => `${it.qty}x ${it.item_name || it.name}`).join(', ');
   if (items.length > 3) itemsSummary += `, +${items.length - 3} lainnya`;
@@ -29,7 +43,7 @@ function renderSaleCardHtml(sale) {
         </div>
         <div style="text-align: right;">
           <div class="history-amount">${window.formatRp(sale.total_amount)}</div>
-          <span class="badge-payment ${isDebt ? 'debt' : 'cash'}">${isDebt ? 'Kasbon' : 'Tunai'}</span>
+          <span class="badge-payment ${badgeClass}">${badgeText}</span>
         </div>
       </div>
 
@@ -72,7 +86,12 @@ function renderHistoryUI() {
       const matchInv = (s.invoice_no || '').toLowerCase().includes(search);
       const matchCust = (s.customer_name || '').toLowerCase().includes(search);
       const matchItems = (s.items || []).some(it => (it.item_name || '').toLowerCase().includes(search));
-      if (!matchInv && !matchCust && !matchItems) return false;
+      const isDebt = s.payment_type === 'debt';
+      const statusText = isDebt 
+        ? (s.debt_status === 'lunas' ? 'kasbon lunas' : 'kasbon belum lunas') 
+        : 'tunai';
+      const matchStatus = statusText.includes(search);
+      if (!matchInv && !matchCust && !matchItems && !matchStatus) return false;
     }
 
     return true;

@@ -842,6 +842,7 @@
 
 .badge-payment.cash { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
 .badge-payment.debt { background: rgba(244, 63, 94, 0.15); color: var(--rose); }
+.badge-payment.debt-lunas { background: rgba(16, 185, 129, 0.18); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.35); }
 
 .history-card-mid {
   background: #090e18;

@@ -365,7 +365,13 @@ function formatReceiptHtml(sale, storeInfo = {}) {
     `;
   }
 
-  const payTypeStr = sale.payment_type === 'cash' ? 'TUNAI' : (sale.payment_type === 'debt' ? 'KASBON / HUTANG' : sale.payment_type.toUpperCase());
+  const isDebt = sale.payment_type === 'debt';
+  const isDebtLunas = isDebt && sale.debt_status === 'lunas';
+  const payTypeStr = sale.payment_type === 'cash' 
+    ? 'TUNAI' 
+    : (isDebt 
+        ? (isDebtLunas ? 'KASBON (LUNAS)' : 'KASBON (BELUM LUNAS)') 
+        : sale.payment_type.toUpperCase());
 
   return `
     <div class="receipt-header">
@@ -427,9 +433,17 @@ function generateWhatsAppReceiptText(sale) {
     text += `  ${item.qty} x Rp ${Number(item.sell_price || item.price).toLocaleString('id-ID')} = Rp ${Number(item.subtotal).toLocaleString('id-ID')}\n`;
   }
 
+  const isDebt = sale.payment_type === 'debt';
+  const isDebtLunas = isDebt && sale.debt_status === 'lunas';
+  const payTypeLabel = sale.payment_type === 'cash' 
+    ? 'Tunai' 
+    : (isDebt 
+        ? (isDebtLunas ? 'Kasbon (Lunas)' : 'Kasbon (Belum Lunas)') 
+        : sale.payment_type.toUpperCase());
+
   text += `───────────────────────\n`;
   text += `• *TOTAL*     : *Rp ${Number(sale.total_amount).toLocaleString('id-ID')}*\n`;
-  text += `• *PEMBAYARAN*: ${sale.payment_type === 'cash' ? 'Tunai' : (sale.payment_type === 'debt' ? 'Kasbon/Hutang' : sale.payment_type.toUpperCase())}\n`;
+  text += `• *PEMBAYARAN*: ${payTypeLabel}\n`;
   if (sale.payment_type === 'cash') {
     text += `• *DITERIMA*  : Rp ${Number(sale.cash_received || 0).toLocaleString('id-ID')}\n`;
     text += `• *KEMBALI*   : Rp ${Number(sale.cash_change || 0).toLocaleString('id-ID')}\n`;
@@ -1398,6 +1412,20 @@ function renderSaleCardHtml(sale) {
   const items = sale.items || [];
   const itemCount = items.reduce((s, it) => s + (it.qty || 1), 0);
   const isDebt = sale.payment_type === 'debt';
+  const isDebtLunas = isDebt && sale.debt_status === 'lunas';
+
+  let badgeClass = 'cash';
+  let badgeText = 'Tunai';
+
+  if (isDebt) {
+    if (isDebtLunas) {
+      badgeClass = 'debt-lunas';
+      badgeText = 'Kasbon (Lunas)';
+    } else {
+      badgeClass = 'debt';
+      badgeText = 'Kasbon (Belum Lunas)';
+    }
+  }
 
   let itemsSummary = items.slice(0, 3).map(it => `${it.qty}x ${it.item_name || it.name}`).join(', ');
   if (items.length > 3) itemsSummary += `, +${items.length - 3} lainnya`;
@@ -1411,7 +1439,7 @@ function renderSaleCardHtml(sale) {
         </div>
         <div style="text-align: right;">
           <div class="history-amount">${window.formatRp(sale.total_amount)}</div>
-          <span class="badge-payment ${isDebt ? 'debt' : 'cash'}">${isDebt ? 'Kasbon' : 'Tunai'}</span>
+          <span class="badge-payment ${badgeClass}">${badgeText}</span>
         </div>
       </div>
 
@@ -1454,7 +1482,12 @@ function renderHistoryUI() {
       const matchInv = (s.invoice_no || '').toLowerCase().includes(search);
       const matchCust = (s.customer_name || '').toLowerCase().includes(search);
       const matchItems = (s.items || []).some(it => (it.item_name || '').toLowerCase().includes(search));
-      if (!matchInv && !matchCust && !matchItems) return false;
+      const isDebt = s.payment_type === 'debt';
+      const statusText = isDebt 
+        ? (s.debt_status === 'lunas' ? 'kasbon lunas' : 'kasbon belum lunas') 
+        : 'tunai';
+      const matchStatus = statusText.includes(search);
+      if (!matchInv && !matchCust && !matchItems && !matchStatus) return false;
     }
 
     return true;
@@ -2283,6 +2316,7 @@ async function submitPayDebt() {
       window.closeSheet('sheetPay');
       window.loadDebts?.();
       window.loadDashboard?.();
+      window.loadHistory?.();
       openSuccessModal({ ...res.data, paidAmount: amount }, 'debt_payment');
     }
   } catch (err) {
