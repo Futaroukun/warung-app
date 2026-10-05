@@ -1,5 +1,88 @@
 // Global application router and master event wiring
 
+// ================= REAL-TIME ENGINE =================
+let realtimeChannel = null;
+try {
+  if (typeof BroadcastChannel !== 'undefined') {
+    realtimeChannel = new BroadcastChannel('warung_realtime_sync');
+    realtimeChannel.onmessage = (event) => {
+      if (event?.data?.type === 'SYNC_DATA') {
+        syncAllDataRealtime(true);
+      }
+    };
+  }
+} catch (err) {
+  console.warn('BroadcastChannel not supported:', err);
+}
+
+// Cross-tab / storage fallback
+window.addEventListener('storage', (e) => {
+  if (e.key === 'warung_realtime_sync_event') {
+    syncAllDataRealtime(true);
+  }
+});
+
+function triggerRealtimeSync(actionName = 'data_changed') {
+  if (realtimeChannel) {
+    try {
+      realtimeChannel.postMessage({ type: 'SYNC_DATA', action: actionName, timestamp: Date.now() });
+    } catch (e) {}
+  }
+  try {
+    localStorage.setItem('warung_realtime_sync_event', `${actionName}_${Date.now()}`);
+  } catch (e) {}
+  syncAllDataRealtime(true);
+}
+
+let isSyncingRealtime = false;
+async function syncAllDataRealtime(force = false) {
+  if (isSyncingRealtime && !force) return;
+  isSyncingRealtime = true;
+
+  try {
+    const currentTab = window.appStore?.getState()?.activeTab || 'pos';
+
+    if (currentTab === 'pos') {
+      await window.loadItems?.();
+    } else if (currentTab === 'debts') {
+      await window.loadDebts?.();
+    } else if (currentTab === 'history') {
+      await window.loadHistory?.();
+    } else if (currentTab === 'dashboard') {
+      await window.loadDashboard?.();
+    } else if (currentTab === 'system') {
+      await window.checkSystemHealth?.();
+    }
+
+    // Always keep debts synced in background for POS dropdown
+    if (currentTab !== 'debts' && window.api) {
+      window.api.get('/debts').then(res => {
+        if (res?.success) window.appStore?.setState({ debts: res.data });
+      }).catch(() => {});
+    }
+  } catch (err) {
+    // silent
+  } finally {
+    isSyncingRealtime = false;
+  }
+}
+
+// Background Heartbeat Polling: sync automatically every 3.5s when page is visible
+setInterval(() => {
+  if (typeof document !== 'undefined' && !document.hidden) {
+    syncAllDataRealtime(false);
+  }
+}, 3500);
+
+// Auto-sync on window focus and visibility change
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) syncAllDataRealtime(true);
+});
+
+window.addEventListener('focus', () => {
+  syncAllDataRealtime(true);
+});
+
 function switchMainTab(tab) {
   // Update buttons
   document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
@@ -450,10 +533,12 @@ async function submitCheckout() {
       window.appStore.clearCart();
       window.closeSheet('sheetCheckout');
 
-      // Refresh data
+      // Refresh data and broadcast realtime
       window.loadItems?.();
       window.loadDashboard?.();
       window.loadDebts?.();
+      window.loadHistory?.();
+      triggerRealtimeSync('sale_created');
 
       // Show rich success popup modal
       openSuccessModal(sale, 'sale');
@@ -651,6 +736,7 @@ async function deleteCurrentItem() {
       window.appStore.removeFromCart(Number(id));
       window.loadItems?.();
       window.loadDashboard?.();
+      triggerRealtimeSync('item_deleted');
     }
   } catch (err) {
     window.showToast(err.message || 'Gagal menghapus produk', 'error');
@@ -683,6 +769,7 @@ async function submitItemForm(e) {
       window.showToast(id ? 'Produk berhasil diubah' : 'Produk baru ditambahkan', 'success');
       window.loadItems?.();
       window.loadDashboard?.();
+      triggerRealtimeSync('item_saved');
     }
   } catch (err) {
     window.showToast(err.message || 'Gagal menyimpan produk', 'error');
@@ -741,6 +828,7 @@ async function submitPayDebt() {
       window.loadDebts?.();
       window.loadDashboard?.();
       window.loadHistory?.();
+      triggerRealtimeSync('debt_paid');
       openSuccessModal({ ...res.data, paidAmount: amount }, 'debt_payment');
     }
   } catch (err) {
@@ -807,6 +895,8 @@ window.submitCustomWaPrompt = window.submitCustomWaPrompt || submitCustomWaPromp
 window.saveDebtTemplateSetting = window.saveDebtTemplateSetting || saveDebtTemplateSetting;
 window.resetDebtTemplateToDefault = window.resetDebtTemplateToDefault || resetDebtTemplateToDefault;
 window.insertReminderTag = window.insertReminderTag || insertReminderTag;
+window.triggerRealtimeSync = triggerRealtimeSync;
+window.syncAllDataRealtime = syncAllDataRealtime;
 
 // Click outside handler for dropdowns
 document.addEventListener('click', (e) => {

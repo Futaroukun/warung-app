@@ -2,45 +2,83 @@ name: Build Android APK
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  build-apk:
+    name: Build & Release Android APK
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-      with:
-        packages: 'platforms;android-34 build-tools;34.0.0 platform-tools'
+      - name: Install Dependencies
+        run: npm ci || npm install
 
-    - name: Copy latest Web files into Android Assets
-      run: |
-        mkdir -p android/app/src/main/assets
-        cp -r public/* android/app/src/main/assets/
+      - name: Verify Unit Tests
+        run: npm test
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: "8.2.1"
+      - name: Sync Frontend Assets to Android Project
+        run: npm run sync-assets
 
-    - name: Build APK with Gradle
-      working-directory: ./android
-      run: |
-        gradle assembleDebug --no-daemon --stacktrace
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-    - name: Rename and Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: WarungPro-APK
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Generate Gradle Wrapper
+        working-directory: android
+        run: |
+          gradle wrapper --gradle-version 8.5
+          chmod +x gradlew
+
+      - name: Build Debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WarungPro-APK
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+
+      - name: Create GitHub Release with APK
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.2.0-build${{ github.run_number }}
+          name: WarungPro APK v1.2.0 (Build #${{ github.run_number }})
+          body: |
+            ## 📱 WarungPro - Aplikasi Kasir Warung Pintar
+            Build otomatis via GitHub Actions.
+
+            ### ✨ Fitur Terbaru:
+            - **Realtime Sync**: Data stok, transaksi POS, buku kasbon, dan riwayat tersinkronisasi otomatis secara realtime.
+            - **Status Kasbon Otomatis**: Riwayat transaksi kasbon otomatis berganti status menjadi `Kasbon (Lunas)` saat hutang dilunasi.
+            - **Kustom Template Tagihan WA**: Template pesan penagihan kasbon via WhatsApp yang dapat dikustomisasi lengkap dengan tag variabel.
+            - **Pop-up Tagih WA Kustom**: Dialog bottom-sheet elegan untuk kirim tagihan WhatsApp dan simpan nomor telepon pelanggan.
+            - **Auto Kapitalisasi**: Pengetikan nama barang, kategori, dan pelanggan otomatis Title Case secara instan.
+            - **Backup Database**: Unduh snapshot binary `warung.db` & ekspor CSV Excel.
+          files: android/app/build/outputs/apk/debug/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

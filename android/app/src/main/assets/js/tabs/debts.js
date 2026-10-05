@@ -141,6 +141,7 @@ async function deleteDebt(id) {
       });
       renderDebtsUI();
       window.showToast('Catatan kasbon dihapus', 'success');
+      window.triggerRealtimeSync?.('debt_deleted');
     }
   } catch (err) {
     window.showToast(err.message || 'Gagal menghapus kasbon', 'error');
@@ -480,6 +481,7 @@ async function submitDirectDebt() {
       window.closeSheet('sheetDirectDebt');
       loadDebts();
       if (window.loadDashboard) window.loadDashboard();
+      window.triggerRealtimeSync?.('direct_debt_created');
       window.openSuccessModal?.(res.data, 'debt_payment');
     }
   } catch (err) {
