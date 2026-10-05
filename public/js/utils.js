@@ -36,9 +36,19 @@ function formatTanggal(isoString) {
   }
 }
 
+function autoCapitalizeWords(str) {
+  if (!str) return '';
+  return str.toString().replace(/(^|[\s\(\)\[\]\/\-_.,])([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+}
+
+function autoCapitalizeSentences(str) {
+  if (!str) return '';
+  return str.toString().replace(/(^|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+}
+
 // Support both ES Modules in browser and CommonJS in tests
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { formatRp, toTitleCase, cleanNumber, formatTanggal };
+  module.exports = { formatRp, toTitleCase, cleanNumber, formatTanggal, autoCapitalizeWords, autoCapitalizeSentences };
 }
 
 if (typeof window !== 'undefined') {
@@ -46,4 +56,6 @@ if (typeof window !== 'undefined') {
   window.toTitleCase = toTitleCase;
   window.cleanNumber = cleanNumber;
   window.formatTanggal = formatTanggal;
+  window.autoCapitalizeWords = autoCapitalizeWords;
+  window.autoCapitalizeSentences = autoCapitalizeSentences;
 }

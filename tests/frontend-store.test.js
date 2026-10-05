@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { Store } = require('../public/js/store');
-const { formatRp, toTitleCase, cleanNumber } = require('../public/js/utils');
+const { formatRp, toTitleCase, cleanNumber, autoCapitalizeWords, autoCapitalizeSentences } = require('../public/js/utils');
 
 test('Frontend Store & Utilities', async (t) => {
   await t.test('formatRp and cleanNumber utilities', () => {
@@ -10,6 +10,8 @@ test('Frontend Store & Utilities', async (t) => {
     assert.equal(toTitleCase('beras rojo lele 5kg'), 'Beras Rojo Lele 5kg');
     assert.equal(cleanNumber('15.000'), 15000);
     assert.equal(cleanNumber('Rp 25.500'), 25500);
+    assert.equal(autoCapitalizeWords('kopi kapal api 65g'), 'Kopi Kapal Api 65g');
+    assert.equal(autoCapitalizeSentences('titip tetangga. lunas besok'), 'Titip tetangga. Lunas besok');
   });
 
   await t.test('Store: Cart calculations, updates, and removals', () => {

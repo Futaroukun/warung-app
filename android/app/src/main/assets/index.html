@@ -187,7 +187,7 @@
         <!-- Search Bar -->
         <div class="search-bar-wrap">
           <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="itemSearchField" class="search-input" placeholder="Cari nama barang / barcode..." oninput="window.renderItemsUI()">
+          <input type="text" id="itemSearchField" class="search-input" placeholder="Cari nama barang / barcode..." autocapitalize="words" oninput="window.renderItemsUI()">
         </div>
 
         <!-- Filter Chips -->
@@ -220,7 +220,7 @@
 
         <div class="search-bar-wrap">
           <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="debtSearchField" class="search-input" placeholder="Cari nama pelanggan / no telp..." oninput="window.renderDebtsUI()">
+          <input type="text" id="debtSearchField" class="search-input" placeholder="Cari nama pelanggan / no telp..." autocapitalize="words" oninput="window.renderDebtsUI()">
         </div>
 
         <div class="filter-chips-row">
@@ -246,7 +246,7 @@
 
         <div class="search-bar-wrap">
           <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="historySearchField" class="search-input" placeholder="Cari invoice / pelanggan..." oninput="window.renderHistoryUI()">
+          <input type="text" id="historySearchField" class="search-input" placeholder="Cari invoice / pelanggan..." autocapitalize="words" oninput="window.renderHistoryUI()">
         </div>
 
         <div class="filter-chips-row">
@@ -402,7 +402,7 @@
               <button type="button" class="btn-preset-mini" id="btnBuyerType_custom" onclick="setCashBuyerType('custom')">Nama Lain</button>
             </div>
             <div id="cashBuyerCustomNameWrap" style="display: none;">
-              <input type="text" id="checkoutCashBuyerName" class="input-box" placeholder="Ketik nama pembeli..." style="font-size: 12px; padding: 8px 10px;" oninput="updateCheckoutPayerSummary()">
+              <input type="text" id="checkoutCashBuyerName" class="input-box" placeholder="Ketik nama pembeli..." autocapitalize="words" style="font-size: 12px; padding: 8px 10px;" oninput="updateCheckoutPayerSummary()">
             </div>
           </div>
         </div>
@@ -436,7 +436,7 @@
           <!-- New Customer Input Form (Shown when + Pelanggan Baru is clicked) -->
           <div id="checkoutNewCustomerBox" style="display: none; background: var(--bg-surface); border: 1.5px dashed var(--emerald); border-radius: var(--radius-sm); padding: 12px; margin-top: 8px;">
             <label class="form-label" style="font-size: 10px; color: var(--emerald);">Nama Pelanggan Baru *</label>
-            <input type="text" id="checkoutNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 8px;" oninput="onNewCustomerNameChange(this.value); updateCheckoutPayerSummary()">
+            <input type="text" id="checkoutNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" autocapitalize="words" style="margin-bottom: 8px;" oninput="onNewCustomerNameChange(this.value); updateCheckoutPayerSummary()">
 
             <label class="form-label" style="font-size: 10px;">No. WhatsApp / HP (Opsional)</label>
             <input type="tel" id="checkoutNewCustPhoneInput" class="input-box" placeholder="Contoh: 08123456789" oninput="onNewCustomerPhoneChange(this.value)">
@@ -478,19 +478,19 @@
         
         <label class="form-label">Barcode (Opsional)</label>
         <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-          <input type="text" id="itemBarcodeField" class="input-box" placeholder="Scan atau ketik kode barcode">
+          <input type="text" id="itemBarcodeField" class="input-box" placeholder="Scan atau ketik kode barcode" autocapitalize="characters">
           <button type="button" class="btn-icon-ghost" onclick="openBarcodeScanner()" title="Scan Kamera">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
           </button>
         </div>
 
         <label class="form-label">Nama Barang *</label>
-        <input type="text" id="itemNameField" class="input-box" placeholder="Contoh: Kopi Kapal Api Special" required style="margin-bottom: 12px;">
+        <input type="text" id="itemNameField" class="input-box" placeholder="Contoh: Kopi Kapal Api Special" autocapitalize="words" required style="margin-bottom: 12px;">
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
           <div>
             <label class="form-label">Kategori</label>
-            <input type="text" id="itemCategoryField" class="input-box" placeholder="Umum">
+            <input type="text" id="itemCategoryField" class="input-box" placeholder="Umum" autocapitalize="words">
           </div>
           <div>
             <label class="form-label">Stok Saat Ini *</label>
@@ -550,7 +550,7 @@
         </div>
 
         <label class="form-label">Catatan Pembayaran (Opsional)</label>
-        <input type="text" id="payDebtNotes" class="input-box" placeholder="Contoh: Titip lewat tetangga" style="margin-bottom: 16px;">
+        <input type="text" id="payDebtNotes" class="input-box" placeholder="Contoh: Titip lewat tetangga" autocapitalize="sentences" style="margin-bottom: 16px;">
 
         <button class="btn btn-primary" onclick="submitPayDebt()" style="width: 100%; padding: 14px; font-weight: 800;">
           Simpan Pembayaran
@@ -596,7 +596,7 @@
         <!-- New Customer Input Form (Shown when + Pelanggan Baru is clicked) -->
         <div id="directDebtNewCustomerBox" style="display: none; background: var(--bg-surface); border: 1.5px dashed var(--emerald); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px;">
           <label class="form-label" style="font-size: 10px; color: var(--emerald);">Nama Pelanggan Baru *</label>
-          <input type="text" id="directDebtNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 8px;" oninput="onDirectDebtNewNameChange(this.value); updateDirectDebtPayerSummary()">
+          <input type="text" id="directDebtNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" autocapitalize="words" style="margin-bottom: 8px;" oninput="onDirectDebtNewNameChange(this.value); updateDirectDebtPayerSummary()">
 
           <label class="form-label" style="font-size: 10px;">No. WhatsApp / HP (Opsional)</label>
           <input type="tel" id="directDebtNewCustPhoneInput" class="input-box" placeholder="Contoh: 08123456789" oninput="onDirectDebtNewPhoneChange(this.value)">
@@ -611,7 +611,7 @@
         <input type="number" id="directDebtAmount" class="input-box" placeholder="0" style="font-size: 16px; font-weight: 800; margin-bottom: 12px;" required oninput="updateDirectDebtNotice()">
 
         <label class="form-label">Rincian Barang / Catatan</label>
-        <input type="text" id="directDebtNotes" class="input-box" placeholder="Contoh: Rokok Surya 1 bks, Kopi 2 sachet" style="margin-bottom: 16px;">
+        <input type="text" id="directDebtNotes" class="input-box" placeholder="Contoh: Rokok Surya 1 bks, Kopi 2 sachet" autocapitalize="sentences" style="margin-bottom: 16px;">
 
         <!-- Direct Debt Payer Confirmation Banner -->
         <div id="directDebtSelectedPayerBanner" style="background: rgba(255, 59, 92, 0.1); border: 1.5px solid var(--rose); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">

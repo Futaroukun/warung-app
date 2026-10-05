@@ -39,9 +39,19 @@ function formatTanggal(isoString) {
   }
 }
 
+function autoCapitalizeWords(str) {
+  if (!str) return '';
+  return str.toString().replace(/(^|[\s\(\)\[\]\/\-_.,])([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+}
+
+function autoCapitalizeSentences(str) {
+  if (!str) return '';
+  return str.toString().replace(/(^|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+}
+
 // Support both ES Modules in browser and CommonJS in tests
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { formatRp, toTitleCase, cleanNumber, formatTanggal };
+  module.exports = { formatRp, toTitleCase, cleanNumber, formatTanggal, autoCapitalizeWords, autoCapitalizeSentences };
 }
 
 if (typeof window !== 'undefined') {
@@ -49,6 +59,8 @@ if (typeof window !== 'undefined') {
   window.toTitleCase = toTitleCase;
   window.cleanNumber = cleanNumber;
   window.formatTanggal = formatTanggal;
+  window.autoCapitalizeWords = autoCapitalizeWords;
+  window.autoCapitalizeSentences = autoCapitalizeSentences;
 }
 
 
@@ -2349,5 +2361,46 @@ document.addEventListener('click', (e) => {
     if (t) t.classList.remove('open');
   }
 });
+
+// Auto-capitalization handling for text inputs and textareas
+document.addEventListener('input', (e) => {
+  const target = e.target;
+  if (!target || !(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
+  if (target.type !== 'text' && target.type !== 'search' && target.tagName !== 'TEXTAREA') return;
+
+  const mode = target.getAttribute('autocapitalize');
+  if (!mode || mode === 'none' || mode === 'off') return;
+
+  const originalVal = target.value;
+  let formatted = originalVal;
+
+  if (mode === 'words') {
+    formatted = window.autoCapitalizeWords ? window.autoCapitalizeWords(originalVal) : originalVal;
+  } else if (mode === 'sentences') {
+    formatted = window.autoCapitalizeSentences ? window.autoCapitalizeSentences(originalVal) : originalVal;
+  } else if (mode === 'characters') {
+    formatted = originalVal.toUpperCase();
+  }
+
+  if (formatted !== originalVal) {
+    const start = target.selectionStart;
+    const end = target.selectionEnd;
+    target.value = formatted;
+    if (typeof start === 'number' && typeof end === 'number') {
+      try {
+        target.setSelectionRange(start, end);
+      } catch (err) {}
+    }
+  }
+}, true);
+
+document.addEventListener('blur', (e) => {
+  const target = e.target;
+  if (!target || !(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) return;
+  const mode = target.getAttribute('autocapitalize');
+  if (mode === 'words' && target.value) {
+    target.value = window.toTitleCase ? window.toTitleCase(target.value) : target.value.trim();
+  }
+}, true);
 
 
