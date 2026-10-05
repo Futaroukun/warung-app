@@ -182,32 +182,159 @@ function sendDebtReminderWhatsApp(debtId) {
   }
 }
 
+function renderDirectDebtCustomers() {
+  const container = document.getElementById('directDebtCustomerSelectList');
+  if (!container) return;
+
+  const countBadge = document.getElementById('directDebtActiveCount');
+  const debts = (window.appStore.getState().debts || []).filter(d => d.status === 'belum_lunas');
+  
+  if (countBadge) {
+    countBadge.innerText = `${debts.length} Kasbon Aktif`;
+  }
+
+  let html = '';
+  debts.forEach(d => {
+    const remaining = Math.max(0, d.amount - d.paid_amount);
+    const initial = (d.customer_name || 'U').trim().charAt(0).toUpperCase();
+    html += `
+      <div class="customer-debt-tile" id="directDebtTile_${d.id}" onclick="selectDirectDebtCustomer(${JSON.stringify(d.customer_name)}, ${JSON.stringify(d.phone || '')}, ${remaining}, ${d.id})">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="tile-avatar">${initial}</div>
+          <div>
+            <div style="font-weight: 800; font-size: 13px; color: #fff;">${d.customer_name}</div>
+            <div style="font-size: 10px; color: var(--rose);">Sisa Kasbon: ${window.formatRp(remaining)}</div>
+          </div>
+        </div>
+        <div class="tile-radio-circle"></div>
+      </div>
+    `;
+  });
+
+  html += `
+    <div class="customer-debt-tile" id="directDebtTile_new" onclick="selectDirectDebtNewCustomer()">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="tile-avatar new">+</div>
+        <div>
+          <div style="font-weight: 800; font-size: 13px; color: var(--emerald);">+ Nama Pelanggan Baru</div>
+          <div style="font-size: 10px; color: var(--text-sub);">Catat kasbon orang baru</div>
+        </div>
+      </div>
+      <div class="tile-radio-circle"></div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+  if (debts.length > 0) {
+    const first = debts[0];
+    const rem = Math.max(0, first.amount - first.paid_amount);
+    selectDirectDebtCustomer(first.customer_name, first.phone || '', rem, first.id);
+  } else {
+    selectDirectDebtNewCustomer();
+  }
+}
+
+function selectDirectDebtCustomer(name, phone, remaining, id) {
+  document.querySelectorAll('#directDebtCustomerSelectList .customer-debt-tile').forEach(t => t.classList.remove('active'));
+  const tile = document.getElementById(`directDebtTile_${id}`);
+  if (tile) tile.classList.add('active');
+
+  const nameInput = document.getElementById('directDebtName');
+  const phoneInput = document.getElementById('directDebtPhone');
+  if (nameInput) nameInput.value = name;
+  if (phoneInput) phoneInput.value = phone || '';
+
+  const newBox = document.getElementById('directDebtNewCustomerBox');
+  if (newBox) newBox.style.display = 'none';
+
+  updateDirectDebtNotice(remaining, name);
+}
+
+function selectDirectDebtNewCustomer() {
+  document.querySelectorAll('#directDebtCustomerSelectList .customer-debt-tile').forEach(t => t.classList.remove('active'));
+  const tile = document.getElementById('directDebtTile_new');
+  if (tile) tile.classList.add('active');
+
+  const newName = document.getElementById('directDebtNewCustNameInput');
+  const newPhone = document.getElementById('directDebtNewCustPhoneInput');
+  const nameInput = document.getElementById('directDebtName');
+  const phoneInput = document.getElementById('directDebtPhone');
+
+  if (nameInput) nameInput.value = newName?.value.trim() || '';
+  if (phoneInput) phoneInput.value = newPhone?.value.trim() || '';
+
+  const newBox = document.getElementById('directDebtNewCustomerBox');
+  if (newBox) newBox.style.display = 'block';
+
+  const notice = document.getElementById('directDebtMergeNotice');
+  if (notice) notice.style.display = 'none';
+
+  if (newName) newName.focus();
+}
+
+function onDirectDebtNewNameChange(val) {
+  const nameInput = document.getElementById('directDebtName');
+  if (nameInput) nameInput.value = val.trim();
+}
+
+function onDirectDebtNewPhoneChange(val) {
+  const phoneInput = document.getElementById('directDebtPhone');
+  if (phoneInput) phoneInput.value = val.trim();
+}
+
+function updateDirectDebtNotice(existingRemaining, custName) {
+  const notice = document.getElementById('directDebtMergeNotice');
+  if (!notice) return;
+
+  const name = custName || document.getElementById('directDebtName')?.value.trim();
+  const debts = window.appStore.getState().debts || [];
+  const found = debts.find(d => d.customer_name === name && d.status === 'belum_lunas');
+
+  if (!found) {
+    notice.style.display = 'none';
+    return;
+  }
+
+  const remaining = existingRemaining !== undefined ? existingRemaining : Math.max(0, found.amount - found.paid_amount);
+  const amount = Number(document.getElementById('directDebtAmount')?.value) || 0;
+
+  notice.style.display = 'block';
+  notice.innerHTML = `💡 Kasbon tambahan sebesar <b>${window.formatRp(amount)}</b> akan otomatis ditambahkan ke kasbon aktif <b>${name}</b>.<br>Total kasbon berjalan menjadi: <b style="color: #fff;">${window.formatRp(remaining + amount)}</b>.`;
+}
+
 function openDirectDebtSheet() {
-  const nameEl = document.getElementById('directDebtName');
-  const phoneEl = document.getElementById('directDebtPhone');
   const amountEl = document.getElementById('directDebtAmount');
   const notesEl = document.getElementById('directDebtNotes');
+  const newNameEl = document.getElementById('directDebtNewCustNameInput');
+  const newPhoneEl = document.getElementById('directDebtNewCustPhoneInput');
 
-  if (nameEl) nameEl.value = '';
-  if (phoneEl) phoneEl.value = '';
   if (amountEl) amountEl.value = '';
   if (notesEl) notesEl.value = '';
+  if (newNameEl) newNameEl.value = '';
+  if (newPhoneEl) newPhoneEl.value = '';
 
+  renderDirectDebtCustomers();
   window.openSheet('sheetDirectDebt');
 }
 
 async function submitDirectDebt() {
-  const name = (document.getElementById('directDebtName')?.value || '').trim();
-  const phone = (document.getElementById('directDebtPhone')?.value || '').trim();
+  let name = (document.getElementById('directDebtName')?.value || '').trim();
+  if (!name) {
+    name = (document.getElementById('directDebtNewCustNameInput')?.value || '').trim();
+  }
+  const phone = (document.getElementById('directDebtPhone')?.value || document.getElementById('directDebtNewCustPhoneInput')?.value || '').trim();
   const amount = Number(document.getElementById('directDebtAmount')?.value);
   const notes = (document.getElementById('directDebtNotes')?.value || '').trim();
 
   if (!name) {
-    window.showToast('Nama pelanggan wajib diisi', 'warning');
+    window.showToast('Silakan pilih pelanggan atau isi nama pelanggan baru!', 'warning');
+    document.getElementById('directDebtNewCustNameInput')?.focus();
     return;
   }
   if (!amount || amount <= 0) {
     window.showToast('Nominal kasbon harus lebih dari 0', 'warning');
+    document.getElementById('directDebtAmount')?.focus();
     return;
   }
 
@@ -221,9 +348,9 @@ async function submitDirectDebt() {
 
     if (res.success) {
       window.closeSheet('sheetDirectDebt');
-      window.showToast(`Kasbon ${res.data.customer_name} berhasil disimpan!`, 'success');
       loadDebts();
       if (window.loadDashboard) window.loadDashboard();
+      window.openSuccessModal?.(res.data, 'debt_payment');
     }
   } catch (err) {
     window.showToast(err.message || 'Gagal menyimpan kasbon', 'error');
@@ -234,6 +361,12 @@ if (typeof window !== 'undefined') {
   window.loadDebts = loadDebts;
   window.renderDebtsUI = renderDebtsUI;
   window.deleteDebt = deleteDebt;
+  window.renderDirectDebtCustomers = renderDirectDebtCustomers;
+  window.selectDirectDebtCustomer = selectDirectDebtCustomer;
+  window.selectDirectDebtNewCustomer = selectDirectDebtNewCustomer;
+  window.onDirectDebtNewNameChange = onDirectDebtNewNameChange;
+  window.onDirectDebtNewPhoneChange = onDirectDebtNewPhoneChange;
+  window.updateDirectDebtNotice = updateDirectDebtNotice;
   window.openDirectDebtSheet = openDirectDebtSheet;
   window.submitDirectDebt = submitDirectDebt;
   window.generateDebtReminderMessage = generateDebtReminderMessage;
@@ -241,5 +374,19 @@ if (typeof window !== 'undefined') {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadDebts, renderDebtsUI, deleteDebt, openDirectDebtSheet, submitDirectDebt, generateDebtReminderMessage, sendDebtReminderWhatsApp };
+  module.exports = {
+    loadDebts,
+    renderDebtsUI,
+    deleteDebt,
+    renderDirectDebtCustomers,
+    selectDirectDebtCustomer,
+    selectDirectDebtNewCustomer,
+    onDirectDebtNewNameChange,
+    onDirectDebtNewPhoneChange,
+    updateDirectDebtNotice,
+    openDirectDebtSheet,
+    submitDirectDebt,
+    generateDebtReminderMessage,
+    sendDebtReminderWhatsApp
+  };
 }

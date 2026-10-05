@@ -526,29 +526,95 @@
     <div class="sheet-box">
       <div class="sheet-pull-bar"></div>
       <div class="sheet-header">
-        <div class="sheet-title">Catat Kasbon Baru</div>
+        <div class="sheet-title">Catat Kasbon</div>
         <button class="btn-icon-subtle" onclick="closeSheet('sheetDirectDebt')">✕</button>
       </div>
 
       <div class="sheet-body">
-        <label class="form-label">Nama Pelanggan *</label>
-        <input type="text" id="directDebtName" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 12px;" required>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pilih Pelanggan Kasbon</label>
+          <span id="directDebtActiveCount" style="font-size: 10px; color: var(--text-sub);">0 Kasbon Aktif</span>
+        </div>
 
-        <label class="form-label">Nomor WhatsApp / HP (Opsional)</label>
-        <input type="tel" id="directDebtPhone" class="input-box" placeholder="Contoh: 08123456789" style="margin-bottom: 12px;">
+        <!-- Existing Active Customers List -->
+        <div id="directDebtCustomerSelectList" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto; margin-bottom: 10px;">
+          <!-- Dynamically populated -->
+        </div>
+
+        <input type="hidden" id="directDebtName">
+        <input type="hidden" id="directDebtPhone">
+
+        <!-- New Customer Input Form (Shown when + Pelanggan Baru is clicked) -->
+        <div id="directDebtNewCustomerBox" style="display: none; background: var(--bg-surface); border: 1.5px dashed var(--emerald); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px;">
+          <label class="form-label" style="font-size: 10px; color: var(--emerald);">Nama Pelanggan Baru *</label>
+          <input type="text" id="directDebtNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 8px;" oninput="onDirectDebtNewNameChange(this.value)">
+
+          <label class="form-label" style="font-size: 10px;">No. WhatsApp / HP (Opsional)</label>
+          <input type="tel" id="directDebtNewCustPhoneInput" class="input-box" placeholder="Contoh: 08123456789" oninput="onDirectDebtNewPhoneChange(this.value)">
+        </div>
+
+        <!-- Merger Preview Banner -->
+        <div id="directDebtMergeNotice" style="display: none; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 10px; margin-bottom: 12px; font-size: 11px; color: #93c5fd;">
+          <!-- Text dynamically inserted -->
+        </div>
 
         <label class="form-label">Nominal Kasbon (Rp) *</label>
-        <input type="number" id="directDebtAmount" class="input-box" placeholder="0" style="font-size: 16px; font-weight: 800; margin-bottom: 12px;" required>
+        <input type="number" id="directDebtAmount" class="input-box" placeholder="0" style="font-size: 16px; font-weight: 800; margin-bottom: 12px;" required oninput="updateDirectDebtNotice()">
 
         <label class="form-label">Rincian Barang / Catatan</label>
         <input type="text" id="directDebtNotes" class="input-box" placeholder="Contoh: Rokok Surya 1 bks, Kopi 2 sachet" style="margin-bottom: 16px;">
 
-        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 8px; padding: 10px; margin-bottom: 16px; font-size: 11px; color: #93c5fd;">
-          💡 <b>Otomatis Menggabung</b>: Jika nama pelanggan sudah punya kasbon aktif, nominal dan rincian barang otomatis ditambahkan ke kasbon yang sudah ada tanpa membuat kartu baru.
-        </div>
-
         <button class="btn btn-primary" onclick="submitDirectDebt()" style="width: 100%; padding: 14px; font-weight: 800;">
           Simpan Data Kasbon
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHEET: MODAL POPUP TRANSAKSI BERHASIL -->
+  <div class="sheet-backdrop" id="sheetSuccessModal">
+    <div class="sheet-box" style="text-align: center;">
+      <div class="sheet-pull-bar"></div>
+      
+      <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(16, 185, 129, 0.18); border: 2px solid var(--emerald); color: var(--emerald); display: flex; align-items: center; justify-content: center; margin: 4px auto 12px;">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+
+      <h2 style="font-size: 18px; font-weight: 900; color: #fff; margin-bottom: 4px;" id="successModalTitle">Transaksi Berhasil!</h2>
+      <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px;" id="successModalSubtitle">Pesanan berhasil dicatat ke sistem</div>
+
+      <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 16px; text-align: left;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
+          <span style="color: var(--text-sub);">Nomor Referensi:</span>
+          <span style="font-weight: 700; color: #fff;" id="successModalRef">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
+          <span style="color: var(--text-sub);">Metode:</span>
+          <span style="font-weight: 700; color: #fff;" id="successModalMethod">Tunai</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
+          <span style="color: var(--text-sub);" id="successModalTotalLabel">Total Belanja:</span>
+          <span style="font-size: 15px; font-weight: 900; color: var(--emerald);" id="successModalAmount">Rp 0</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; border-top: 1px solid var(--border); padding-top: 6px; margin-top: 6px;" id="successModalExtraRow">
+          <span style="color: var(--text-sub);" id="successModalExtraLabel">Kembalian:</span>
+          <span style="font-weight: 800; color: #fff;" id="successModalExtraVal">Rp 0</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 8px;" id="successModalActionRow">
+          <button type="button" class="btn" id="btnSuccessPrint" onclick="onSuccessModalPrint()" style="flex: 1; background: var(--bg-surface); border: 1px solid var(--border); color: #fff; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+            <span>Cetak Struk</span>
+          </button>
+          <button type="button" class="btn" id="btnSuccessShareWa" onclick="onSuccessModalShareWa()" style="flex: 1; background: rgba(37, 211, 102, 0.15); border: 1px solid rgba(37, 211, 102, 0.3); color: #25d366; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>Kirim WA</span>
+          </button>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="closeSheet('sheetSuccessModal')" style="width: 100%; padding: 14px; font-weight: 800;">
+          ✓ Transaksi Baru / Selesai
         </button>
       </div>
     </div>

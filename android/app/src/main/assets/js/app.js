@@ -48,20 +48,73 @@ function renderCheckoutSheetItems() {
   const cart = window.appStore.getState().cart;
   const total = window.appStore.getCartTotal();
 
+  if (cart.length === 0) {
+    container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-sub); font-size: 12px;">Keranjang belanja kosong</div>';
+    const totalEl = document.getElementById('checkoutGrandTotal');
+    if (totalEl) totalEl.innerText = window.formatRp(0);
+    return;
+  }
+
   container.innerHTML = cart.map(item => `
-    <div class="checkout-item-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-subtle);">
-      <div>
-        <div style="font-weight: 700; font-size: 13px;">${item.name}</div>
-        <div style="font-size: 11px; color: var(--text-sub);">${item.qty} x ${window.formatRp(item.sell_price)}</div>
+    <div class="checkout-item-row" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border);">
+      <div style="flex: 1; min-width: 0; padding-right: 8px;">
+        <div style="font-weight: 700; font-size: 13px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</div>
+        <div style="font-size: 11px; color: var(--text-sub);">@${window.formatRp(item.sell_price)}</div>
       </div>
-      <div style="font-weight: 800; font-size: 13px; color: var(--emerald);">
-        ${window.formatRp(item.qty * item.sell_price)}
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="checkout-item-stepper" style="display: flex; align-items: center; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;">
+          <button type="button" onclick="changeCartQtyInCheckout(${item.id}, -1)" style="background: none; border: none; color: var(--text); padding: 5px 9px; cursor: pointer; font-weight: 900; font-size: 13px;" title="Kurangi">-</button>
+          <span style="font-size: 12px; font-weight: 800; color: #fff; min-width: 20px; text-align: center;">${item.qty}</span>
+          <button type="button" onclick="changeCartQtyInCheckout(${item.id}, 1)" style="background: none; border: none; color: var(--text); padding: 5px 9px; cursor: pointer; font-weight: 900; font-size: 13px;" title="Tambah">+</button>
+        </div>
+        <div style="font-weight: 800; font-size: 13px; color: var(--emerald); min-width: 65px; text-align: right;">
+          ${window.formatRp(item.qty * item.sell_price)}
+        </div>
+        <button type="button" onclick="removeCartItemInCheckout(${item.id})" title="Hapus dari keranjang" style="background: none; border: none; color: var(--rose); padding: 5px; cursor: pointer; display: flex; align-items: center;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
       </div>
     </div>
   `).join('');
 
   const totalEl = document.getElementById('checkoutGrandTotal');
   if (totalEl) totalEl.innerText = window.formatRp(total);
+}
+
+function changeCartQtyInCheckout(id, delta) {
+  try {
+    window.appStore.updateCartQty(id, delta);
+  } catch (err) {
+    window.showToast(err.message, 'warning');
+    return;
+  }
+
+  const cart = window.appStore.getState().cart;
+  if (cart.length === 0) {
+    window.closeSheet('sheetCheckout');
+    window.showToast('Keranjang belanja kosong', 'info');
+    return;
+  }
+  renderCheckoutSheetItems();
+  calculateCheckoutChange();
+  if (checkoutPaymentType === 'debt') {
+    renderCheckoutDebtCustomers();
+  }
+}
+
+function removeCartItemInCheckout(id) {
+  window.appStore.removeFromCart(id);
+  const cart = window.appStore.getState().cart;
+  if (cart.length === 0) {
+    window.closeSheet('sheetCheckout');
+    window.showToast('Keranjang belanja kosong', 'info');
+    return;
+  }
+  renderCheckoutSheetItems();
+  calculateCheckoutChange();
+  if (checkoutPaymentType === 'debt') {
+    renderCheckoutDebtCustomers();
+  }
 }
 
 function setCheckoutPaymentType(type) {
@@ -265,25 +318,120 @@ async function submitCheckout() {
       const sale = res.data;
       window.appStore.clearCart();
       window.closeSheet('sheetCheckout');
-      window.showToast('Transaksi Berhasil!', 'success');
 
       // Refresh data
       window.loadItems?.();
       window.loadDashboard?.();
       window.loadDebts?.();
 
-      // Show print & share modal or prompt
-      promptReceiptAction(sale);
+      // Show rich success popup modal
+      openSuccessModal(sale, 'sale');
     }
   } catch (err) {
     window.showToast(err.message || 'Gagal memproses transaksi', 'error');
   }
 }
 
-function promptReceiptAction(sale) {
-  const doPrint = confirm(`Transaksi Sukses!\nNo. Struk: ${sale.invoice_no}\nTotal: ${window.formatRp(sale.total_amount)}\n\nIngin cetak struk belanja sekarang?`);
-  if (doPrint) {
-    window.printReceipt?.(sale);
+let currentSuccessTx = null;
+let currentSuccessType = 'sale';
+
+function openSuccessModal(data, type = 'sale') {
+  currentSuccessTx = data;
+  currentSuccessType = type;
+
+  const titleEl = document.getElementById('successModalTitle');
+  const subEl = document.getElementById('successModalSubtitle');
+  const refEl = document.getElementById('successModalRef');
+  const methodEl = document.getElementById('successModalMethod');
+  const amountEl = document.getElementById('successModalAmount');
+  const totalLabelEl = document.getElementById('successModalTotalLabel');
+  const extraRowEl = document.getElementById('successModalExtraRow');
+  const extraLabelEl = document.getElementById('successModalExtraLabel');
+  const extraValEl = document.getElementById('successModalExtraVal');
+  const btnPrint = document.getElementById('btnSuccessPrint');
+  const btnShare = document.getElementById('btnSuccessShareWa');
+
+  if (type === 'sale') {
+    if (titleEl) titleEl.innerText = 'Transaksi Berhasil!';
+    if (subEl) subEl.innerText = 'Pesanan tercatat & stok otomatis terpotong';
+    if (refEl) refEl.innerText = data.invoice_no || `INV-${data.id}`;
+    
+    const isDebt = data.payment_type === 'debt';
+    if (methodEl) {
+      methodEl.innerText = isDebt ? 'Kasbon / Hutang' : 'Tunai';
+      methodEl.style.color = isDebt ? 'var(--rose)' : 'var(--emerald)';
+    }
+
+    if (totalLabelEl) totalLabelEl.innerText = 'Total Belanja:';
+    if (amountEl) amountEl.innerText = window.formatRp(data.total_amount);
+
+    if (extraRowEl) {
+      if (isDebt) {
+        extraRowEl.style.display = 'flex';
+        if (extraLabelEl) extraLabelEl.innerText = 'Pelanggan:';
+        if (extraValEl) {
+          extraValEl.innerText = data.customer_name || 'Pelanggan';
+          extraValEl.style.color = '#fff';
+        }
+      } else {
+        extraRowEl.style.display = 'flex';
+        if (extraLabelEl) extraLabelEl.innerText = 'Kembalian:';
+        if (extraValEl) {
+          extraValEl.innerText = window.formatRp(data.cash_change || 0);
+          extraValEl.style.color = 'var(--emerald)';
+        }
+      }
+    }
+
+    if (btnPrint) btnPrint.style.display = 'flex';
+    if (btnShare) {
+      btnShare.style.display = 'flex';
+      btnShare.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Kirim WA</span>';
+    }
+  } else if (type === 'debt_payment') {
+    if (titleEl) titleEl.innerText = 'Pembayaran Kasbon Berhasil!';
+    if (subEl) subEl.innerText = `Catatan kasbon ${data.customer_name} diperbarui`;
+    if (refEl) refEl.innerText = `PAY-DEBT-${data.id}`;
+    if (methodEl) {
+      methodEl.innerText = data.status === 'lunas' ? 'LUNAS' : 'Cicilan Kasbon';
+      methodEl.style.color = 'var(--emerald)';
+    }
+
+    if (totalLabelEl) totalLabelEl.innerText = 'Nominal Dibayar:';
+    if (amountEl) amountEl.innerText = window.formatRp(data.paidAmount || data.paid_amount);
+
+    const remaining = Math.max(0, data.amount - data.paid_amount);
+    if (extraRowEl) {
+      extraRowEl.style.display = 'flex';
+      if (extraLabelEl) extraLabelEl.innerText = 'Sisa Kasbon:';
+      if (extraValEl) {
+        extraValEl.innerText = window.formatRp(remaining);
+        extraValEl.style.color = remaining === 0 ? 'var(--emerald)' : 'var(--rose)';
+      }
+    }
+
+    if (btnPrint) btnPrint.style.display = 'none';
+    if (btnShare) {
+      btnShare.style.display = 'flex';
+      btnShare.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Kirim Bukti WA</span>';
+    }
+  }
+
+  window.openSheet('sheetSuccessModal');
+}
+
+function onSuccessModalPrint() {
+  if (currentSuccessTx && currentSuccessType === 'sale') {
+    window.printReceipt?.(currentSuccessTx);
+  }
+}
+
+function onSuccessModalShareWa() {
+  if (!currentSuccessTx) return;
+  if (currentSuccessType === 'sale') {
+    window.shareReceiptWhatsApp?.(currentSuccessTx, currentSuccessTx.customer_phone || '');
+  } else if (currentSuccessType === 'debt_payment') {
+    window.sendDebtReminderWhatsApp?.(currentSuccessTx.id);
   }
 }
 
@@ -428,9 +576,9 @@ async function submitPayDebt() {
     const res = await window.api.post(`/debts/${activePayingDebtId}/pay`, { amount, notes });
     if (res.success) {
       window.closeSheet('sheetPay');
-      window.showToast('Pembayaran kasbon berhasil dicatat', 'success');
       window.loadDebts?.();
       window.loadDashboard?.();
+      openSuccessModal({ ...res.data, paidAmount: amount }, 'debt_payment');
     }
   } catch (err) {
     window.showToast(err.message || 'Gagal memproses pembayaran kasbon', 'error');
@@ -480,3 +628,8 @@ window.selectCheckoutDebtCustomer = selectCheckoutDebtCustomer;
 window.selectCheckoutNewCustomer = selectCheckoutNewCustomer;
 window.onNewCustomerNameChange = onNewCustomerNameChange;
 window.onNewCustomerPhoneChange = onNewCustomerPhoneChange;
+window.changeCartQtyInCheckout = changeCartQtyInCheckout;
+window.removeCartItemInCheckout = removeCartItemInCheckout;
+window.openSuccessModal = openSuccessModal;
+window.onSuccessModalPrint = onSuccessModalPrint;
+window.onSuccessModalShareWa = onSuccessModalShareWa;
