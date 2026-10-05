@@ -2,6 +2,14 @@ plugins {
     id 'com.android.application'
 }
 
+def getBuildNumber() {
+    def val = System.getenv("BUILD_NUMBER")
+    if (val != null && val.toString().trim().isInteger()) {
+        return val.toString().trim().toInteger()
+    }
+    return 1
+}
+
 android {
     namespace 'com.warungpro.app'
     compileSdk 34
@@ -10,8 +18,8 @@ android {
         applicationId "com.warungpro.app"
         minSdk 24
         targetSdk 34
-        versionCode (System.getenv("BUILD_NUMBER") ?: "1").toInteger()
-        versionName "1.2." + (System.getenv("BUILD_NUMBER") ?: "0")
+        versionCode getBuildNumber()
+        versionName "1.2." + getBuildNumber()
     }
 
     signingConfigs {

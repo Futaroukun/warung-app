@@ -12,6 +12,12 @@ jobs:
   build-apk:
     name: Build & Release Android APK
     runs-on: ubuntu-latest
+    env:
+      BUILD_NUMBER: ${{ github.run_number }}
+      KEYSTORE_PATH: warungpro.keystore
+      KEYSTORE_PASS: warungpro123
+      KEY_ALIAS: warungpro
+      KEY_PASS: warungpro123
 
     steps:
       - name: Checkout Code
