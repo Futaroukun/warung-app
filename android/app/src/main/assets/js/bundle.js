@@ -1410,6 +1410,7 @@ let activeStream = null;
 let scanAnimationId = null;
 let isScanning = false;
 let barcodeDetector = null;
+let currentVideoEl = null;
 
 // Initialize native BarcodeDetector if available
 const LINEAR_1D_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf', 'codabar'];
@@ -1452,6 +1453,20 @@ async function startScanner(videoEl, onResult) {
   }
 
   stopScanner();
+  currentVideoEl = videoEl;
+
+  if (videoEl) {
+    videoEl.muted = true;
+    videoEl.autoplay = true;
+    videoEl.playsInline = true;
+    videoEl.setAttribute('playsinline', '');
+    videoEl.setAttribute('webkit-playsinline', '');
+    videoEl.setAttribute('disablePictureInPicture', '');
+    videoEl.style.opacity = '0';
+  }
+
+  const loadingText = typeof document !== 'undefined' ? document.getElementById('scannerLoadingText') : null;
+  if (loadingText) loadingText.style.display = 'flex';
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -1466,6 +1481,8 @@ async function startScanner(videoEl, onResult) {
     activeStream = stream;
     videoEl.srcObject = stream;
     await videoEl.play();
+    if (videoEl) videoEl.style.opacity = '1';
+    if (loadingText) loadingText.style.display = 'none';
     isScanning = true;
 
     if (!barcodeDetector) {
@@ -1543,6 +1560,16 @@ function stopScanner() {
     activeStream.getTracks().forEach(track => track.stop());
     activeStream = null;
   }
+  if (currentVideoEl) {
+    try {
+      currentVideoEl.pause();
+      currentVideoEl.srcObject = null;
+      currentVideoEl.style.opacity = '0';
+    } catch (_) {}
+    currentVideoEl = null;
+  }
+  const loadingText = typeof document !== 'undefined' ? document.getElementById('scannerLoadingText') : null;
+  if (loadingText) loadingText.style.display = 'none';
 }
 
 if (typeof window !== 'undefined') {
@@ -3486,6 +3513,10 @@ function onSuccessModalShareWa() {
 function openBarcodeScanner() {
   const videoEl = document.getElementById('scannerVideo');
   if (!videoEl) return;
+
+  const loadingText = document.getElementById('scannerLoadingText');
+  if (loadingText) loadingText.style.display = 'flex';
+  videoEl.style.opacity = '0';
 
   window.openSheet('sheetScanner');
   window.startScanner(videoEl, (barcode) => {

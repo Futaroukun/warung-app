@@ -661,6 +661,10 @@ function openBarcodeScanner() {
   const videoEl = document.getElementById('scannerVideo');
   if (!videoEl) return;
 
+  const loadingText = document.getElementById('scannerLoadingText');
+  if (loadingText) loadingText.style.display = 'flex';
+  videoEl.style.opacity = '0';
+
   window.openSheet('sheetScanner');
   window.startScanner(videoEl, (barcode) => {
     window.handleBarcodeScanned?.(barcode);

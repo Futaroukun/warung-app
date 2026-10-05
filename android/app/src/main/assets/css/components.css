@@ -1165,3 +1165,22 @@
   border-color: var(--emerald);
   color: #d1fae5;
 }
+
+/* Scanner Video Styling & Reset native player controls */
+#scannerVideo::-webkit-media-controls,
+#scannerVideo::-webkit-media-controls-enclosure,
+#scannerVideo::-webkit-media-controls-panel,
+#scannerVideo::-webkit-media-controls-play-button,
+#scannerVideo::-webkit-media-controls-start-playback-button,
+#scannerVideo::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
