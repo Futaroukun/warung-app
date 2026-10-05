@@ -6,6 +6,7 @@ const publicJsDir = path.join(__dirname, '..', 'public', 'js');
 const files = [
   'utils.js',
   'store.js',
+  'local-db.js',
   'api.js',
   'components/toast.js',
   'components/sheets.js',

@@ -56,12 +56,90 @@ async function loadProfitLoss() {
   }
 }
 
-function exportSalesCsv() {
+async function exportSalesCsv() {
+  if (window.api && window.api.shouldUseLocalDb() && window.localDb) {
+    try {
+      window.showToast?.('Menyiapkan Laporan Penjualan (CSV)...', 'info');
+      const sales = await window.localDb.getSales({ limit: 10000 });
+      let csv = '"No Invoice","Tanggal","Pelanggan","Metode Pembayaran","Total Belanja (Rp)","Modal HPP (Rp)","Laba Bersih (Rp)","Rincian Produk"\n';
+      for (const s of sales) {
+        const items = s.items || [];
+        const itemsStr = items.map(it => `${it.item_name} (${it.qty}x)`).join('; ');
+        const profit = (s.total_amount || 0) - (s.total_cost || 0);
+        const row = [
+          `"${s.invoice_no || ''}"`,
+          `"${s.created_at}"`,
+          `"${(s.customer_name || 'Umum').replace(/"/g, '""')}"`,
+          `"${s.payment_type === 'cash' ? 'Tunai' : (s.payment_type === 'debt' ? 'Kasbon' : s.payment_type)}"`,
+          s.total_amount || 0,
+          s.total_cost || 0,
+          profit,
+          `"${itemsStr.replace(/"/g, '""')}"`
+        ];
+        csv += row.join(',') + '\n';
+      }
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `laporan-penjualan-${new Date().toISOString().substring(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      window.showToast?.('Laporan Penjualan berhasil diunduh!', 'success');
+      return;
+    } catch (err) {
+      window.showToast?.('Gagal ekspor penjualan: ' + err.message, 'error');
+      return;
+    }
+  }
   window.showToast('Mengunduh Laporan Penjualan (CSV)...', 'success');
   window.location.href = '/api/reports/export/sales';
 }
 
-function exportItemsCsv() {
+async function exportItemsCsv() {
+  if (window.api && window.api.shouldUseLocalDb() && window.localDb) {
+    try {
+      window.showToast?.('Menyiapkan Data Inventaris (CSV)...', 'info');
+      const items = await window.localDb.getItems();
+      let csv = '"Barcode","Nama Produk","Kategori","Harga Modal (Rp)","Harga Jual (Rp)","Margin Laba (Rp)","Stok","Satuan","Nilai Aset Modal (Rp)","Status Stok"\n';
+      for (const it of items) {
+        const margin = (it.sell_price || 0) - (it.buy_price || 0);
+        let status = 'Aman';
+        if (it.stock === 0) status = 'Habis';
+        else if (it.stock <= it.min_stock) status = 'Kritis';
+        const assetVal = (it.stock || 0) * (it.buy_price || 0);
+        const row = [
+          `"${it.barcode || ''}"`,
+          `"${(it.name || '').replace(/"/g, '""')}"`,
+          `"${(it.category || 'Umum').replace(/"/g, '""')}"`,
+          it.buy_price || 0,
+          it.sell_price || 0,
+          margin,
+          it.stock || 0,
+          `"${it.unit || 'pcs'}"`,
+          assetVal,
+          `"${status}"`
+        ];
+        csv += row.join(',') + '\n';
+      }
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `stok-barang-${new Date().toISOString().substring(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      window.showToast?.('Data Stok berhasil diunduh!', 'success');
+      return;
+    } catch (err) {
+      window.showToast?.('Gagal ekspor inventaris: ' + err.message, 'error');
+      return;
+    }
+  }
   window.showToast('Mengunduh Data Inventaris Stok (CSV)...', 'success');
   window.location.href = '/api/reports/export/items';
 }

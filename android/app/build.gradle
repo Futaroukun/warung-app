@@ -10,14 +10,28 @@ android {
         applicationId "com.warungpro.app"
         minSdk 24
         targetSdk 34
-        versionCode 1
-        versionName "1.0.0"
+        versionCode (System.getenv("BUILD_NUMBER") ?: "1").toInteger()
+        versionName "1.2." + (System.getenv("BUILD_NUMBER") ?: "0")
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("KEYSTORE_PATH") ?: "warungpro.keystore")
+            storePassword System.getenv("KEYSTORE_PASS") ?: "warungpro123"
+            keyAlias System.getenv("KEY_ALIAS") ?: "warungpro"
+            keyPassword System.getenv("KEY_PASS") ?: "warungpro123"
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            // debug juga pakai signingConfig release agar signature konsisten
+            signingConfig signingConfigs.release
         }
     }
 

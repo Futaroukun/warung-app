@@ -26,6 +26,7 @@ test('Frontend Static Assets Verification', async (t) => {
     '/css/print.css',
     '/js/utils.js',
     '/js/store.js',
+    '/js/local-db.js',
     '/js/api.js',
     '/js/components/toast.js',
     '/js/components/sheets.js',

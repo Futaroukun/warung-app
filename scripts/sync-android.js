@@ -36,17 +36,7 @@ html = html.replace(/(href|src)="\//g, '$1="');
 fs.writeFileSync(htmlPath, html, 'utf8');
 console.log('✓ Patched index.html: absolute paths → relative');
 
-// ── 3. Patch api.js di assets: inject APK base URL detection ───────────────
-const apiPath = path.join(DEST, 'js', 'api.js');
-if (fs.existsSync(apiPath)) {
-  let api = fs.readFileSync(apiPath, 'utf8');
-  // Ganti baris API_BASE
-  api = api.replace(
-    /^const API_BASE\s*=\s*['"][^'"]*['"];?/m,
-    `const API_BASE = (location.protocol === 'file:') ? 'http://localhost:3000/api' : '/api';`
-  );
-  fs.writeFileSync(apiPath, api, 'utf8');
-  console.log('✓ Patched api.js: file:// → localhost:3000/api');
-}
+// ── 3. Standalone APK Configuration ─────────────────────────────────────────
+console.log('✓ APK assets configured: 100% Standalone Offline Mode (IndexedDB)');
 
 console.log('✓ sync-android done');

@@ -76,7 +76,28 @@ function insertReminderTag(tag) {
   el.setSelectionRange(start + tag.length, start + tag.length);
 }
 
-function downloadDatabaseBackup() {
+async function downloadDatabaseBackup() {
+  if (window.api && window.api.shouldUseLocalDb() && window.localDb) {
+    try {
+      window.showToast?.('Menyiapkan file backup...', 'info');
+      const backup = await window.localDb.exportFullBackup();
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const d = new Date().toISOString().substring(0, 10);
+      a.href = url;
+      a.download = `warungpro-backup-${d}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      window.showToast?.('Backup database lokal berhasil diunduh!', 'success');
+      return;
+    } catch (err) {
+      window.showToast?.('Gagal backup: ' + err.message, 'error');
+      return;
+    }
+  }
   window.showToast('Memulai unduh backup warung.db...', 'success');
   window.location.href = '/api/system/backup';
 }
