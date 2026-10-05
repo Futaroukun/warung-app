@@ -2,6 +2,11 @@
    WARUNGPRO - 60 FPS ULTRA-LIGHTWEIGHT BASE & LAYOUT
    Solid Backgrounds, Hardware Accelerated, Zero Lag
    ============================================================ */
+*, *::before, *::after {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none;
+}
+
 html, body {
   width: 100%;
   min-height: 100%;
@@ -9,6 +14,12 @@ html, body {
   color: var(--text);
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 body {
@@ -17,6 +28,15 @@ body {
   overflow-x: hidden;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Izinkan seleksi teks hanya pada kolom input dan textarea */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
 }
 
 .app-viewport {

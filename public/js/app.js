@@ -966,3 +966,18 @@ document.addEventListener('blur', (e) => {
   }
 }, true);
 
+// Matikan seleksi teks dan menu context popup kecuali pada input/textarea
+document.addEventListener('selectstart', (e) => {
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+  if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+    e.preventDefault();
+  }
+}, false);
+
+document.addEventListener('contextmenu', (e) => {
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+  if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+    e.preventDefault();
+  }
+}, false);
+
