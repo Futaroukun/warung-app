@@ -131,6 +131,30 @@ function toggleOnlineBarcodeSetting() {
   window.showToast?.(`Pencarian barcode online ${next ? 'diaktifkan' : 'dinonaktifkan'}`, 'info');
 }
 
+async function resetAllData() {
+  const confirmed = confirm('PERINGATAN: Apakah Anda yakin ingin menghapus SEMUA data produk, stok, riwayat penjualan, dan kasbon? Seluruh data dummy/contoh akan dihapus bersih!');
+  if (!confirmed) return;
+
+  try {
+    if (window.api && window.api.shouldUseLocalDb() && window.localDb) {
+      await window.localDb.clearAllData();
+      window.showToast?.('Semua data berhasil dibersihkan!', 'success');
+      setTimeout(() => window.location.reload(), 800);
+      return;
+    }
+
+    const res = await window.api.post('/system/reset');
+    if (res && res.success) {
+      window.showToast?.('Semua data berhasil dibersihkan!', 'success');
+      setTimeout(() => window.location.reload(), 800);
+    } else {
+      window.showToast?.(res?.error?.message || 'Gagal mereset data', 'error');
+    }
+  } catch (err) {
+    window.showToast?.('Gagal mereset data: ' + err.message, 'error');
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.DEFAULT_DEBT_REMINDER_TEMPLATE = DEFAULT_DEBT_REMINDER_TEMPLATE;
   window.checkSystemHealth = checkSystemHealth;
@@ -141,6 +165,7 @@ if (typeof window !== 'undefined') {
   window.downloadDatabaseBackup = downloadDatabaseBackup;
   window.loadOnlineBarcodeSetting = loadOnlineBarcodeSetting;
   window.toggleOnlineBarcodeSetting = toggleOnlineBarcodeSetting;
+  window.resetAllData = resetAllData;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -153,6 +178,7 @@ if (typeof module !== 'undefined' && module.exports) {
     insertReminderTag,
     downloadDatabaseBackup,
     loadOnlineBarcodeSetting,
-    toggleOnlineBarcodeSetting
+    toggleOnlineBarcodeSetting,
+    resetAllData
   };
 }

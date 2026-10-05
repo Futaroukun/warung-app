@@ -7,6 +7,7 @@ function createSystemRouter(db, dbPath) {
 
   router.get('/health', controller.health);
   router.get('/backup', controller.backup);
+  router.post('/reset', controller.reset);
 
   return router;
 }

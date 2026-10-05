@@ -60,7 +60,7 @@ class LocalDatabase {
 
       request.onsuccess = async (e) => {
         this.db = e.target.result;
-        await this.seedInitialDataIfEmpty();
+        await this.purgeDummyDataIfPresent();
         resolve(this.db);
       };
 
@@ -135,33 +135,50 @@ class LocalDatabase {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
 
-  // --- Seed Data Sample ---
-  async seedInitialDataIfEmpty() {
+  async clear(storeName) {
+    const tx = await this.tx(storeName, 'readwrite');
+    return new Promise((resolve, reject) => {
+      const store = tx.objectStore(storeName);
+      const req = store.clear();
+      req.onsuccess = () => resolve(true);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async clearAllData() {
+    await this.clear('items');
+    await this.clear('sales');
+    await this.clear('sale_items');
+    await this.clear('debts');
+    await this.clear('debt_payments');
+  }
+
+  // --- Purge Dummy / Sample Data ---
+  async purgeDummyDataIfPresent() {
     try {
+      const dummyBarcodes = new Set(['8991001', '8991002', '8991003', '8991004', '8991005', '8991006']);
+      const dummyNames = new Set([
+        'Beras Premium 5kg',
+        'Minyak Goreng 1L',
+        'Gula Pasir 1kg',
+        'Kopi Kapal Api Special Mix',
+        'Indomie Goreng Original',
+        'Telur Ayam 1kg'
+      ]);
+
       const items = await this.getAll('items');
-      if (items.length > 0) return;
-
-      const samples = [
-        { name: 'Beras Premium 5kg', category: 'Sembako', buy_price: 64000, sell_price: 72000, stock: 10, min_stock: 3, unit: 'karung', barcode: '8991001' },
-        { name: 'Minyak Goreng 1L', category: 'Sembako', buy_price: 15500, sell_price: 17500, stock: 15, min_stock: 4, unit: 'pouch', barcode: '8991002' },
-        { name: 'Gula Pasir 1kg', category: 'Sembako', buy_price: 14500, sell_price: 16500, stock: 12, min_stock: 3, unit: 'kg', barcode: '8991003' },
-        { name: 'Kopi Kapal Api Special Mix', category: 'Minuman', buy_price: 1600, sell_price: 2000, stock: 40, min_stock: 10, unit: 'sachet', barcode: '8991004' },
-        { name: 'Indomie Goreng Original', category: 'Makanan', buy_price: 2900, sell_price: 3500, stock: 50, min_stock: 12, unit: 'bungkus', barcode: '8991005' },
-        { name: 'Telur Ayam 1kg', category: 'Sembako', buy_price: 26000, sell_price: 29000, stock: 10, min_stock: 2, unit: 'kg', barcode: '8991006' }
-      ];
-
-      for (const it of samples) {
-        await this.add('items', {
-          ...it,
-          is_active: 1,
-          created_at: this.now(),
-          updated_at: this.now()
-        });
+      for (const it of items) {
+        if (dummyBarcodes.has(it.barcode) || dummyNames.has(it.name)) {
+          await this.delete('items', it.id);
+        }
       }
-      console.log('✓ Seeded initial sample items for standalone APK');
     } catch (err) {
-      console.warn('Failed to seed items:', err);
+      console.warn('Purge dummy items:', err);
     }
+  }
+
+  async seedInitialDataIfEmpty() {
+    // Dummy seeding disabled
   }
 
   // ── Items API ─────────────────────────────────────────────────────────────

@@ -41,6 +41,24 @@ class SystemController {
       next(err);
     }
   };
+
+  reset = (req, res, next) => {
+    try {
+      this.db.prepare('DELETE FROM debt_payments').run();
+      this.db.prepare('DELETE FROM debts').run();
+      this.db.prepare('DELETE FROM sale_items').run();
+      this.db.prepare('DELETE FROM sales').run();
+      this.db.prepare('DELETE FROM items').run();
+      this.db.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+      this.db.exec('VACUUM;');
+      res.json({
+        success: true,
+        message: 'Database berhasil direset bersih'
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 module.exports = { SystemController };
