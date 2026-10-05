@@ -117,7 +117,7 @@ function renderMasterBarcodesUI() {
         <div style="display: flex; gap: 6px; margin-top: 2px;">
           <button type="button" class="btn" onclick="openQuickRestockModal(${item.id})" style="flex: 2; padding: 9px 8px; font-size: 12px; font-weight: 800; background: rgba(0, 245, 155, 0.15); border: 1px solid rgba(0, 245, 155, 0.3); color: var(--emerald); display: flex; align-items: center; justify-content: center; gap: 5px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>+ Tambah Stok</span>
+            <span>Tambah Stok</span>
           </button>
           <button type="button" class="btn" onclick="openItemSheet(masterBarcodes.find(i => i.id === ${item.id}))" style="flex: 1; padding: 9px 8px; font-size: 12px; font-weight: 700; background: var(--bg-surface); border: 1px solid var(--border); color: #fff;">
             Edit

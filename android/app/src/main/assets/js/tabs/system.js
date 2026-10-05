@@ -12,6 +12,7 @@ Jika ada waktu luang, mohon dibantu pelunasannya ya Kak. Terima kasih banyak ata
 
 async function checkSystemHealth() {
   loadDebtTemplateSetting();
+  loadOnlineBarcodeSetting();
   try {
     const res = await window.api.get('/system/health');
     if (res.success) {
@@ -102,6 +103,33 @@ async function downloadDatabaseBackup() {
   window.location.href = '/api/system/backup';
 }
 
+function loadOnlineBarcodeSetting() {
+  const btn = document.getElementById('btnToggleOnlineBarcode');
+  if (!btn) return;
+  const isEnabled = typeof localStorage !== 'undefined' ? localStorage.getItem('setting_online_barcode') !== 'false' : true;
+  if (isEnabled) {
+    btn.textContent = 'Aktif';
+    btn.style.background = 'rgba(0, 245, 155, 0.15)';
+    btn.style.color = 'var(--emerald)';
+    btn.style.borderColor = 'rgba(0, 245, 155, 0.3)';
+  } else {
+    btn.textContent = 'Nonaktif';
+    btn.style.background = 'rgba(255, 255, 255, 0.08)';
+    btn.style.color = 'var(--text-sub)';
+    btn.style.borderColor = 'var(--border)';
+  }
+}
+
+function toggleOnlineBarcodeSetting() {
+  const current = typeof localStorage !== 'undefined' ? localStorage.getItem('setting_online_barcode') !== 'false' : true;
+  const next = !current;
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('setting_online_barcode', next ? 'true' : 'false');
+  }
+  loadOnlineBarcodeSetting();
+  window.showToast?.(`Pencarian barcode online ${next ? 'diaktifkan' : 'dinonaktifkan'}`, 'info');
+}
+
 if (typeof window !== 'undefined') {
   window.DEFAULT_DEBT_REMINDER_TEMPLATE = DEFAULT_DEBT_REMINDER_TEMPLATE;
   window.checkSystemHealth = checkSystemHealth;
@@ -110,6 +138,8 @@ if (typeof window !== 'undefined') {
   window.resetDebtTemplateToDefault = resetDebtTemplateToDefault;
   window.insertReminderTag = insertReminderTag;
   window.downloadDatabaseBackup = downloadDatabaseBackup;
+  window.loadOnlineBarcodeSetting = loadOnlineBarcodeSetting;
+  window.toggleOnlineBarcodeSetting = toggleOnlineBarcodeSetting;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -120,6 +150,8 @@ if (typeof module !== 'undefined' && module.exports) {
     saveDebtTemplateSetting,
     resetDebtTemplateToDefault,
     insertReminderTag,
-    downloadDatabaseBackup
+    downloadDatabaseBackup,
+    loadOnlineBarcodeSetting,
+    toggleOnlineBarcodeSetting
   };
 }

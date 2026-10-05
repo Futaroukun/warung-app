@@ -49,9 +49,52 @@ function autoCapitalizeSentences(str) {
   return str.toString().replace(/(^|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
 }
 
+async function fetchOnlineBarcodeProduct(barcode) {
+  if (!barcode || String(barcode).trim().length < 6) return null;
+  const clean = String(barcode).trim();
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 2800) : null;
+
+  try {
+    const fetchOpts = {
+      headers: { 'User-Agent': 'KasirWarung - Android/Web - Version 1.0' }
+    };
+    if (controller) fetchOpts.signal = controller.signal;
+
+    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(clean)}.json`, fetchOpts);
+    if (timeoutId) clearTimeout(timeoutId);
+    if (!res || !res.ok) return null;
+    const data = await res.json();
+    if (data && data.status === 1 && data.product) {
+      const p = data.product;
+      const rawName = p.product_name_id || p.product_name || p.product_name_en || '';
+      if (!rawName) return null;
+      const brand = p.brands ? p.brands.split(',')[0].trim() : '';
+      let category = 'Umum';
+      if (p.categories) {
+        const catFirst = p.categories.split(',')[0].trim();
+        if (catFirst) category = toTitleCase(catFirst.replace(/^[a-z]{2}:/, ''));
+      }
+      let finalName = rawName.trim();
+      if (brand && !finalName.toLowerCase().includes(brand.toLowerCase())) {
+        finalName = `${brand} ${finalName}`;
+      }
+      return {
+        name: toTitleCase(finalName),
+        category: category || 'Umum',
+        brand: brand ? toTitleCase(brand) : ''
+      };
+    }
+    return null;
+  } catch (err) {
+    if (timeoutId) clearTimeout(timeoutId);
+    return null;
+  }
+}
+
 // Support both ES Modules in browser and CommonJS in tests
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { formatRp, toTitleCase, cleanNumber, formatTanggal, autoCapitalizeWords, autoCapitalizeSentences };
+  module.exports = { formatRp, toTitleCase, cleanNumber, formatTanggal, autoCapitalizeWords, autoCapitalizeSentences, fetchOnlineBarcodeProduct };
 }
 
 if (typeof window !== 'undefined') {
@@ -61,7 +104,9 @@ if (typeof window !== 'undefined') {
   window.formatTanggal = formatTanggal;
   window.autoCapitalizeWords = autoCapitalizeWords;
   window.autoCapitalizeSentences = autoCapitalizeSentences;
+  window.fetchOnlineBarcodeProduct = fetchOnlineBarcodeProduct;
 }
+
 
 
 /* --- store.js --- */
@@ -1890,7 +1935,7 @@ function renderProductCardHtml(item) {
           ` : `
             <button class="btn-cart-cta add-to-cart" onclick="addToCartById(${item.id})">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              <span>+ Keranjang</span>
+              <span>Keranjang</span>
             </button>
           `}
         </div>
@@ -2255,7 +2300,7 @@ function renderMasterBarcodesUI() {
         <div style="display: flex; gap: 6px; margin-top: 2px;">
           <button type="button" class="btn" onclick="openQuickRestockModal(${item.id})" style="flex: 2; padding: 9px 8px; font-size: 12px; font-weight: 800; background: rgba(0, 245, 155, 0.15); border: 1px solid rgba(0, 245, 155, 0.3); color: var(--emerald); display: flex; align-items: center; justify-content: center; gap: 5px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>+ Tambah Stok</span>
+            <span>Tambah Stok</span>
           </button>
           <button type="button" class="btn" onclick="openItemSheet(masterBarcodes.find(i => i.id === ${item.id}))" style="flex: 1; padding: 9px 8px; font-size: 12px; font-weight: 700; background: var(--bg-surface); border: 1px solid var(--border); color: #fff;">
             Edit
@@ -2503,8 +2548,7 @@ function renderDebtsUI() {
   const searchInput = document.getElementById('debtSearchField');
   const search = (searchInput ? searchInput.value : '').toLowerCase().trim();
   const state = window.appStore.getState();
-  const debts = state.debts || [];
-  const filter = state.debtFilter || 'belum_lunas';
+  const filter = (state.debtFilter !== undefined && state.debtFilter !== '') ? state.debtFilter : 'belum_lunas';
 
   const totalUnpaid = debts.filter(d => d.status === 'belum_lunas').reduce((sum, d) => sum + (d.amount - d.paid_amount), 0);
   const unpaidCount = debts.filter(d => d.status === 'belum_lunas').length;
@@ -2516,16 +2560,11 @@ function renderDebtsUI() {
 
   // Update active state of filter chips
   const btnUnpaid = document.getElementById('chipDebt_unpaid');
-  const btnPaid = document.getElementById('chipDebt_paid');
+  const btnLunas = document.getElementById('chipDebt_lunas') || document.getElementById('chipDebt_paid');
   const btnAll = document.getElementById('chipDebt_all');
-  if (btnUnpaid && btnPaid && btnAll) {
-    btnUnpaid.classList.remove('active');
-    btnPaid.classList.remove('active');
-    btnAll.classList.remove('active');
-    if (filter === 'belum_lunas') btnUnpaid.classList.add('active');
-    else if (filter === 'lunas') btnPaid.classList.add('active');
-    else btnAll.classList.add('active');
-  }
+  if (btnUnpaid) btnUnpaid.classList.toggle('active', filter === 'belum_lunas');
+  if (btnLunas) btnLunas.classList.toggle('active', filter === 'lunas');
+  if (btnAll) btnAll.classList.toggle('active', filter === 'all');
 
   const filtered = debts.filter(d => {
     const matchSearch = !search ||
@@ -2807,7 +2846,7 @@ function selectDirectDebtCustomer(name, phone, remaining, id) {
 function onPickDirectNewCust() {
   const textEl = document.getElementById('directDebtSelectedText');
   if (textEl) {
-    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">+ Nama Pelanggan Baru</span>`;
+    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">Nama Pelanggan Baru</span>`;
   }
 
   const menu = document.getElementById('directDebtDropdownMenu');
@@ -2925,7 +2964,14 @@ async function submitDirectDebt() {
 }
 
 function setDebtFilter(filter) {
-  window.appStore.setState({ debtFilter: filter });
+  const normFilter = filter || 'all';
+  window.appStore.setState({ debtFilter: normFilter });
+  const btnUnpaid = document.getElementById('chipDebt_unpaid');
+  const btnLunas = document.getElementById('chipDebt_lunas') || document.getElementById('chipDebt_paid');
+  const btnAll = document.getElementById('chipDebt_all');
+  if (btnUnpaid) btnUnpaid.classList.toggle('active', normFilter === 'belum_lunas');
+  if (btnLunas) btnLunas.classList.toggle('active', normFilter === 'lunas');
+  if (btnAll) btnAll.classList.toggle('active', normFilter === 'all');
   renderDebtsUI();
 }
 
@@ -3152,6 +3198,7 @@ Jika ada waktu luang, mohon dibantu pelunasannya ya Kak. Terima kasih banyak ata
 
 async function checkSystemHealth() {
   loadDebtTemplateSetting();
+  loadOnlineBarcodeSetting();
   try {
     const res = await window.api.get('/system/health');
     if (res.success) {
@@ -3242,6 +3289,33 @@ async function downloadDatabaseBackup() {
   window.location.href = '/api/system/backup';
 }
 
+function loadOnlineBarcodeSetting() {
+  const btn = document.getElementById('btnToggleOnlineBarcode');
+  if (!btn) return;
+  const isEnabled = typeof localStorage !== 'undefined' ? localStorage.getItem('setting_online_barcode') !== 'false' : true;
+  if (isEnabled) {
+    btn.textContent = 'Aktif';
+    btn.style.background = 'rgba(0, 245, 155, 0.15)';
+    btn.style.color = 'var(--emerald)';
+    btn.style.borderColor = 'rgba(0, 245, 155, 0.3)';
+  } else {
+    btn.textContent = 'Nonaktif';
+    btn.style.background = 'rgba(255, 255, 255, 0.08)';
+    btn.style.color = 'var(--text-sub)';
+    btn.style.borderColor = 'var(--border)';
+  }
+}
+
+function toggleOnlineBarcodeSetting() {
+  const current = typeof localStorage !== 'undefined' ? localStorage.getItem('setting_online_barcode') !== 'false' : true;
+  const next = !current;
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('setting_online_barcode', next ? 'true' : 'false');
+  }
+  loadOnlineBarcodeSetting();
+  window.showToast?.(`Pencarian barcode online ${next ? 'diaktifkan' : 'dinonaktifkan'}`, 'info');
+}
+
 if (typeof window !== 'undefined') {
   window.DEFAULT_DEBT_REMINDER_TEMPLATE = DEFAULT_DEBT_REMINDER_TEMPLATE;
   window.checkSystemHealth = checkSystemHealth;
@@ -3250,6 +3324,8 @@ if (typeof window !== 'undefined') {
   window.resetDebtTemplateToDefault = resetDebtTemplateToDefault;
   window.insertReminderTag = insertReminderTag;
   window.downloadDatabaseBackup = downloadDatabaseBackup;
+  window.loadOnlineBarcodeSetting = loadOnlineBarcodeSetting;
+  window.toggleOnlineBarcodeSetting = toggleOnlineBarcodeSetting;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -3260,7 +3336,9 @@ if (typeof module !== 'undefined' && module.exports) {
     saveDebtTemplateSetting,
     resetDebtTemplateToDefault,
     insertReminderTag,
-    downloadDatabaseBackup
+    downloadDatabaseBackup,
+    loadOnlineBarcodeSetting,
+    toggleOnlineBarcodeSetting
   };
 }
 
@@ -3678,7 +3756,7 @@ function selectCheckoutDebtCustomer(name, phone, remaining, id) {
 function onPickCheckoutNewCust() {
   const textEl = document.getElementById('checkoutDebtSelectedText');
   if (textEl) {
-    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">+ Nama Pelanggan Baru</span>`;
+    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">Nama Pelanggan Baru</span>`;
   }
 
   const menu = document.getElementById('checkoutDebtDropdownMenu');
@@ -3995,7 +4073,104 @@ function openItemSheet(item = null) {
     if (minStockInput) minStockInput.value = '3';
   }
 
+  const statusEl = document.getElementById('barcodeOnlineStatus');
+  if (statusEl) {
+    statusEl.textContent = '';
+    statusEl.style.display = 'none';
+  }
+
   window.openSheet('sheetItem');
+
+  // If new item has barcode and name is empty, auto-lookup online in background
+  const initBarcode = (item && item.barcode) ? String(item.barcode).trim() : '';
+  const initName = (item && item.name) ? String(item.name).trim() : '';
+  if (initBarcode && !initName) {
+    setTimeout(() => {
+      fetchAndFillOnlineName(initBarcode, true);
+    }, 250);
+  }
+}
+
+let barcodeInputDebounce = null;
+function onBarcodeFieldInput(val) {
+  clearTimeout(barcodeInputDebounce);
+  const statusEl = document.getElementById('barcodeOnlineStatus');
+  if (statusEl) statusEl.style.display = 'none';
+
+  const clean = String(val || '').trim();
+  const nameInput = document.getElementById('itemNameField');
+  if (clean.length >= 8 && (!nameInput || !nameInput.value.trim())) {
+    barcodeInputDebounce = setTimeout(() => {
+      fetchAndFillOnlineName(clean, true);
+    }, 700);
+  }
+}
+
+async function fetchAndFillOnlineName(barcode = null, isAuto = false) {
+  const barcodeInput = document.getElementById('itemBarcodeField');
+  const code = (barcode || barcodeInput?.value || '').trim();
+  if (!code) {
+    if (!isAuto) window.showToast?.('Ketik atau scan barcode terlebih dahulu', 'warning');
+    return;
+  }
+
+  // Check setting preference
+  if (isAuto && typeof localStorage !== 'undefined' && localStorage.getItem('setting_online_barcode') === 'false') {
+    return;
+  }
+
+  const nameInput = document.getElementById('itemNameField');
+  const catInput = document.getElementById('itemCategoryField');
+  const btnFetch = document.getElementById('btnFetchOnlineBarcode');
+  const btnText = document.getElementById('btnFetchOnlineText');
+  const statusEl = document.getElementById('barcodeOnlineStatus');
+
+  if (isAuto && nameInput && nameInput.value.trim() !== '') {
+    return;
+  }
+
+  if (btnText) btnText.textContent = 'Mencari...';
+  if (btnFetch) btnFetch.disabled = true;
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--text-sub)';
+    statusEl.textContent = '🔍 Mencari data produk online...';
+  }
+
+  try {
+    const data = await (window.fetchOnlineBarcodeProduct ? window.fetchOnlineBarcodeProduct(code) : null);
+    if (data && data.name) {
+      if (nameInput && (!isAuto || !nameInput.value.trim())) {
+        nameInput.value = data.name;
+      }
+      if (catInput && (!catInput.value || catInput.value === 'Umum') && data.category) {
+        catInput.value = data.category;
+      }
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.style.color = 'var(--emerald)';
+        statusEl.textContent = `✓ Ditemukan: ${data.name}`;
+      }
+      window.showToast?.(`✓ Ditemukan: ${data.name}`, 'success');
+    } else {
+      if (statusEl) {
+        statusEl.style.color = 'var(--text-muted)';
+        statusEl.textContent = 'Produk tidak ditemukan online';
+        setTimeout(() => { if (statusEl) statusEl.style.display = 'none'; }, 2500);
+      }
+      if (!isAuto) {
+        window.showToast?.('Data produk tidak ditemukan online. Silakan isi manual.', 'info');
+      }
+    }
+  } catch (err) {
+    if (statusEl) statusEl.style.display = 'none';
+    if (!isAuto) {
+      window.showToast?.('Gagal menghubungi database online: ' + err.message, 'error');
+    }
+  } finally {
+    if (btnText) btnText.textContent = 'Cari Online';
+    if (btnFetch) btnFetch.disabled = false;
+  }
 }
 
 async function deleteCurrentItem() {
@@ -4189,6 +4364,8 @@ window.submitCustomWaPrompt = window.submitCustomWaPrompt || submitCustomWaPromp
 window.saveDebtTemplateSetting = window.saveDebtTemplateSetting || saveDebtTemplateSetting;
 window.resetDebtTemplateToDefault = window.resetDebtTemplateToDefault || resetDebtTemplateToDefault;
 window.insertReminderTag = window.insertReminderTag || insertReminderTag;
+window.onBarcodeFieldInput = onBarcodeFieldInput;
+window.fetchAndFillOnlineName = fetchAndFillOnlineName;
 window.triggerRealtimeSync = triggerRealtimeSync;
 window.syncAllDataRealtime = syncAllDataRealtime;
 

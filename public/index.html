@@ -124,7 +124,7 @@
         <div class="quick-actions-bar">
           <button class="btn-quick-touch" onclick="openItemSheet()">
             <div class="quick-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
-            <span>+ Produk Baru</span>
+            <span>Produk Baru</span>
           </button>
           <button class="btn-quick-touch" onclick="openBarcodeScanner()">
             <div class="quick-icon-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg></div>
@@ -211,7 +211,7 @@
           <div style="display: flex; gap: 8px;">
             <button class="btn" onclick="openBarcodeScanner('restock')" title="Scan kamera untuk tambah stok" style="background: rgba(0, 245, 155, 0.15); border: 1px solid rgba(0, 245, 155, 0.3); color: var(--emerald); padding: 8px 12px; font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 6px;">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
-              <span>+ Scan Restok</span>
+              <span>Scan Restok</span>
             </button>
             <button class="btn-add-circle" onclick="openItemSheet()" title="Daftarkan barcode baru">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -261,7 +261,7 @@
         <div class="filter-chips-row">
           <button type="button" class="filter-chip active" id="chipDebt_unpaid" onclick="setDebtFilter('belum_lunas')">Belum Lunas</button>
           <button type="button" class="filter-chip" id="chipDebt_lunas" onclick="setDebtFilter('lunas')">Lunas</button>
-          <button type="button" class="filter-chip" id="chipDebt_all" onclick="setDebtFilter('')">Semua</button>
+          <button type="button" class="filter-chip" id="chipDebt_all" onclick="setDebtFilter('all')">Semua</button>
         </div>
 
         <div class="debts-list-wrap" id="debtsListContainer">
@@ -347,7 +347,27 @@
           <div id="sysUptimeInfo" style="font-size: 11px; color: var(--text-sub); margin-top: 10px; text-align: right;">Sesi Aktif: -</div>
         </div>
 
-        <!-- Kartu 2: Custom Teks Tagihan WhatsApp -->
+        <!-- Kartu 2: Fitur Auto-Fetch Barcode Online -->
+        <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+            <div style="flex: 1;">
+              <h3 style="font-size: 14px; font-weight: 800; margin-bottom: 4px; color: var(--emerald); display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span>Cari Nama Barcode Online</span>
+              </h3>
+              <p style="font-size: 11px; color: var(--text-sub); margin: 0; line-height: 1.4;">
+                Otomatis deteksi dan isi nama barang dari database online (Open Food Facts) saat scan barcode baru.
+              </p>
+            </div>
+            <div>
+              <button type="button" id="btnToggleOnlineBarcode" class="btn" onclick="toggleOnlineBarcodeSetting()" style="padding: 7px 14px; font-size: 12px; font-weight: 800; border-radius: 20px; background: rgba(0, 245, 155, 0.15); color: var(--emerald); border: 1px solid rgba(0, 245, 155, 0.3); cursor: pointer;">
+                Aktif
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kartu 3: Custom Teks Tagihan WhatsApp -->
         <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
           <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 6px; color: #25d366; display: flex; align-items: center; gap: 8px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -547,7 +567,8 @@
               <div id="checkoutDebtDropdownItems"></div>
               <div class="dropdown-item new-cust-item" onclick="onPickCheckoutNewCust()" style="border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0, 245, 155, 0.05);">
                 <div style="font-weight: 800; color: var(--emerald); display: flex; align-items: center; gap: 6px;">
-                  <span style="font-size: 16px;">+</span> <span>Nama Pelanggan Baru</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>Nama Pelanggan Baru</span>
                 </div>
               </div>
             </div>
@@ -600,13 +621,20 @@
       <form id="formItem" class="sheet-body">
         <input type="hidden" id="itemIdField">
         
-        <label class="form-label">Barcode (Opsional)</label>
-        <div style="display: flex; gap: 6px; margin-bottom: 12px;">
-          <input type="text" id="itemBarcodeField" class="input-box" placeholder="Scan atau ketik kode barcode" autocapitalize="characters">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+          <label class="form-label" style="margin-bottom: 0;">Barcode (Opsional)</label>
+          <button type="button" id="btnFetchOnlineBarcode" class="btn" onclick="fetchAndFillOnlineName()" title="Cari nama produk dari database online" style="padding: 3px 9px; font-size: 11px; font-weight: 700; background: rgba(0, 245, 155, 0.12); color: var(--emerald); border: 1px solid rgba(0, 245, 155, 0.25); display: flex; align-items: center; gap: 5px; border-radius: 6px; cursor: pointer;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <span id="btnFetchOnlineText">Cari Online</span>
+          </button>
+        </div>
+        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+          <input type="text" id="itemBarcodeField" class="input-box" placeholder="Scan atau ketik kode barcode" autocapitalize="characters" oninput="onBarcodeFieldInput(this.value)">
           <button type="button" class="btn-icon-ghost" onclick="openBarcodeScanner()" title="Scan Kamera">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
           </button>
         </div>
+        <div id="barcodeOnlineStatus" style="font-size: 11px; font-weight: 600; color: var(--emerald); margin-top: -4px; margin-bottom: 8px; display: none;"></div>
 
         <label class="form-label">Nama Barang *</label>
         <input type="text" id="itemNameField" class="input-box" placeholder="Contoh: Kopi Kapal Api Special" autocapitalize="words" required style="margin-bottom: 12px;">
@@ -708,7 +736,8 @@
             <div id="directDebtDropdownItems"></div>
             <div class="dropdown-item new-cust-item" onclick="onPickDirectNewCust()" style="border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0, 245, 155, 0.05);">
               <div style="font-weight: 800; color: var(--emerald); display: flex; align-items: center; gap: 6px;">
-                <span style="font-size: 16px;">+</span> <span>Nama Pelanggan Baru</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Nama Pelanggan Baru</span>
               </div>
             </div>
           </div>

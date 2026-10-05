@@ -95,8 +95,7 @@ function renderDebtsUI() {
   const searchInput = document.getElementById('debtSearchField');
   const search = (searchInput ? searchInput.value : '').toLowerCase().trim();
   const state = window.appStore.getState();
-  const debts = state.debts || [];
-  const filter = state.debtFilter || 'belum_lunas';
+  const filter = (state.debtFilter !== undefined && state.debtFilter !== '') ? state.debtFilter : 'belum_lunas';
 
   const totalUnpaid = debts.filter(d => d.status === 'belum_lunas').reduce((sum, d) => sum + (d.amount - d.paid_amount), 0);
   const unpaidCount = debts.filter(d => d.status === 'belum_lunas').length;
@@ -108,16 +107,11 @@ function renderDebtsUI() {
 
   // Update active state of filter chips
   const btnUnpaid = document.getElementById('chipDebt_unpaid');
-  const btnPaid = document.getElementById('chipDebt_paid');
+  const btnLunas = document.getElementById('chipDebt_lunas') || document.getElementById('chipDebt_paid');
   const btnAll = document.getElementById('chipDebt_all');
-  if (btnUnpaid && btnPaid && btnAll) {
-    btnUnpaid.classList.remove('active');
-    btnPaid.classList.remove('active');
-    btnAll.classList.remove('active');
-    if (filter === 'belum_lunas') btnUnpaid.classList.add('active');
-    else if (filter === 'lunas') btnPaid.classList.add('active');
-    else btnAll.classList.add('active');
-  }
+  if (btnUnpaid) btnUnpaid.classList.toggle('active', filter === 'belum_lunas');
+  if (btnLunas) btnLunas.classList.toggle('active', filter === 'lunas');
+  if (btnAll) btnAll.classList.toggle('active', filter === 'all');
 
   const filtered = debts.filter(d => {
     const matchSearch = !search ||
@@ -399,7 +393,7 @@ function selectDirectDebtCustomer(name, phone, remaining, id) {
 function onPickDirectNewCust() {
   const textEl = document.getElementById('directDebtSelectedText');
   if (textEl) {
-    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">+ Nama Pelanggan Baru</span>`;
+    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">Nama Pelanggan Baru</span>`;
   }
 
   const menu = document.getElementById('directDebtDropdownMenu');
@@ -517,7 +511,14 @@ async function submitDirectDebt() {
 }
 
 function setDebtFilter(filter) {
-  window.appStore.setState({ debtFilter: filter });
+  const normFilter = filter || 'all';
+  window.appStore.setState({ debtFilter: normFilter });
+  const btnUnpaid = document.getElementById('chipDebt_unpaid');
+  const btnLunas = document.getElementById('chipDebt_lunas') || document.getElementById('chipDebt_paid');
+  const btnAll = document.getElementById('chipDebt_all');
+  if (btnUnpaid) btnUnpaid.classList.toggle('active', normFilter === 'belum_lunas');
+  if (btnLunas) btnLunas.classList.toggle('active', normFilter === 'lunas');
+  if (btnAll) btnAll.classList.toggle('active', normFilter === 'all');
   renderDebtsUI();
 }
 

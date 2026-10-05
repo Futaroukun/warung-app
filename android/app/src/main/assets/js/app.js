@@ -410,7 +410,7 @@ function selectCheckoutDebtCustomer(name, phone, remaining, id) {
 function onPickCheckoutNewCust() {
   const textEl = document.getElementById('checkoutDebtSelectedText');
   if (textEl) {
-    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">+ Nama Pelanggan Baru</span>`;
+    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">Nama Pelanggan Baru</span>`;
   }
 
   const menu = document.getElementById('checkoutDebtDropdownMenu');
@@ -727,7 +727,104 @@ function openItemSheet(item = null) {
     if (minStockInput) minStockInput.value = '3';
   }
 
+  const statusEl = document.getElementById('barcodeOnlineStatus');
+  if (statusEl) {
+    statusEl.textContent = '';
+    statusEl.style.display = 'none';
+  }
+
   window.openSheet('sheetItem');
+
+  // If new item has barcode and name is empty, auto-lookup online in background
+  const initBarcode = (item && item.barcode) ? String(item.barcode).trim() : '';
+  const initName = (item && item.name) ? String(item.name).trim() : '';
+  if (initBarcode && !initName) {
+    setTimeout(() => {
+      fetchAndFillOnlineName(initBarcode, true);
+    }, 250);
+  }
+}
+
+let barcodeInputDebounce = null;
+function onBarcodeFieldInput(val) {
+  clearTimeout(barcodeInputDebounce);
+  const statusEl = document.getElementById('barcodeOnlineStatus');
+  if (statusEl) statusEl.style.display = 'none';
+
+  const clean = String(val || '').trim();
+  const nameInput = document.getElementById('itemNameField');
+  if (clean.length >= 8 && (!nameInput || !nameInput.value.trim())) {
+    barcodeInputDebounce = setTimeout(() => {
+      fetchAndFillOnlineName(clean, true);
+    }, 700);
+  }
+}
+
+async function fetchAndFillOnlineName(barcode = null, isAuto = false) {
+  const barcodeInput = document.getElementById('itemBarcodeField');
+  const code = (barcode || barcodeInput?.value || '').trim();
+  if (!code) {
+    if (!isAuto) window.showToast?.('Ketik atau scan barcode terlebih dahulu', 'warning');
+    return;
+  }
+
+  // Check setting preference
+  if (isAuto && typeof localStorage !== 'undefined' && localStorage.getItem('setting_online_barcode') === 'false') {
+    return;
+  }
+
+  const nameInput = document.getElementById('itemNameField');
+  const catInput = document.getElementById('itemCategoryField');
+  const btnFetch = document.getElementById('btnFetchOnlineBarcode');
+  const btnText = document.getElementById('btnFetchOnlineText');
+  const statusEl = document.getElementById('barcodeOnlineStatus');
+
+  if (isAuto && nameInput && nameInput.value.trim() !== '') {
+    return;
+  }
+
+  if (btnText) btnText.textContent = 'Mencari...';
+  if (btnFetch) btnFetch.disabled = true;
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.style.color = 'var(--text-sub)';
+    statusEl.textContent = '🔍 Mencari data produk online...';
+  }
+
+  try {
+    const data = await (window.fetchOnlineBarcodeProduct ? window.fetchOnlineBarcodeProduct(code) : null);
+    if (data && data.name) {
+      if (nameInput && (!isAuto || !nameInput.value.trim())) {
+        nameInput.value = data.name;
+      }
+      if (catInput && (!catInput.value || catInput.value === 'Umum') && data.category) {
+        catInput.value = data.category;
+      }
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.style.color = 'var(--emerald)';
+        statusEl.textContent = `✓ Ditemukan: ${data.name}`;
+      }
+      window.showToast?.(`✓ Ditemukan: ${data.name}`, 'success');
+    } else {
+      if (statusEl) {
+        statusEl.style.color = 'var(--text-muted)';
+        statusEl.textContent = 'Produk tidak ditemukan online';
+        setTimeout(() => { if (statusEl) statusEl.style.display = 'none'; }, 2500);
+      }
+      if (!isAuto) {
+        window.showToast?.('Data produk tidak ditemukan online. Silakan isi manual.', 'info');
+      }
+    }
+  } catch (err) {
+    if (statusEl) statusEl.style.display = 'none';
+    if (!isAuto) {
+      window.showToast?.('Gagal menghubungi database online: ' + err.message, 'error');
+    }
+  } finally {
+    if (btnText) btnText.textContent = 'Cari Online';
+    if (btnFetch) btnFetch.disabled = false;
+  }
 }
 
 async function deleteCurrentItem() {
@@ -921,6 +1018,8 @@ window.submitCustomWaPrompt = window.submitCustomWaPrompt || submitCustomWaPromp
 window.saveDebtTemplateSetting = window.saveDebtTemplateSetting || saveDebtTemplateSetting;
 window.resetDebtTemplateToDefault = window.resetDebtTemplateToDefault || resetDebtTemplateToDefault;
 window.insertReminderTag = window.insertReminderTag || insertReminderTag;
+window.onBarcodeFieldInput = onBarcodeFieldInput;
+window.fetchAndFillOnlineName = fetchAndFillOnlineName;
 window.triggerRealtimeSync = triggerRealtimeSync;
 window.syncAllDataRealtime = syncAllDataRealtime;
 

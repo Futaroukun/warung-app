@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { Store } = require('../public/js/store');
-const { formatRp, toTitleCase, cleanNumber, autoCapitalizeWords, autoCapitalizeSentences } = require('../public/js/utils');
+const { formatRp, toTitleCase, cleanNumber, autoCapitalizeWords, autoCapitalizeSentences, fetchOnlineBarcodeProduct } = require('../public/js/utils');
 
 test('Frontend Store & Utilities', async (t) => {
   await t.test('formatRp and cleanNumber utilities', () => {
@@ -63,5 +63,11 @@ test('Frontend Store & Utilities', async (t) => {
     assert.ok(msg.includes('30.000'));
     assert.ok(msg.includes('50.000'));
     assert.ok(msg.includes('Rokok & Kopi'));
+  });
+
+  await t.test('fetchOnlineBarcodeProduct handles invalid or empty barcode safely', async () => {
+    assert.equal(await fetchOnlineBarcodeProduct(''), null);
+    assert.equal(await fetchOnlineBarcodeProduct('123'), null);
+    assert.equal(await fetchOnlineBarcodeProduct(null), null);
   });
 });

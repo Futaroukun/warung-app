@@ -94,7 +94,7 @@ function renderProductCardHtml(item) {
           ` : `
             <button class="btn-cart-cta add-to-cart" onclick="addToCartById(${item.id})">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-              <span>+ Keranjang</span>
+              <span>Keranjang</span>
             </button>
           `}
         </div>
