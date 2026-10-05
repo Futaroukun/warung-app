@@ -167,7 +167,10 @@ class LocalDatabase {
   // ── Items API ─────────────────────────────────────────────────────────────
   async getItems(query = {}) {
     const all = await this.getAll('items');
-    let items = all.filter(it => it.is_active !== 0);
+    let items = all;
+    if (!query.include_all && query.include_all !== 'true') {
+      items = items.filter(it => it.is_active !== 0);
+    }
 
     if (query.category && query.category !== 'all') {
       items = items.filter(it => (it.category || '').toLowerCase() === query.category.toLowerCase());
@@ -189,21 +192,46 @@ class LocalDatabase {
     return this.getOne('items', id);
   }
 
-  async getItemByBarcode(barcode) {
+  async getItemByBarcode(barcode, includeInactive = false) {
     const all = await this.getAll('items');
-    return all.find(it => it.is_active !== 0 && it.barcode === barcode) || null;
+    const clean = String(barcode || '').trim();
+    return all.find(it => (includeInactive || it.is_active !== 0) && String(it.barcode || '').trim() === clean) || null;
   }
 
   async createItem(data) {
     if (!data.name || !data.name.trim()) throw new Error('Nama produk wajib diisi');
     const name = window.toTitleCase ? window.toTitleCase(data.name) : data.name.trim();
+    const cleanBarcode = data.barcode && String(data.barcode).trim() ? String(data.barcode).trim() : null;
 
     const all = await this.getAll('items');
+
+    if (cleanBarcode) {
+      const barcodeExists = all.find(it => String(it.barcode || '').trim() === cleanBarcode);
+      if (barcodeExists) {
+        if (barcodeExists.is_active !== 0) {
+          throw new Error(`Barcode sudah digunakan oleh "${barcodeExists.name}"!`);
+        } else {
+          // Re-activate soft-deleted/archived item with updated data
+          barcodeExists.name = name;
+          barcodeExists.category = data.category ? data.category.trim() : (barcodeExists.category || 'Umum');
+          barcodeExists.buy_price = data.buy_price !== undefined ? Math.max(0, Number(data.buy_price) || 0) : barcodeExists.buy_price;
+          barcodeExists.sell_price = data.sell_price !== undefined ? Math.max(0, Number(data.sell_price) || 0) : barcodeExists.sell_price;
+          barcodeExists.stock = data.stock !== undefined ? Math.max(0, Number(data.stock) || 0) : (barcodeExists.stock || 0);
+          barcodeExists.min_stock = data.min_stock !== undefined ? Math.max(0, Number(data.min_stock) || 0) : (barcodeExists.min_stock || 3);
+          barcodeExists.unit = data.unit ? data.unit.trim() : (barcodeExists.unit || 'pcs');
+          barcodeExists.is_active = 1;
+          barcodeExists.updated_at = this.now();
+          await this.put('items', barcodeExists);
+          return barcodeExists;
+        }
+      }
+    }
+
     const exists = all.find(it => it.is_active !== 0 && it.name.toLowerCase() === name.toLowerCase());
     if (exists) throw new Error(`Barang dengan nama "${name}" sudah ada`);
 
     const item = {
-      barcode: data.barcode ? data.barcode.trim() : null,
+      barcode: cleanBarcode,
       name,
       category: data.category ? data.category.trim() : 'Umum',
       buy_price: Math.max(0, Number(data.buy_price) || 0),
@@ -235,6 +263,7 @@ class LocalDatabase {
     if (data.stock !== undefined) item.stock = Math.max(0, Number(data.stock) || 0);
     if (data.min_stock !== undefined) item.min_stock = Math.max(0, Number(data.min_stock) || 0);
     if (data.unit !== undefined) item.unit = data.unit ? data.unit.trim() : 'pcs';
+    if (data.is_active !== undefined) item.is_active = Number(data.is_active);
     item.updated_at = this.now();
 
     await this.put('items', item);
@@ -245,6 +274,7 @@ class LocalDatabase {
     const item = await this.getOne('items', id);
     if (!item) throw new Error('Barang tidak ditemukan');
     item.stock = Math.max(0, (item.stock || 0) + Number(delta));
+    item.is_active = 1;
     item.updated_at = this.now();
     await this.put('items', item);
     return item;
@@ -764,6 +794,15 @@ class LocalDatabase {
         const created = await this.createItem(body);
         return { success: true, data: created };
       }
+    }
+
+    const itemBarcodeMatch = cleanPath.match(/^\/items\/barcode\/([^\/\?]+)/);
+    if (itemBarcodeMatch && method === 'GET') {
+      const barcode = decodeURIComponent(itemBarcodeMatch[1]);
+      const includeAll = query.include_all === 'true' || query.all === 'true';
+      const item = await this.getItemByBarcode(barcode, includeAll);
+      if (!item) return { success: false, error: 'Barang tidak ditemukan' };
+      return { success: true, data: item };
     }
 
     const itemStockMatch = cleanPath.match(/^\/items\/(\d+)\/stock$/);

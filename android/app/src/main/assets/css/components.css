@@ -1202,4 +1202,12 @@
   animation: fadeIn 0.15s ease-out;
 }
 
+/* Scanner Mode Switcher Buttons */
+#btnScannerModeKasir.active, #btnScannerModeRestock.active {
+  background: var(--emerald) !important;
+  color: #041a10 !important;
+  box-shadow: 0 2px 8px rgba(0, 245, 155, 0.35);
+}
+
+
 

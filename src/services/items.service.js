@@ -5,9 +5,13 @@ class ItemsService {
     this.db = db;
   }
 
-  getAll({ search, category, low_stock } = {}) {
-    let query = 'SELECT * FROM items WHERE is_active = 1';
+  getAll({ search, category, low_stock, include_all } = {}) {
+    let query = 'SELECT * FROM items WHERE 1=1';
     const params = [];
+
+    if (!include_all || (include_all !== 'true' && include_all !== true)) {
+      query += ' AND is_active = 1';
+    }
 
     if (search) {
       query += ' AND (name LIKE ? OR barcode LIKE ?)';
@@ -31,9 +35,13 @@ class ItemsService {
     return this.db.prepare('SELECT * FROM items WHERE id = ? AND is_active = 1').get(id);
   }
 
-  getByBarcode(barcode) {
+  getByBarcode(barcode, includeAll = false) {
     if (!barcode) return null;
-    return this.db.prepare('SELECT * FROM items WHERE barcode = ? AND is_active = 1').get(barcode.trim());
+    let query = 'SELECT * FROM items WHERE barcode = ?';
+    if (!includeAll) {
+      query += ' AND is_active = 1';
+    }
+    return this.db.prepare(query).get(barcode.trim());
   }
 
   create(data) {
@@ -54,11 +62,21 @@ class ItemsService {
 
     const cleanBarcode = barcode && barcode.trim() ? barcode.trim() : null;
     if (cleanBarcode) {
-      const barcodeExists = this.db.prepare('SELECT id, name FROM items WHERE barcode = ? AND is_active = 1').get(cleanBarcode);
+      const barcodeExists = this.db.prepare('SELECT id, name, is_active FROM items WHERE barcode = ?').get(cleanBarcode);
       if (barcodeExists) {
-        const err = new Error(`Barcode sudah digunakan oleh "${barcodeExists.name}"!`);
-        err.status = 409;
-        throw err;
+        if (barcodeExists.is_active === 1) {
+          const err = new Error(`Barcode sudah digunakan oleh "${barcodeExists.name}"!`);
+          err.status = 409;
+          throw err;
+        } else {
+          // Re-activate soft-deleted/archived item with new data
+          return this.update(barcodeExists.id, {
+            ...data,
+            name: cleanName,
+            barcode: cleanBarcode,
+            is_active: 1
+          });
+        }
       }
     }
 
@@ -108,9 +126,11 @@ class ItemsService {
       }
     }
 
+    const targetActive = data.is_active !== undefined ? Number(data.is_active) : existing.is_active;
+
     const stmt = this.db.prepare(`
       UPDATE items
-      SET barcode = ?, name = ?, category = ?, buy_price = ?, sell_price = ?, stock = ?, min_stock = ?, unit = ?, updated_at = datetime('now', 'localtime')
+      SET barcode = ?, name = ?, category = ?, buy_price = ?, sell_price = ?, stock = ?, min_stock = ?, unit = ?, is_active = ?, updated_at = datetime('now', 'localtime')
       WHERE id = ?
     `);
 
@@ -123,14 +143,15 @@ class ItemsService {
       stock !== undefined ? Math.max(0, Number(stock)) : existing.stock,
       min_stock !== undefined ? Number(min_stock) : existing.min_stock,
       unit !== undefined ? unit.trim().toLowerCase() : existing.unit,
+      targetActive,
       id
     );
 
-    return this.getById(id);
+    return this.db.prepare('SELECT * FROM items WHERE id = ?').get(id);
   }
 
   updateStock(id, diffQty) {
-    const item = this.getById(id);
+    const item = this.getById(id) || this.db.prepare('SELECT * FROM items WHERE id = ?').get(id);
     if (!item) {
       const err = new Error('Barang tidak ditemukan');
       err.status = 404;
@@ -138,8 +159,8 @@ class ItemsService {
     }
 
     const newStock = Math.max(0, item.stock + Number(diffQty));
-    this.db.prepare("UPDATE items SET stock = ?, updated_at = datetime('now', 'localtime') WHERE id = ?").run(newStock, id);
-    return this.getById(id);
+    this.db.prepare("UPDATE items SET stock = ?, is_active = 1, updated_at = datetime('now', 'localtime') WHERE id = ?").run(newStock, id);
+    return this.db.prepare('SELECT * FROM items WHERE id = ?').get(id);
   }
 
   delete(id) {

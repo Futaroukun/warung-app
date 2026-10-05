@@ -44,6 +44,8 @@ async function syncAllDataRealtime(force = false) {
 
     if (currentTab === 'pos') {
       await window.loadItems?.();
+    } else if (currentTab === 'barcode') {
+      await window.loadMasterBarcodes?.();
     } else if (currentTab === 'debts') {
       await window.loadDebts?.();
     } else if (currentTab === 'history') {
@@ -99,6 +101,7 @@ function switchMainTab(tab) {
   // Refresh view data
   if (tab === 'dashboard') window.loadDashboard?.();
   if (tab === 'pos') window.renderItemsUI?.();
+  if (tab === 'barcode') window.loadMasterBarcodes?.();
   if (tab === 'debts') window.loadDebts?.();
   if (tab === 'history') window.loadHistory?.();
   if (tab === 'system') window.checkSystemHealth?.();
@@ -657,9 +660,13 @@ function onSuccessModalShareWa() {
 }
 
 // Scanner Sheet Control
-function openBarcodeScanner() {
+function openBarcodeScanner(mode = 'kasir') {
   const videoEl = document.getElementById('scannerVideo');
   if (!videoEl) return;
+
+  if (window.setScannerMode) {
+    window.setScannerMode(mode);
+  }
 
   const loadingText = document.getElementById('scannerLoadingText');
   if (loadingText) loadingText.style.display = 'flex';
@@ -737,6 +744,7 @@ async function deleteCurrentItem() {
         window.showToast(`Produk "${name}" berhasil dihapus`, 'success');
         window.appStore.removeFromCart(Number(id));
         window.loadItems?.();
+        window.loadMasterBarcodes?.();
         window.loadDashboard?.();
         triggerRealtimeSync('item_deleted');
       }
@@ -784,6 +792,7 @@ async function submitItemForm(e) {
       window.closeSheet('sheetItem');
       window.showToast(id ? 'Produk berhasil diubah' : 'Produk baru ditambahkan', 'success');
       window.loadItems?.();
+      window.loadMasterBarcodes?.();
       window.loadDashboard?.();
       triggerRealtimeSync('item_saved');
     }
@@ -865,6 +874,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load initial data
   window.loadDashboard?.();
   window.loadItems?.();
+  window.loadMasterBarcodes?.();
   window.loadDebts?.();
 
   // Bind forms

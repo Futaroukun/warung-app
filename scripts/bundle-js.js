@@ -14,6 +14,7 @@ const files = [
   'components/scanner.js',
   'tabs/dashboard.js',
   'tabs/pos.js',
+  'tabs/barcode.js',
   'tabs/debts.js',
   'tabs/history.js',
   'tabs/system.js',

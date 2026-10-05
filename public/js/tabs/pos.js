@@ -209,8 +209,24 @@ async function fastAdjustStock(id, delta) {
   }
 }
 
-// Scanner Hook with Debounce & Fallback Lookup
+// Scanner Hook with Debounce, Master Lookup & Restock Support
 let lastBarcodeScanTimestamp = 0;
+let scannerCurrentMode = 'kasir'; // 'kasir' | 'restock'
+
+function setScannerMode(mode) {
+  scannerCurrentMode = mode || 'kasir';
+  const btnKasir = document.getElementById('btnScannerModeKasir');
+  const btnRestock = document.getElementById('btnScannerModeRestock');
+  if (btnKasir && btnRestock) {
+    if (scannerCurrentMode === 'restock') {
+      btnRestock.classList.add('active');
+      btnKasir.classList.remove('active');
+    } else {
+      btnKasir.classList.add('active');
+      btnRestock.classList.remove('active');
+    }
+  }
+}
 
 async function handleBarcodeScanned(barcode) {
   const now = Date.now();
@@ -243,11 +259,41 @@ async function handleBarcodeScanned(barcode) {
     } catch (e) {}
   }
 
-  // Pencarian barcode fleksibel (abaikan whitespace & case)
-  const found = items.find(it => it.is_active !== 0 && String(it.barcode || '').trim() === cleanBarcode);
+  // 1. Pencarian barcode di daftar aktif
+  let found = items.find(it => it.is_active !== 0 && String(it.barcode || '').trim() === cleanBarcode);
+
+  // 2. Jika tidak ditemukan di aktif, cari di Master Barcode (termasuk produk nonaktif/arsip)
+  if (!found && window.api) {
+    try {
+      const res = await window.api.get(`/items/barcode/${encodeURIComponent(cleanBarcode)}?include_all=true`);
+      if (res && res.success && res.data) {
+        found = res.data;
+      }
+    } catch (_) {}
+  }
 
   if (found) {
+    // A. MODE TAMBAH STOK (RESTOK)
+    if (scannerCurrentMode === 'restock') {
+      window.playBeep?.();
+      navigator.vibrate?.([60]);
+      if (window.openQuickRestockModal) {
+        window.openQuickRestockModal(found);
+      }
+      window.showToast(`[Scan Restok] ${found.name}`, 'success');
+      return;
+    }
+
+    // B. MODE KASIR (TRANSAKSI)
     try {
+      if (found.is_active === 0 && window.api) {
+        // Otomatis aktifkan kembali produk dari master ke stok aktif
+        await window.api.put(`/items/${found.id}`, { is_active: 1 });
+        found.is_active = 1;
+        window.loadItems?.();
+        window.loadMasterBarcodes?.();
+      }
+
       window.appStore.addToCart(found, 1);
       window.showToast(`[Barcode] +1 ${found.name}`, 'success');
       window.updateCartBar?.();
@@ -256,7 +302,8 @@ async function handleBarcodeScanned(barcode) {
       window.showToast(err.message, 'warning');
     }
   } else {
-    window.openItemSheet({ barcode: cleanBarcode, name: '' });
+    // Barcode baru belum terdaftar di master
+    window.openItemSheet({ barcode: cleanBarcode, name: '', stock: scannerCurrentMode === 'restock' ? 12 : 5 });
     window.showToast(`Barcode ${cleanBarcode} belum terdaftar. Silakan lengkapi produk.`, 'warning');
   }
 }
@@ -269,8 +316,9 @@ if (typeof window !== 'undefined') {
   window.updateCartBar = updateCartBar;
   window.fastAdjustStock = fastAdjustStock;
   window.handleBarcodeScanned = handleBarcodeScanned;
+  window.setScannerMode = setScannerMode;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadItems, renderItemsUI, addToCartById, changeCartQty, fastAdjustStock, handleBarcodeScanned };
+  module.exports = { loadItems, renderItemsUI, addToCartById, changeCartQty, fastAdjustStock, handleBarcodeScanned, setScannerMode };
 }

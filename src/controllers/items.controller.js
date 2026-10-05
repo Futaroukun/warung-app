@@ -24,7 +24,8 @@ class ItemsController {
 
   getByBarcode = (req, res, next) => {
     try {
-      const item = this.service.getByBarcode(req.params.barcode);
+      const includeAll = req.query.include_all === 'true' || req.query.all === 'true';
+      const item = this.service.getByBarcode(req.params.barcode, includeAll);
       if (!item) return res.status(404).json({ success: false, error: 'Barang dengan barcode ini tidak ditemukan' });
       res.json({ success: true, data: item });
     } catch (err) {
