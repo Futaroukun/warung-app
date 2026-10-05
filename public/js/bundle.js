@@ -1919,6 +1919,15 @@ function renderItemsUI() {
   const elStatOut = document.getElementById('itemsStatOut');
   if (elStatOut) elStatOut.textContent = totalOut;
 
+  // Update active state of filter chips
+  ['all', 'low', 'out'].forEach(f => {
+    const el = document.getElementById(`chipItem_${f}`);
+    if (el) {
+      if (f === filter) el.classList.add('active');
+      else el.classList.remove('active');
+    }
+  });
+
   const filtered = items.filter(item => {
     const matchSearch = !search ||
       item.name.toLowerCase().includes(search) ||
@@ -2104,9 +2113,15 @@ async function handleBarcodeScanned(barcode) {
   }
 }
 
+function setItemFilter(filter) {
+  window.appStore.setState({ itemFilter: filter });
+  renderItemsUI();
+}
+
 if (typeof window !== 'undefined') {
   window.loadItems = loadItems;
   window.renderItemsUI = renderItemsUI;
+  window.setItemFilter = setItemFilter;
   window.addToCartById = addToCartById;
   window.changeCartQty = changeCartQty;
   window.updateCartBar = updateCartBar;
@@ -2116,7 +2131,7 @@ if (typeof window !== 'undefined') {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadItems, renderItemsUI, addToCartById, changeCartQty, fastAdjustStock, handleBarcodeScanned, setScannerMode };
+  module.exports = { loadItems, renderItemsUI, setItemFilter, addToCartById, changeCartQty, fastAdjustStock, handleBarcodeScanned, setScannerMode };
 }
 
 
@@ -2498,6 +2513,19 @@ function renderDebtsUI() {
   if (totalUnpaidEl) totalUnpaidEl.innerText = window.formatRp(totalUnpaid);
   const countEl = document.getElementById('debtSummaryCount');
   if (countEl) countEl.innerText = `${unpaidCount} Orang Belum Lunas`;
+
+  // Update active state of filter chips
+  const btnUnpaid = document.getElementById('chipDebt_unpaid');
+  const btnPaid = document.getElementById('chipDebt_paid');
+  const btnAll = document.getElementById('chipDebt_all');
+  if (btnUnpaid && btnPaid && btnAll) {
+    btnUnpaid.classList.remove('active');
+    btnPaid.classList.remove('active');
+    btnAll.classList.remove('active');
+    if (filter === 'belum_lunas') btnUnpaid.classList.add('active');
+    else if (filter === 'lunas') btnPaid.classList.add('active');
+    else btnAll.classList.add('active');
+  }
 
   const filtered = debts.filter(d => {
     const matchSearch = !search ||
@@ -2896,9 +2924,15 @@ async function submitDirectDebt() {
   }
 }
 
+function setDebtFilter(filter) {
+  window.appStore.setState({ debtFilter: filter });
+  renderDebtsUI();
+}
+
 if (typeof window !== 'undefined') {
   window.loadDebts = loadDebts;
   window.renderDebtsUI = renderDebtsUI;
+  window.setDebtFilter = setDebtFilter;
   window.deleteDebt = deleteDebt;
   window.toggleDirectDebtDropdown = toggleDirectDebtDropdown;
   window.onSelectDirectDebtItem = onSelectDirectDebtItem;
@@ -2921,6 +2955,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     loadDebts,
     renderDebtsUI,
+    setDebtFilter,
     deleteDebt,
     toggleDirectDebtDropdown,
     onSelectDirectDebtItem,
@@ -3049,6 +3084,19 @@ function renderHistoryUI() {
   const trxEl = document.getElementById('historyPeriodCount');
   if (trxEl) trxEl.innerText = `${totalTrx} Transaksi`;
 
+  // Update active state of filter chips
+  const btnToday = document.getElementById('chipHistory_today');
+  const btnAll = document.getElementById('chipHistory_all');
+  if (btnToday && btnAll) {
+    if (period === 'today') {
+      btnToday.classList.add('active');
+      btnAll.classList.remove('active');
+    } else {
+      btnAll.classList.add('active');
+      btnToday.classList.remove('active');
+    }
+  }
+
   if (container) {
     if (filtered.length === 0) {
       container.innerHTML = `
@@ -3071,15 +3119,21 @@ function shareHistoryWhatsApp(sale) {
   window.shareReceiptWhatsApp(sale);
 }
 
+function setHistoryPeriodFilter(period) {
+  window.appStore.setState({ historyPeriod: period });
+  renderHistoryUI();
+}
+
 if (typeof window !== 'undefined') {
   window.loadHistory = loadHistory;
   window.renderHistoryUI = renderHistoryUI;
+  window.setHistoryPeriodFilter = setHistoryPeriodFilter;
   window.printHistoryReceipt = printHistoryReceipt;
   window.shareHistoryWhatsApp = shareHistoryWhatsApp;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadHistory, renderHistoryUI, printHistoryReceipt, shareHistoryWhatsApp };
+  module.exports = { loadHistory, renderHistoryUI, setHistoryPeriodFilter, printHistoryReceipt, shareHistoryWhatsApp };
 }
 
 

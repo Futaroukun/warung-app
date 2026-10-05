@@ -105,6 +105,19 @@ function renderHistoryUI() {
   const trxEl = document.getElementById('historyPeriodCount');
   if (trxEl) trxEl.innerText = `${totalTrx} Transaksi`;
 
+  // Update active state of filter chips
+  const btnToday = document.getElementById('chipHistory_today');
+  const btnAll = document.getElementById('chipHistory_all');
+  if (btnToday && btnAll) {
+    if (period === 'today') {
+      btnToday.classList.add('active');
+      btnAll.classList.remove('active');
+    } else {
+      btnAll.classList.add('active');
+      btnToday.classList.remove('active');
+    }
+  }
+
   if (container) {
     if (filtered.length === 0) {
       container.innerHTML = `
@@ -127,13 +140,19 @@ function shareHistoryWhatsApp(sale) {
   window.shareReceiptWhatsApp(sale);
 }
 
+function setHistoryPeriodFilter(period) {
+  window.appStore.setState({ historyPeriod: period });
+  renderHistoryUI();
+}
+
 if (typeof window !== 'undefined') {
   window.loadHistory = loadHistory;
   window.renderHistoryUI = renderHistoryUI;
+  window.setHistoryPeriodFilter = setHistoryPeriodFilter;
   window.printHistoryReceipt = printHistoryReceipt;
   window.shareHistoryWhatsApp = shareHistoryWhatsApp;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadHistory, renderHistoryUI, printHistoryReceipt, shareHistoryWhatsApp };
+  module.exports = { loadHistory, renderHistoryUI, setHistoryPeriodFilter, printHistoryReceipt, shareHistoryWhatsApp };
 }

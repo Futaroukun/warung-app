@@ -106,6 +106,19 @@ function renderDebtsUI() {
   const countEl = document.getElementById('debtSummaryCount');
   if (countEl) countEl.innerText = `${unpaidCount} Orang Belum Lunas`;
 
+  // Update active state of filter chips
+  const btnUnpaid = document.getElementById('chipDebt_unpaid');
+  const btnPaid = document.getElementById('chipDebt_paid');
+  const btnAll = document.getElementById('chipDebt_all');
+  if (btnUnpaid && btnPaid && btnAll) {
+    btnUnpaid.classList.remove('active');
+    btnPaid.classList.remove('active');
+    btnAll.classList.remove('active');
+    if (filter === 'belum_lunas') btnUnpaid.classList.add('active');
+    else if (filter === 'lunas') btnPaid.classList.add('active');
+    else btnAll.classList.add('active');
+  }
+
   const filtered = debts.filter(d => {
     const matchSearch = !search ||
       d.customer_name.toLowerCase().includes(search) ||
@@ -503,9 +516,15 @@ async function submitDirectDebt() {
   }
 }
 
+function setDebtFilter(filter) {
+  window.appStore.setState({ debtFilter: filter });
+  renderDebtsUI();
+}
+
 if (typeof window !== 'undefined') {
   window.loadDebts = loadDebts;
   window.renderDebtsUI = renderDebtsUI;
+  window.setDebtFilter = setDebtFilter;
   window.deleteDebt = deleteDebt;
   window.toggleDirectDebtDropdown = toggleDirectDebtDropdown;
   window.onSelectDirectDebtItem = onSelectDirectDebtItem;
@@ -528,6 +547,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     loadDebts,
     renderDebtsUI,
+    setDebtFilter,
     deleteDebt,
     toggleDirectDebtDropdown,
     onSelectDirectDebtItem,

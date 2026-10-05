@@ -190,9 +190,9 @@
 
         <!-- Filter Chips -->
         <div class="filter-chips-row">
-          <button class="filter-chip active" id="chipItem_all" onclick="window.appStore.setState({ itemFilter: 'all' }); renderItemsUI();">Semua (<span id="itemsStatTotal">0</span>)</button>
-          <button class="filter-chip" id="chipItem_low" onclick="window.appStore.setState({ itemFilter: 'low' }); renderItemsUI();">Menipis (<span id="itemsStatCritical">0</span>)</button>
-          <button class="filter-chip" id="chipItem_out" onclick="window.appStore.setState({ itemFilter: 'out' }); renderItemsUI();">Habis (<span id="itemsStatOut">0</span>)</button>
+          <button type="button" class="filter-chip active" id="chipItem_all" onclick="setItemFilter('all')">Semua (<span id="itemsStatTotal">0</span>)</button>
+          <button type="button" class="filter-chip" id="chipItem_low" onclick="setItemFilter('low')">Menipis (<span id="itemsStatCritical">0</span>)</button>
+          <button type="button" class="filter-chip" id="chipItem_out" onclick="setItemFilter('out')">Habis (<span id="itemsStatOut">0</span>)</button>
         </div>
 
         <!-- Product Cards Container -->
@@ -259,9 +259,9 @@
         </div>
 
         <div class="filter-chips-row">
-          <button class="filter-chip active" onclick="window.appStore.setState({ debtFilter: 'belum_lunas' }); renderDebtsUI();">Belum Lunas</button>
-          <button class="filter-chip" onclick="window.appStore.setState({ debtFilter: 'lunas' }); renderDebtsUI();">Lunas</button>
-          <button class="filter-chip" onclick="window.appStore.setState({ debtFilter: '' }); renderDebtsUI();">Semua</button>
+          <button type="button" class="filter-chip active" id="chipDebt_unpaid" onclick="setDebtFilter('belum_lunas')">Belum Lunas</button>
+          <button type="button" class="filter-chip" id="chipDebt_lunas" onclick="setDebtFilter('lunas')">Lunas</button>
+          <button type="button" class="filter-chip" id="chipDebt_all" onclick="setDebtFilter('')">Semua</button>
         </div>
 
         <div class="debts-list-wrap" id="debtsListContainer">
@@ -285,8 +285,8 @@
         </div>
 
         <div class="filter-chips-row">
-          <button class="filter-chip active" onclick="window.appStore.setState({ historyPeriod: 'today' }); renderHistoryUI();">Hari Ini</button>
-          <button class="filter-chip" onclick="window.appStore.setState({ historyPeriod: 'all' }); renderHistoryUI();">Semua Waktu</button>
+          <button type="button" class="filter-chip active" id="chipHistory_today" onclick="setHistoryPeriodFilter('today')">Hari Ini</button>
+          <button type="button" class="filter-chip" id="chipHistory_all" onclick="setHistoryPeriodFilter('all')">Semua Waktu</button>
         </div>
 
         <div class="history-list-wrap" id="historyListContainer">
@@ -336,6 +336,13 @@
               <div style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Alokasi Memori</div>
               <div id="sysMemoryInfo" style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-top: 3px;">Memuat...</div>
             </div>
+          </div>
+          <div style="background: var(--bg-surface); padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Pengembang Aplikasi</div>
+              <div style="font-size: 13px; font-weight: 800; color: var(--emerald); margin-top: 2px;">M Rafli Setiawan</div>
+            </div>
+            <span style="font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px; background: rgba(0, 245, 155, 0.12); color: var(--emerald); border: 1px solid rgba(0, 245, 155, 0.25);">Official Creator</span>
           </div>
           <div id="sysUptimeInfo" style="font-size: 11px; color: var(--text-sub); margin-top: 10px; text-align: right;">Sesi Aktif: -</div>
         </div>
@@ -401,6 +408,15 @@
               <span>Unduh Stok & Aset Barang (CSV)</span>
             </button>
           </div>
+        </div>
+
+        <!-- Watermark Pengembang -->
+        <div style="text-align: center; padding: 24px 16px 14px; margin-top: 10px;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 20px; padding: 8px 18px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-sub);">Dibuat & Dikembangkan oleh: <strong style="color: #ffffff; font-weight: 800;">M Rafli Setiawan</strong></span>
+          </div>
+          <div style="font-size: 10px; color: var(--text-muted); margin-top: 6px;">Kasir Warung &copy; 2026 • Hak Cipta Dilindungi</div>
         </div>
       </section>
 

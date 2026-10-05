@@ -123,6 +123,15 @@ function renderItemsUI() {
   const elStatOut = document.getElementById('itemsStatOut');
   if (elStatOut) elStatOut.textContent = totalOut;
 
+  // Update active state of filter chips
+  ['all', 'low', 'out'].forEach(f => {
+    const el = document.getElementById(`chipItem_${f}`);
+    if (el) {
+      if (f === filter) el.classList.add('active');
+      else el.classList.remove('active');
+    }
+  });
+
   const filtered = items.filter(item => {
     const matchSearch = !search ||
       item.name.toLowerCase().includes(search) ||
@@ -308,9 +317,15 @@ async function handleBarcodeScanned(barcode) {
   }
 }
 
+function setItemFilter(filter) {
+  window.appStore.setState({ itemFilter: filter });
+  renderItemsUI();
+}
+
 if (typeof window !== 'undefined') {
   window.loadItems = loadItems;
   window.renderItemsUI = renderItemsUI;
+  window.setItemFilter = setItemFilter;
   window.addToCartById = addToCartById;
   window.changeCartQty = changeCartQty;
   window.updateCartBar = updateCartBar;
@@ -320,5 +335,5 @@ if (typeof window !== 'undefined') {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { loadItems, renderItemsUI, addToCartById, changeCartQty, fastAdjustStock, handleBarcodeScanned, setScannerMode };
+  module.exports = { loadItems, renderItemsUI, setItemFilter, addToCartById, changeCartQty, fastAdjustStock, handleBarcodeScanned, setScannerMode };
 }
