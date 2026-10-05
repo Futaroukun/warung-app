@@ -402,7 +402,7 @@
               <button type="button" class="btn-preset-mini" id="btnBuyerType_custom" onclick="setCashBuyerType('custom')">Nama Lain</button>
             </div>
             <div id="cashBuyerCustomNameWrap" style="display: none;">
-              <input type="text" id="checkoutCashBuyerName" class="input-box" placeholder="Ketik nama pembeli..." style="font-size: 12px; padding: 8px 10px;">
+              <input type="text" id="checkoutCashBuyerName" class="input-box" placeholder="Ketik nama pembeli..." style="font-size: 12px; padding: 8px 10px;" oninput="updateCheckoutPayerSummary()">
             </div>
           </div>
         </div>
@@ -436,7 +436,7 @@
           <!-- New Customer Input Form (Shown when + Pelanggan Baru is clicked) -->
           <div id="checkoutNewCustomerBox" style="display: none; background: var(--bg-surface); border: 1.5px dashed var(--emerald); border-radius: var(--radius-sm); padding: 12px; margin-top: 8px;">
             <label class="form-label" style="font-size: 10px; color: var(--emerald);">Nama Pelanggan Baru *</label>
-            <input type="text" id="checkoutNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 8px;" oninput="onNewCustomerNameChange(this.value)">
+            <input type="text" id="checkoutNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 8px;" oninput="onNewCustomerNameChange(this.value); updateCheckoutPayerSummary()">
 
             <label class="form-label" style="font-size: 10px;">No. WhatsApp / HP (Opsional)</label>
             <input type="tel" id="checkoutNewCustPhoneInput" class="input-box" placeholder="Contoh: 08123456789" oninput="onNewCustomerPhoneChange(this.value)">
@@ -448,7 +448,16 @@
           </div>
         </div>
 
-        <button class="btn btn-primary" onclick="submitCheckout()" style="width: 100%; padding: 14px; font-weight: 800; font-size: 15px;">
+        <!-- Payer Confirmation Banner (Always visible right above the checkout button) -->
+        <div id="checkoutSelectedPayerBanner" style="background: rgba(16, 185, 129, 0.1); border: 1.5px solid var(--emerald); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; display: block;">Pembeli / Kasbon Atas Nama:</span>
+            <span id="checkoutSelectedPayerName" style="font-size: 16px; font-weight: 900; color: #ffffff;">Pembeli Umum</span>
+          </div>
+          <span id="checkoutSelectedPayerBadge" style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; background: rgba(0, 245, 155, 0.2); color: var(--emerald);">TUNAI</span>
+        </div>
+
+        <button class="btn btn-primary" id="btnSubmitCheckout" onclick="submitCheckout()" style="width: 100%; padding: 14px; font-weight: 800; font-size: 15px;">
           Proses Transaksi Selesai
         </button>
       </div>
@@ -587,7 +596,7 @@
         <!-- New Customer Input Form (Shown when + Pelanggan Baru is clicked) -->
         <div id="directDebtNewCustomerBox" style="display: none; background: var(--bg-surface); border: 1.5px dashed var(--emerald); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px;">
           <label class="form-label" style="font-size: 10px; color: var(--emerald);">Nama Pelanggan Baru *</label>
-          <input type="text" id="directDebtNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 8px;" oninput="onDirectDebtNewNameChange(this.value)">
+          <input type="text" id="directDebtNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 8px;" oninput="onDirectDebtNewNameChange(this.value); updateDirectDebtPayerSummary()">
 
           <label class="form-label" style="font-size: 10px;">No. WhatsApp / HP (Opsional)</label>
           <input type="tel" id="directDebtNewCustPhoneInput" class="input-box" placeholder="Contoh: 08123456789" oninput="onDirectDebtNewPhoneChange(this.value)">
@@ -604,7 +613,16 @@
         <label class="form-label">Rincian Barang / Catatan</label>
         <input type="text" id="directDebtNotes" class="input-box" placeholder="Contoh: Rokok Surya 1 bks, Kopi 2 sachet" style="margin-bottom: 16px;">
 
-        <button class="btn btn-primary" onclick="submitDirectDebt()" style="width: 100%; padding: 14px; font-weight: 800;">
+        <!-- Direct Debt Payer Confirmation Banner -->
+        <div id="directDebtSelectedPayerBanner" style="background: rgba(255, 59, 92, 0.1); border: 1.5px solid var(--rose); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; display: block;">Catat Kasbon Atas Nama:</span>
+            <span id="directDebtSelectedPayerName" style="font-size: 16px; font-weight: 900; color: #ffffff;">-</span>
+          </div>
+          <span style="font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 20px; background: rgba(255, 59, 92, 0.2); color: var(--rose);">KASBON</span>
+        </div>
+
+        <button class="btn btn-primary" id="btnSubmitDirectDebt" onclick="submitDirectDebt()" style="width: 100%; padding: 14px; font-weight: 800;">
           Simpan Data Kasbon
         </button>
       </div>

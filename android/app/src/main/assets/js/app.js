@@ -25,6 +25,60 @@ function switchMainTab(tab) {
 let checkoutPaymentType = 'cash';
 let cashBuyerType = 'umum';
 
+function updateCheckoutPayerSummary() {
+  const nameEl = document.getElementById('checkoutSelectedPayerName');
+  const badgeEl = document.getElementById('checkoutSelectedPayerBadge');
+  const btnEl = document.getElementById('btnSubmitCheckout');
+  const bannerEl = document.getElementById('checkoutSelectedPayerBanner');
+  if (!nameEl) return;
+
+  if (checkoutPaymentType === 'cash') {
+    if (badgeEl) {
+      badgeEl.innerText = 'TUNAI';
+      badgeEl.style.color = 'var(--emerald)';
+      badgeEl.style.background = 'rgba(0, 245, 155, 0.2)';
+    }
+    if (bannerEl) {
+      bannerEl.style.borderColor = 'var(--emerald)';
+      bannerEl.style.background = 'rgba(16, 185, 129, 0.12)';
+    }
+
+    let displayName = 'Pembeli Umum';
+    if (cashBuyerType === 'pegawai') {
+      displayName = 'Pegawai';
+    } else if (cashBuyerType === 'custom') {
+      const customName = (document.getElementById('checkoutCashBuyerName')?.value || '').trim();
+      displayName = customName || 'Nama Belum Diisi';
+    }
+    nameEl.innerText = displayName;
+    nameEl.style.color = '#ffffff';
+
+    if (btnEl) btnEl.innerText = `Selesaikan Transaksi Tunai (${displayName})`;
+  } else {
+    if (badgeEl) {
+      badgeEl.innerText = 'KASBON';
+      badgeEl.style.color = 'var(--rose)';
+      badgeEl.style.background = 'rgba(255, 59, 92, 0.2)';
+    }
+    if (bannerEl) {
+      bannerEl.style.borderColor = 'var(--rose)';
+      bannerEl.style.background = 'rgba(255, 59, 92, 0.12)';
+    }
+
+    const isNew = document.getElementById('checkoutNewCustomerBox')?.style.display !== 'none';
+    let debtName = '';
+    if (isNew) {
+      debtName = (document.getElementById('checkoutNewCustNameInput')?.value || '').trim() || 'Nama Pelanggan Baru';
+    } else {
+      debtName = (document.getElementById('checkoutCustomerName')?.value || '').trim() || 'Pilih Pelanggan...';
+    }
+    nameEl.innerText = debtName;
+    nameEl.style.color = 'var(--rose)';
+
+    if (btnEl) btnEl.innerText = `Simpan Transaksi Kasbon (${debtName})`;
+  }
+}
+
 function setCashBuyerType(type) {
   cashBuyerType = type;
   document.querySelectorAll('#checkoutCashSection .btn-preset-mini').forEach(b => {
@@ -43,6 +97,7 @@ function setCashBuyerType(type) {
   } else {
     if (customWrap) customWrap.style.display = 'none';
   }
+  updateCheckoutPayerSummary();
 }
 
 function openCheckoutSheet() {
@@ -63,6 +118,7 @@ function openCheckoutSheet() {
     cashInput.value = '';
   }
   calculateCheckoutChange();
+  updateCheckoutPayerSummary();
   window.openSheet('sheetCheckout');
 }
 
@@ -159,6 +215,7 @@ function setCheckoutPaymentType(type) {
     if (debtSec) debtSec.style.display = 'block';
     renderCheckoutDebtCustomers();
   }
+  updateCheckoutPayerSummary();
 }
 
 function toggleCheckoutDebtDropdown(e) {
@@ -228,7 +285,7 @@ function renderCheckoutDebtCustomers() {
 function selectCheckoutDebtCustomer(name, phone, remaining, id) {
   const textEl = document.getElementById('checkoutDebtSelectedText');
   if (textEl) {
-    textEl.innerHTML = `<span style="font-weight: 800; color: #fff;">${name}</span> <span style="font-size: 11px; color: var(--rose); margin-left: 4px;">(${window.formatRp(remaining)})</span>`;
+    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">${name}</span> <span style="font-size: 11px; color: var(--rose); margin-left: 4px;">(${window.formatRp(remaining)})</span>`;
   }
 
   const menu = document.getElementById('checkoutDebtDropdownMenu');
@@ -254,6 +311,8 @@ function selectCheckoutDebtCustomer(name, phone, remaining, id) {
     notice.style.display = 'block';
     notice.innerHTML = `💡 Belanjaan baru <b>${window.formatRp(cartTotal)}</b> otomatis ditambahkan ke kasbon <b>${name}</b>.<br>Total kasbon berjalan: <b style="color: #fff;">${window.formatRp(remaining + cartTotal)}</b>.`;
   }
+
+  updateCheckoutPayerSummary();
 }
 
 function onPickCheckoutNewCust() {
@@ -284,6 +343,7 @@ function onPickCheckoutNewCust() {
   if (notice) notice.style.display = 'none';
 
   if (newNameInput) newNameInput.focus();
+  updateCheckoutPayerSummary();
 }
 
 const selectCheckoutNewCustomer = onPickCheckoutNewCust;
@@ -291,6 +351,7 @@ const selectCheckoutNewCustomer = onPickCheckoutNewCust;
 function onNewCustomerNameChange(val) {
   const custInput = document.getElementById('checkoutCustomerName');
   if (custInput) custInput.value = val.trim();
+  updateCheckoutPayerSummary();
 }
 
 function onNewCustomerPhoneChange(val) {
@@ -730,6 +791,7 @@ window.onNewCustomerNameChange = onNewCustomerNameChange;
 window.onNewCustomerPhoneChange = onNewCustomerPhoneChange;
 window.changeCartQtyInCheckout = changeCartQtyInCheckout;
 window.removeCartItemInCheckout = removeCartItemInCheckout;
+window.updateCheckoutPayerSummary = updateCheckoutPayerSummary;
 window.openSuccessModal = openSuccessModal;
 window.onSuccessModalPrint = onSuccessModalPrint;
 window.onSuccessModalShareWa = onSuccessModalShareWa;
