@@ -80,7 +80,7 @@ function initTables(db) {
 function initIndices(db) {
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_items_name ON items(name);
-    CREATE INDEX IF NOT EXISTS idx_items_barcode ON items(barcode);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_items_barcode ON items(barcode) WHERE barcode IS NOT NULL;
     CREATE INDEX IF NOT EXISTS idx_items_category ON items(category);
     CREATE INDEX IF NOT EXISTS idx_sales_created_at ON sales(created_at);
     CREATE INDEX IF NOT EXISTS idx_sales_invoice ON sales(invoice_no);
@@ -103,7 +103,7 @@ function runSafeMigrations(db) {
 
   const itemCols = getColumns('items');
   if (itemCols.length && !itemCols.includes('barcode')) {
-    db.exec('ALTER TABLE items ADD COLUMN barcode TEXT UNIQUE;');
+    db.exec('ALTER TABLE items ADD COLUMN barcode TEXT;');
   }
   if (itemCols.length && !itemCols.includes('unit')) {
     db.exec("ALTER TABLE items ADD COLUMN unit TEXT DEFAULT 'pcs';");
