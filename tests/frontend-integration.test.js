@@ -36,7 +36,8 @@ test('Frontend Static Assets Verification', async (t) => {
     '/js/tabs/debts.js',
     '/js/tabs/history.js',
     '/js/tabs/system.js',
-    '/js/app.js'
+    '/js/app.js',
+    '/js/bundle.js'
   ];
 
   for (const asset of assets) {

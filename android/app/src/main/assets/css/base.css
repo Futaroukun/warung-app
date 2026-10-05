@@ -1,178 +1,172 @@
-    html, body {
-      width: 100%;
-      min-height: 100%;
-      background-color: var(--bg-base);
-    }
+/* ============================================================
+   WARUNGPRO - 60 FPS ULTRA-LIGHTWEIGHT BASE & LAYOUT
+   Solid Backgrounds, Hardware Accelerated, Zero Lag
+   ============================================================ */
+html, body {
+  width: 100%;
+  min-height: 100%;
+  background-color: var(--bg-base);
+  color: var(--text);
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
 
-    body {
-      background-image: 
-        radial-gradient(ellipse 90% 45% at 50% -5%, rgba(0, 245, 155, 0.09), transparent 60%),
-        radial-gradient(ellipse 70% 35% at 100% 25%, rgba(139, 92, 246, 0.07), transparent 50%),
-        radial-gradient(ellipse 70% 35% at 0% 65%, rgba(255, 59, 92, 0.05), transparent 50%);
-      background-attachment: fixed;
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
-      padding-bottom: 96px; /* space for floating dock */
-      overflow-x: hidden;
-      line-height: 1.45;
-      -webkit-font-smoothing: antialiased;
-    }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding-bottom: 92px; /* space for bottom bar & cart dock */
+  overflow-x: hidden;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
 
-    .app-viewport {
-      max-width: 540px;
-      margin: 0 auto;
-      min-height: 100vh;
-      position: relative;
-    }
+.app-viewport {
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+  background: var(--bg-base);
+}
 
-    /* TOP HEADER: DYNAMIC GLASS CAPSULE */
-    header {
-      height: 64px;
-      padding: 0 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(9, 12, 18, 0.85);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 40;
-    }
+/* TOP HEADER - Solid Dark (Zero Blur = 60 FPS) */
+header {
+  height: 60px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #090c14;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  transform: translateZ(0);
+}
 
-    .brand-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+.brand-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-    .brand-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #00f59b 0%, #00965e 100%);
-      color: var(--emerald-dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 18px rgba(0, 245, 155, 0.4);
-    }
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 
-    .brand-text h1 {
-      font-size: 16px;
-      font-weight: 900;
-      color: #ffffff;
-      letter-spacing: -0.3px;
-      line-height: 1.1;
-    }
+.brand-text h1 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+  color: #ffffff;
+}
 
-    .brand-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 10px;
-      color: var(--emerald);
-      font-weight: 750;
-      margin-top: 2px;
-    }
+.brand-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--emerald);
+}
 
-    .pulse-dot {
-      width: 6.5px;
-      height: 6.5px;
-      border-radius: 50%;
-      background: var(--emerald);
-      box-shadow: 0 0 9px var(--emerald);
-      animation: pulseGlow 2s infinite ease-in-out;
-    }
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 6px var(--emerald);
+}
 
-    @keyframes pulseGlow {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
+.btn-icon-ghost {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 
-    .btn-icon-ghost {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
+.btn-icon-ghost:active {
+  background: var(--bg-elevated);
+  color: #ffffff;
+}
 
-    .btn-icon-ghost:active {
-      transform: scale(0.92);
-      background: rgba(255, 255, 255, 0.1);
-      color: #ffffff;
-    }
-
-    .content-area {
-      padding: 16px;
-    }
-
-
-    /* BOTTOM NAVIGATION: FLOATING DYNAMIC ISLAND DOCK */
-    .bottom-bar {
-      position: fixed;
-      bottom: 12px;
-      left: 14px;
-      right: 14px;
-      max-width: 512px;
-      margin: 0 auto;
-      height: 64px;
-      background: rgba(14, 18, 27, 0.88);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 0 6px;
-      z-index: 50;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.14);
-      transform: translateZ(0);
-    }
-
-    .nav-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      background: transparent;
-      border: none;
-      color: #64748b;
-      cursor: pointer;
-      padding: 6px 0;
-      border-radius: 20px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .nav-btn.active {
-      color: var(--emerald);
-      background: rgba(0, 245, 155, 0.08);
-    }
-
-    .nav-btn.active svg {
-      stroke: var(--emerald);
-      filter: drop-shadow(0 0 8px rgba(0, 245, 155, 0.5));
-    }
-
-    .nav-label {
-      font-size: 10px;
-      font-weight: 750;
-      letter-spacing: 0.2px;
-    }
-
+/* MAIN CONTENT AREA */
+.content-area {
+  padding: 14px 16px;
+}
 
 /* TAB PANES */
-.tab-pane { display: none; }
-.tab-pane.active { display: block; animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* BOTTOM NAVIGATION BAR - Solid Dark (Zero Blur = 60 FPS) */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 600px;
+  margin: 0 auto;
+  height: 64px;
+  background: #090c14;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 50;
+  transform: translateZ(0);
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: var(--text-sub);
+  cursor: pointer;
+  user-select: none;
+  height: 100%;
+  transition: color 0.15s ease;
+}
+
+.nav-btn:active {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.nav-btn.active {
+  color: var(--emerald);
+}
+
+.nav-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
