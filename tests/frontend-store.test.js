@@ -1,0 +1,50 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { Store } = require('../public/js/store');
+const { formatRp, toTitleCase, cleanNumber } = require('../public/js/utils');
+
+test('Frontend Store & Utilities', async (t) => {
+  await t.test('formatRp and cleanNumber utilities', () => {
+    assert.equal(formatRp(15000), 'Rp 15.000');
+    assert.equal(formatRp(0), 'Rp 0');
+    assert.equal(toTitleCase('beras rojo lele 5kg'), 'Beras Rojo Lele 5kg');
+    assert.equal(cleanNumber('15.000'), 15000);
+    assert.equal(cleanNumber('Rp 25.500'), 25500);
+  });
+
+  await t.test('Store: Cart calculations, updates, and removals', () => {
+    const store = new Store();
+    let listenerCalled = false;
+    store.subscribe(() => { listenerCalled = true; });
+
+    store.addToCart({ id: 1, name: 'Kopi', sell_price: 3000, buy_price: 2000, stock: 10 });
+    assert.equal(listenerCalled, true);
+    assert.equal(store.getCartItemCount(), 1);
+    assert.equal(store.getCartTotal(), 3000);
+
+    // Increase qty
+    store.updateCartQty(1, 2);
+    assert.equal(store.getCartItemCount(), 3);
+    assert.equal(store.getCartTotal(), 9000);
+
+    // Decrement qty
+    store.updateCartQty(1, -1);
+    assert.equal(store.getCartItemCount(), 2);
+    assert.equal(store.getCartTotal(), 6000);
+
+    // Add another item
+    store.addToCart({ id: 2, name: 'Gula', sell_price: 15000, buy_price: 13000, stock: 5 });
+    assert.equal(store.getCartItemCount(), 3);
+    assert.equal(store.getCartTotal(), 21000);
+
+    // Remove first item
+    store.removeFromCart(1);
+    assert.equal(store.getCartItemCount(), 1);
+    assert.equal(store.getCartTotal(), 15000);
+
+    // Clear cart
+    store.clearCart();
+    assert.equal(store.getCartItemCount(), 0);
+    assert.equal(store.getCartTotal(), 0);
+  });
+});
