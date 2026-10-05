@@ -10,10 +10,14 @@ function closeSheet(id) {
   const el = document.getElementById(id);
   if (el) {
     el.classList.remove('show');
-    // Only restore scroll if no other sheets are open
-    if (!document.querySelector('.sheet-backdrop.show')) {
-      document.body.style.overflow = '';
-    }
+  }
+  if (id === 'sheetItem') {
+    const confirmEl = document.getElementById('sheetConfirmDialog');
+    if (confirmEl) confirmEl.classList.remove('show');
+  }
+  // Only restore scroll if no other sheets are open
+  if (!document.querySelector('.sheet-backdrop.show')) {
+    document.body.style.overflow = '';
   }
 }
 

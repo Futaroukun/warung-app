@@ -732,6 +732,7 @@ async function deleteCurrentItem() {
     try {
       const res = await window.api.delete(`/items/${id}`);
       if (res.success) {
+        window.closeSheet('sheetConfirmDialog');
         window.closeSheet('sheetItem');
         window.showToast(`Produk "${name}" berhasil dihapus`, 'success');
         window.appStore.removeFromCart(Number(id));
