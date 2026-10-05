@@ -6,7 +6,7 @@ function showToast(msg, type = 'success') {
     toast = document.createElement('div');
     toast.id = 'toastMessage';
     toast.className = 'toast';
-    toast.innerHTML = '<svg id="toastIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2.5"></svg><span id="toastText"></span>';
+    toast.innerHTML = '<svg id="toastIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2.5"></svg><span id="toastText"></span>';
     document.body.appendChild(toast);
   }
 
