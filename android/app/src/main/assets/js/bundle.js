@@ -1638,6 +1638,9 @@ function openCheckoutSheet() {
     return;
   }
 
+  // Preload debts so active customers are instantly available
+  window.loadDebts?.();
+
   renderCheckoutSheetItems();
   setCheckoutPaymentType('cash');
   setCashBuyerType('umum');
@@ -1729,7 +1732,7 @@ function removeCartItemInCheckout(id) {
   }
 }
 
-function setCheckoutPaymentType(type) {
+async function setCheckoutPaymentType(type) {
   checkoutPaymentType = type;
   document.querySelectorAll('.btn-pay-mode').forEach(b => b.classList.remove('active'));
   const activeBtn = document.getElementById(`btnPayMode_${type}`);
@@ -1744,6 +1747,9 @@ function setCheckoutPaymentType(type) {
   } else {
     if (cashSec) cashSec.style.display = 'none';
     if (debtSec) debtSec.style.display = 'block';
+    if (window.loadDebts) {
+      await window.loadDebts();
+    }
     renderCheckoutDebtCustomers();
   }
   updateCheckoutPayerSummary();
@@ -2285,6 +2291,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load initial data
   window.loadDashboard?.();
   window.loadItems?.();
+  window.loadDebts?.();
 
   // Bind forms
   const formItem = document.getElementById('formItem');
