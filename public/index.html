@@ -394,9 +394,34 @@
           </div>
         </div>
 
-        <div id="checkoutDebtSection" style="display: none;">
-          <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Nama Pelanggan (Wajib)</label>
-          <input type="text" id="checkoutCustomerName" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 16px;">
+        <div id="checkoutDebtSection" style="display: none; margin-bottom: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Pilih Pelanggan Kasbon</label>
+            <span id="checkoutActiveDebtCount" style="font-size: 10px; color: var(--text-sub);">0 Kasbon Aktif</span>
+          </div>
+
+          <!-- Existing Active Customers List -->
+          <div id="checkoutCustomerSelectList" style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; margin-bottom: 8px;">
+            <!-- Dynamically populated by renderCheckoutDebtCustomers() -->
+          </div>
+
+          <!-- Hidden input keeping track of final selected customer name & phone -->
+          <input type="hidden" id="checkoutCustomerName">
+          <input type="hidden" id="checkoutCustomerPhone">
+
+          <!-- New Customer Input Form (Shown when + Pelanggan Baru is clicked) -->
+          <div id="checkoutNewCustomerBox" style="display: none; background: var(--bg-surface); border: 1.5px dashed var(--emerald); border-radius: var(--radius-sm); padding: 12px; margin-top: 8px;">
+            <label class="form-label" style="font-size: 10px; color: var(--emerald);">Nama Pelanggan Baru *</label>
+            <input type="text" id="checkoutNewCustNameInput" class="input-box" placeholder="Contoh: Pak Budi" style="margin-bottom: 8px;" oninput="onNewCustomerNameChange(this.value)">
+
+            <label class="form-label" style="font-size: 10px;">No. WhatsApp / HP (Opsional)</label>
+            <input type="tel" id="checkoutNewCustPhoneInput" class="input-box" placeholder="Contoh: 08123456789" oninput="onNewCustomerPhoneChange(this.value)">
+          </div>
+
+          <!-- Merger Preview Banner -->
+          <div id="checkoutDebtMergeNotice" style="display: none; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 10px; margin-top: 8px; font-size: 11px; color: #93c5fd;">
+            <!-- Text dynamically inserted -->
+          </div>
         </div>
 
         <button class="btn btn-primary" onclick="submitCheckout()" style="width: 100%; padding: 14px; font-weight: 800; font-size: 15px;">

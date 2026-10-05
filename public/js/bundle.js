@@ -1402,7 +1402,114 @@ function setCheckoutPaymentType(type) {
   } else {
     if (cashSec) cashSec.style.display = 'none';
     if (debtSec) debtSec.style.display = 'block';
+    renderCheckoutDebtCustomers();
   }
+}
+
+function renderCheckoutDebtCustomers() {
+  const container = document.getElementById('checkoutCustomerSelectList');
+  if (!container) return;
+
+  const countBadge = document.getElementById('checkoutActiveDebtCount');
+  const debts = (window.appStore.getState().debts || []).filter(d => d.status === 'belum_lunas');
+  
+  if (countBadge) {
+    countBadge.innerText = `${debts.length} Kasbon Aktif`;
+  }
+
+  let html = '';
+  debts.forEach(d => {
+    const remaining = Math.max(0, d.amount - d.paid_amount);
+    const initial = (d.customer_name || 'U').trim().charAt(0).toUpperCase();
+    html += `
+      <div class="customer-debt-tile" id="debtTile_${d.id}" onclick="selectCheckoutDebtCustomer(${JSON.stringify(d.customer_name)}, ${JSON.stringify(d.phone || '')}, ${remaining}, ${d.id})">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="tile-avatar">${initial}</div>
+          <div>
+            <div style="font-weight: 800; font-size: 13px; color: #fff;">${d.customer_name}</div>
+            <div style="font-size: 10px; color: var(--rose);">Sisa Kasbon: ${window.formatRp(remaining)}</div>
+          </div>
+        </div>
+        <div class="tile-radio-circle"></div>
+      </div>
+    `;
+  });
+
+  html += `
+    <div class="customer-debt-tile" id="debtTile_new" onclick="selectCheckoutNewCustomer()">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div class="tile-avatar new">+</div>
+        <div>
+          <div style="font-weight: 800; font-size: 13px; color: var(--emerald);">+ Nama Pelanggan Baru</div>
+          <div style="font-size: 10px; color: var(--text-sub);">Catat nama pelanggan baru</div>
+        </div>
+      </div>
+      <div class="tile-radio-circle"></div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+  if (debts.length > 0) {
+    const first = debts[0];
+    const rem = Math.max(0, first.amount - first.paid_amount);
+    selectCheckoutDebtCustomer(first.customer_name, first.phone || '', rem, first.id);
+  } else {
+    selectCheckoutNewCustomer();
+  }
+}
+
+function selectCheckoutDebtCustomer(name, phone, remaining, id) {
+  document.querySelectorAll('.customer-debt-tile').forEach(t => t.classList.remove('active'));
+  const tile = document.getElementById(`debtTile_${id}`);
+  if (tile) tile.classList.add('active');
+
+  const custInput = document.getElementById('checkoutCustomerName');
+  const phoneInput = document.getElementById('checkoutCustomerPhone');
+  if (custInput) custInput.value = name;
+  if (phoneInput) phoneInput.value = phone || '';
+
+  const newBox = document.getElementById('checkoutNewCustomerBox');
+  if (newBox) newBox.style.display = 'none';
+
+  const cartTotal = window.appStore.getCartTotal();
+  const notice = document.getElementById('checkoutDebtMergeNotice');
+  if (notice) {
+    notice.style.display = 'block';
+    notice.innerHTML = `💡 Belanjaan baru <b>${window.formatRp(cartTotal)}</b> akan otomatis ditambahkan ke kasbon <b>${name}</b>.<br>Total kasbon berjalan: <b style="color: #fff;">${window.formatRp(remaining + cartTotal)}</b>.`;
+  }
+}
+
+function selectCheckoutNewCustomer() {
+  document.querySelectorAll('.customer-debt-tile').forEach(t => t.classList.remove('active'));
+  const tile = document.getElementById('debtTile_new');
+  if (tile) tile.classList.add('active');
+
+  const newNameInput = document.getElementById('checkoutNewCustNameInput');
+  const newPhoneInput = document.getElementById('checkoutNewCustPhoneInput');
+  const custInput = document.getElementById('checkoutCustomerName');
+  const phoneInput = document.getElementById('checkoutCustomerPhone');
+
+  if (custInput) custInput.value = newNameInput?.value.trim() || '';
+  if (phoneInput) phoneInput.value = newPhoneInput?.value.trim() || '';
+
+  const newBox = document.getElementById('checkoutNewCustomerBox');
+  if (newBox) newBox.style.display = 'block';
+
+  const notice = document.getElementById('checkoutDebtMergeNotice');
+  if (notice) notice.style.display = 'none';
+
+  if (newNameInput) newNameInput.focus();
+}
+
+function onNewCustomerNameChange(val) {
+  const custInput = document.getElementById('checkoutCustomerName');
+  if (custInput) custInput.value = val.trim();
+}
+
+function onNewCustomerPhoneChange(val) {
+  const phoneInput = document.getElementById('checkoutCustomerPhone');
+  if (phoneInput) phoneInput.value = val.trim();
 }
 
 function setQuickCash(val) {
@@ -1455,17 +1562,24 @@ async function submitCheckout() {
     const custInput = document.getElementById('checkoutCustomerName');
     customerName = (custInput?.value || '').trim();
     if (!customerName) {
-      window.showToast('Nama pelanggan wajib diisi untuk kasbon!', 'warning');
-      custInput?.focus();
+      const newNameInput = document.getElementById('checkoutNewCustNameInput');
+      customerName = (newNameInput?.value || '').trim();
+    }
+    if (!customerName) {
+      window.showToast('Silakan pilih pelanggan atau isi nama pelanggan baru!', 'warning');
+      document.getElementById('checkoutNewCustNameInput')?.focus();
       return;
     }
   }
+
+  const customerPhone = (document.getElementById('checkoutCustomerPhone')?.value || document.getElementById('checkoutNewCustPhoneInput')?.value || '').trim();
 
   const payload = {
     items: cart.map(c => ({ id: c.id, qty: c.qty })),
     payment_type: checkoutPaymentType,
     cash_received: cashReceived,
-    customer_name: customerName
+    customer_name: customerName,
+    customer_phone: customerPhone
   };
 
   try {
@@ -1684,4 +1798,9 @@ window.submitItemForm = submitItemForm;
 window.openPaySheet = openPaySheet;
 window.setPayPreset = setPayPreset;
 window.submitPayDebt = submitPayDebt;
+window.renderCheckoutDebtCustomers = renderCheckoutDebtCustomers;
+window.selectCheckoutDebtCustomer = selectCheckoutDebtCustomer;
+window.selectCheckoutNewCustomer = selectCheckoutNewCustomer;
+window.onNewCustomerNameChange = onNewCustomerNameChange;
+window.onNewCustomerPhoneChange = onNewCustomerPhoneChange;
 
