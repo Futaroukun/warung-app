@@ -1098,7 +1098,8 @@ function sendDebtReminderWhatsApp(debtId) {
   }
 }
 
-function toggleDirectDebtDropdown() {
+function toggleDirectDebtDropdown(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
   const menu = document.getElementById('directDebtDropdownMenu');
   const trigger = document.getElementById('directDebtSelectTrigger');
   if (!menu) return;
@@ -1108,6 +1109,14 @@ function toggleDirectDebtDropdown() {
     if (isHidden) trigger.classList.add('open');
     else trigger.classList.remove('open');
   }
+}
+
+function onSelectDirectDebtItem(id) {
+  const debts = (window.appStore?.getState()?.debts || []).filter(d => d.status === 'belum_lunas');
+  const debt = debts.find(d => Number(d.id) === Number(id));
+  if (!debt) return;
+  const remaining = Math.max(0, debt.amount - debt.paid_amount);
+  selectDirectDebtCustomer(debt.customer_name, debt.phone || '', remaining, debt.id);
 }
 
 function renderDirectDebtCustomers() {
@@ -1130,7 +1139,7 @@ function renderDirectDebtCustomers() {
   debts.forEach(d => {
     const remaining = Math.max(0, d.amount - d.paid_amount);
     html += `
-      <div class="dropdown-item" id="directDebtItem_${d.id}" onclick="selectDirectDebtCustomer(${JSON.stringify(d.customer_name)}, ${JSON.stringify(d.phone || '')}, ${remaining}, ${d.id})">
+      <div class="dropdown-item" id="directDebtItem_${d.id}" onclick="onSelectDirectDebtItem(${d.id})">
         <div>
           <div class="cust-name">${d.customer_name}</div>
           <div style="font-size: 10px; color: var(--text-sub);">${d.phone || 'Tanpa no. HP'}</div>
@@ -1300,6 +1309,7 @@ if (typeof window !== 'undefined') {
   window.renderDebtsUI = renderDebtsUI;
   window.deleteDebt = deleteDebt;
   window.toggleDirectDebtDropdown = toggleDirectDebtDropdown;
+  window.onSelectDirectDebtItem = onSelectDirectDebtItem;
   window.onPickDirectNewCust = onPickDirectNewCust;
   window.renderDirectDebtCustomers = renderDirectDebtCustomers;
   window.selectDirectDebtCustomer = selectDirectDebtCustomer;
@@ -1319,6 +1329,7 @@ if (typeof module !== 'undefined' && module.exports) {
     renderDebtsUI,
     deleteDebt,
     toggleDirectDebtDropdown,
+    onSelectDirectDebtItem,
     onPickDirectNewCust,
     renderDirectDebtCustomers,
     selectDirectDebtCustomer,
@@ -1376,14 +1387,16 @@ function renderSaleCardHtml(sale) {
       </div>
 
       <div class="history-card-bottom">
-        <button class="btn-receipt-action print" onclick='printHistoryReceipt(${JSON.stringify(sale).replace(/'/g, "&apos;")})'>
+        <button class="btn-receipt-action print" onclick='printHistoryReceipt(${JSON.stringify(sale).replace(/'/g, "&apos;")})' style="${(isDebt || sale.customer_phone) ? '' : 'flex: 1; justify-content: center;'}">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
           <span>Cetak Struk</span>
         </button>
-        <button class="btn-receipt-action wa" onclick='shareHistoryWhatsApp(${JSON.stringify(sale).replace(/'/g, "&apos;")})'>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          <span>Kirim WA</span>
-        </button>
+        ${(isDebt || sale.customer_phone) ? `
+          <button class="btn-receipt-action wa" onclick='shareHistoryWhatsApp(${JSON.stringify(sale).replace(/'/g, "&apos;")})'>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>Kirim WA</span>
+          </button>
+        ` : ''}
       </div>
     </div>
   `;
@@ -1519,6 +1532,27 @@ function switchMainTab(tab) {
 
 // Checkout Modal Workflow
 let checkoutPaymentType = 'cash';
+let cashBuyerType = 'umum';
+
+function setCashBuyerType(type) {
+  cashBuyerType = type;
+  document.querySelectorAll('#checkoutCashSection .btn-preset-mini').forEach(b => {
+    if (b.id && b.id.startsWith('btnBuyerType_')) {
+      b.classList.remove('active');
+    }
+  });
+  const activeBtn = document.getElementById(`btnBuyerType_${type}`);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  const customWrap = document.getElementById('cashBuyerCustomNameWrap');
+  const customInput = document.getElementById('checkoutCashBuyerName');
+  if (type === 'custom') {
+    if (customWrap) customWrap.style.display = 'block';
+    if (customInput) customInput.focus();
+  } else {
+    if (customWrap) customWrap.style.display = 'none';
+  }
+}
 
 function openCheckoutSheet() {
   const cart = window.appStore.getState().cart;
@@ -1529,6 +1563,10 @@ function openCheckoutSheet() {
 
   renderCheckoutSheetItems();
   setCheckoutPaymentType('cash');
+  setCashBuyerType('umum');
+  const customBuyerName = document.getElementById('checkoutCashBuyerName');
+  if (customBuyerName) customBuyerName.value = '';
+
   const cashInput = document.getElementById('checkoutCashReceived');
   if (cashInput) {
     cashInput.value = '';
@@ -1632,7 +1670,8 @@ function setCheckoutPaymentType(type) {
   }
 }
 
-function toggleCheckoutDebtDropdown() {
+function toggleCheckoutDebtDropdown(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
   const menu = document.getElementById('checkoutDebtDropdownMenu');
   const trigger = document.getElementById('checkoutDebtSelectTrigger');
   if (!menu) return;
@@ -1642,6 +1681,14 @@ function toggleCheckoutDebtDropdown() {
     if (isHidden) trigger.classList.add('open');
     else trigger.classList.remove('open');
   }
+}
+
+function onSelectCheckoutDebtItem(id) {
+  const debts = (window.appStore.getState().debts || []).filter(d => d.status === 'belum_lunas');
+  const debt = debts.find(d => Number(d.id) === Number(id));
+  if (!debt) return;
+  const remaining = Math.max(0, debt.amount - debt.paid_amount);
+  selectCheckoutDebtCustomer(debt.customer_name, debt.phone || '', remaining, debt.id);
 }
 
 function renderCheckoutDebtCustomers() {
@@ -1664,7 +1711,7 @@ function renderCheckoutDebtCustomers() {
   debts.forEach(d => {
     const remaining = Math.max(0, d.amount - d.paid_amount);
     html += `
-      <div class="dropdown-item" id="checkoutDebtItem_${d.id}" onclick="selectCheckoutDebtCustomer(${JSON.stringify(d.customer_name)}, ${JSON.stringify(d.phone || '')}, ${remaining}, ${d.id})">
+      <div class="dropdown-item" id="checkoutDebtItem_${d.id}" onclick="onSelectCheckoutDebtItem(${d.id})">
         <div>
           <div class="cust-name">${d.customer_name}</div>
           <div style="font-size: 10px; color: var(--text-sub);">${d.phone || 'Tanpa no. HP'}</div>
@@ -1806,6 +1853,14 @@ async function submitCheckout() {
       window.showToast('Uang tunai kurang dari total belanja!', 'warning');
       return;
     }
+
+    if (cashBuyerType === 'pegawai') {
+      customerName = 'Pegawai';
+    } else if (cashBuyerType === 'custom') {
+      customerName = (document.getElementById('checkoutCashBuyerName')?.value || '').trim() || 'Umum';
+    } else {
+      customerName = 'Umum';
+    }
   } else if (checkoutPaymentType === 'debt') {
     const custInput = document.getElementById('checkoutCustomerName');
     customerName = (custInput?.value || '').trim();
@@ -1820,7 +1875,7 @@ async function submitCheckout() {
     }
   }
 
-  const customerPhone = (document.getElementById('checkoutCustomerPhone')?.value || document.getElementById('checkoutNewCustPhoneInput')?.value || '').trim();
+  const customerPhone = (checkoutPaymentType === 'debt') ? (document.getElementById('checkoutCustomerPhone')?.value || document.getElementById('checkoutNewCustPhoneInput')?.value || '').trim() : '';
 
   const payload = {
     items: cart.map(c => ({ id: c.id, qty: c.qty })),
@@ -1902,9 +1957,14 @@ function openSuccessModal(data, type = 'sale') {
     }
 
     if (btnPrint) btnPrint.style.display = 'flex';
+    const hasPhone = Boolean((data.customer_phone || '').trim());
     if (btnShare) {
-      btnShare.style.display = 'flex';
-      btnShare.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Kirim WA</span>';
+      if (isDebt || hasPhone) {
+        btnShare.style.display = 'flex';
+        btnShare.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Kirim WA</span>';
+      } else {
+        btnShare.style.display = 'none';
+      }
     }
   } else if (type === 'debt_payment') {
     if (titleEl) titleEl.innerText = 'Pembayaran Kasbon Berhasil!';
@@ -1987,10 +2047,12 @@ function openItemSheet(item = null) {
   const sellInput = document.getElementById('itemSellPriceField');
   const stockInput = document.getElementById('itemStockField');
   const minStockInput = document.getElementById('itemMinStockField');
+  const delBtn = document.getElementById('btnDeleteItem');
 
   if (item && item.id) {
     if (titleEl) titleEl.innerText = 'Edit Produk';
     if (idInput) idInput.value = item.id;
+    if (delBtn) delBtn.style.display = 'block';
     if (barcodeInput) barcodeInput.value = item.barcode || '';
     if (nameInput) nameInput.value = item.name || '';
     if (catInput) catInput.value = item.category || 'Umum';
@@ -2001,6 +2063,7 @@ function openItemSheet(item = null) {
   } else {
     if (titleEl) titleEl.innerText = 'Tambah Produk Baru';
     if (idInput) idInput.value = '';
+    if (delBtn) delBtn.style.display = 'none';
     if (barcodeInput) barcodeInput.value = (item && item.barcode) ? item.barcode : '';
     if (nameInput) nameInput.value = (item && item.name) ? item.name : '';
     if (catInput) catInput.value = 'Umum';
@@ -2011,6 +2074,29 @@ function openItemSheet(item = null) {
   }
 
   window.openSheet('sheetItem');
+}
+
+async function deleteCurrentItem() {
+  const id = document.getElementById('itemIdField')?.value;
+  const name = document.getElementById('itemNameField')?.value || 'produk ini';
+  if (!id) return;
+
+  if (!confirm(`Hapus produk "${name}" dari katalog?`)) {
+    return;
+  }
+
+  try {
+    const res = await window.api.delete(`/items/${id}`);
+    if (res.success) {
+      window.closeSheet('sheetItem');
+      window.showToast(`Produk "${name}" berhasil dihapus`, 'success');
+      window.appStore.removeFromCart(Number(id));
+      window.loadItems?.();
+      window.loadDashboard?.();
+    }
+  } catch (err) {
+    window.showToast(err.message || 'Gagal menghapus produk', 'error');
+  }
 }
 
 async function submitItemForm(e) {
@@ -2141,6 +2227,9 @@ window.submitItemForm = submitItemForm;
 window.openPaySheet = openPaySheet;
 window.setPayPreset = setPayPreset;
 window.submitPayDebt = submitPayDebt;
+window.setCashBuyerType = setCashBuyerType;
+window.deleteCurrentItem = deleteCurrentItem;
+window.onSelectCheckoutDebtItem = onSelectCheckoutDebtItem;
 window.toggleCheckoutDebtDropdown = toggleCheckoutDebtDropdown;
 window.onPickCheckoutNewCust = onPickCheckoutNewCust;
 window.renderCheckoutDebtCustomers = renderCheckoutDebtCustomers;

@@ -182,7 +182,8 @@ function sendDebtReminderWhatsApp(debtId) {
   }
 }
 
-function toggleDirectDebtDropdown() {
+function toggleDirectDebtDropdown(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
   const menu = document.getElementById('directDebtDropdownMenu');
   const trigger = document.getElementById('directDebtSelectTrigger');
   if (!menu) return;
@@ -192,6 +193,14 @@ function toggleDirectDebtDropdown() {
     if (isHidden) trigger.classList.add('open');
     else trigger.classList.remove('open');
   }
+}
+
+function onSelectDirectDebtItem(id) {
+  const debts = (window.appStore?.getState()?.debts || []).filter(d => d.status === 'belum_lunas');
+  const debt = debts.find(d => Number(d.id) === Number(id));
+  if (!debt) return;
+  const remaining = Math.max(0, debt.amount - debt.paid_amount);
+  selectDirectDebtCustomer(debt.customer_name, debt.phone || '', remaining, debt.id);
 }
 
 function renderDirectDebtCustomers() {
@@ -214,7 +223,7 @@ function renderDirectDebtCustomers() {
   debts.forEach(d => {
     const remaining = Math.max(0, d.amount - d.paid_amount);
     html += `
-      <div class="dropdown-item" id="directDebtItem_${d.id}" onclick="selectDirectDebtCustomer(${JSON.stringify(d.customer_name)}, ${JSON.stringify(d.phone || '')}, ${remaining}, ${d.id})">
+      <div class="dropdown-item" id="directDebtItem_${d.id}" onclick="onSelectDirectDebtItem(${d.id})">
         <div>
           <div class="cust-name">${d.customer_name}</div>
           <div style="font-size: 10px; color: var(--text-sub);">${d.phone || 'Tanpa no. HP'}</div>
@@ -384,6 +393,7 @@ if (typeof window !== 'undefined') {
   window.renderDebtsUI = renderDebtsUI;
   window.deleteDebt = deleteDebt;
   window.toggleDirectDebtDropdown = toggleDirectDebtDropdown;
+  window.onSelectDirectDebtItem = onSelectDirectDebtItem;
   window.onPickDirectNewCust = onPickDirectNewCust;
   window.renderDirectDebtCustomers = renderDirectDebtCustomers;
   window.selectDirectDebtCustomer = selectDirectDebtCustomer;
@@ -403,6 +413,7 @@ if (typeof module !== 'undefined' && module.exports) {
     renderDebtsUI,
     deleteDebt,
     toggleDirectDebtDropdown,
+    onSelectDirectDebtItem,
     onPickDirectNewCust,
     renderDirectDebtCustomers,
     selectDirectDebtCustomer,

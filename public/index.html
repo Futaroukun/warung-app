@@ -388,9 +388,22 @@
             <button type="button" class="btn-preset-mini" onclick="setQuickCash(100000)">100rb</button>
           </div>
 
-          <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 14px;">
             <span style="color: var(--text-sub);">Kembalian:</span>
             <span style="font-weight: 800;" id="checkoutChangeVal">Rp 0</span>
+          </div>
+
+          <!-- Kategori Pembeli Tunai: Pembeli / Pegawai / Nama Lain -->
+          <div style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 16px;">
+            <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 6px; text-transform: uppercase;">Kategori Pembeli Tunai</label>
+            <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+              <button type="button" class="btn-preset-mini active" id="btnBuyerType_umum" onclick="setCashBuyerType('umum')">Umum</button>
+              <button type="button" class="btn-preset-mini" id="btnBuyerType_pegawai" onclick="setCashBuyerType('pegawai')">Pegawai</button>
+              <button type="button" class="btn-preset-mini" id="btnBuyerType_custom" onclick="setCashBuyerType('custom')">Nama Lain</button>
+            </div>
+            <div id="cashBuyerCustomNameWrap" style="display: none;">
+              <input type="text" id="checkoutCashBuyerName" class="input-box" placeholder="Ketik nama pembeli..." style="font-size: 12px; padding: 8px 10px;">
+            </div>
           </div>
         </div>
 
@@ -402,7 +415,7 @@
 
           <!-- Custom Dropdown Customer Select -->
           <div class="custom-select-wrap" id="checkoutSelectWrap" style="margin-bottom: 8px;">
-            <div class="custom-select-box" id="checkoutDebtSelectTrigger" onclick="toggleCheckoutDebtDropdown()">
+            <div class="custom-select-box" id="checkoutDebtSelectTrigger" onclick="toggleCheckoutDebtDropdown(event)">
               <span id="checkoutDebtSelectedText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Pilih Pelanggan Kasbon...</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="checkoutDebtSelectArrow"><polyline points="6 9 12 15 18 9"/></svg>
             </div>
@@ -489,9 +502,14 @@
 
         <input type="hidden" id="itemMinStockField" value="3">
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-weight: 800; margin-top: 8px;">
-          Simpan Data Produk
-        </button>
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button type="button" id="btnDeleteItem" class="btn" onclick="deleteCurrentItem()" style="display: none; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--rose); padding: 14px 16px; font-weight: 800; min-width: 90px; cursor: pointer;">
+            Hapus
+          </button>
+          <button type="submit" class="btn btn-primary" style="flex: 1; padding: 14px; font-weight: 800;">
+            Simpan Data Produk
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -549,7 +567,7 @@
 
         <!-- Custom Dropdown Customer Select -->
         <div class="custom-select-wrap" id="directDebtSelectWrap" style="margin-bottom: 12px;">
-          <div class="custom-select-box" id="directDebtSelectTrigger" onclick="toggleDirectDebtDropdown()">
+          <div class="custom-select-box" id="directDebtSelectTrigger" onclick="toggleDirectDebtDropdown(event)">
             <span id="directDebtSelectedText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Pilih Pelanggan Kasbon...</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="directDebtSelectArrow"><polyline points="6 9 12 15 18 9"/></svg>
           </div>

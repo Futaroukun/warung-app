@@ -50,6 +50,13 @@ test('ItemsService: CRUD and validation', async (t) => {
     assert.equal(updated.stock, 0);
   });
 
+  await t.test('Deletes item (soft delete)', () => {
+    const item = service.getByBarcode('8991234567890');
+    const result = service.delete(item.id);
+    assert.equal(result.deleted, true);
+    assert.equal(service.getById(item.id), undefined);
+  });
+
   db.close();
   if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
   ['wal', 'shm'].forEach(ext => {
