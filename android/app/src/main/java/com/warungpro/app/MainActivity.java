@@ -91,9 +91,7 @@ public class MainActivity extends AppCompatActivity {
     private void requestAppPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             String[] permissions = new String[]{
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.MODIFY_AUDIO_SETTINGS
+                Manifest.permission.CAMERA
             };
 
             boolean needRequest = false;

@@ -80,7 +80,7 @@ jobs:
             echo "Permanent keystore exists. Reusing key for consistent signature."
           fi
 
-      - name: Build Debug APK
+      - name: Build Release APK
         working-directory: android
         env:
           BUILD_NUMBER: ${{ github.run_number }}
@@ -88,13 +88,13 @@ jobs:
           KEYSTORE_PASS: warungpro123
           KEY_ALIAS: warungpro
           KEY_PASS: warungpro123
-        run: ./gradlew assembleDebug --stacktrace
+        run: ./gradlew assembleRelease --stacktrace
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Kasir-Warung-APK
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
       - name: Create GitHub Release with APK
@@ -106,15 +106,17 @@ jobs:
           name: Kasir Warung APK v1.2.0 (Build #${{ github.run_number }})
           body: |
             ## 📱 Kasir Warung - Aplikasi Kasir, Stok & Kasbon Pintar
-            Build otomatis via GitHub Actions.
+            Build otomatis via GitHub Actions (Official Signed Release APK).
 
             ### ✨ Fitur Terbaru:
+            - **Signed Production Release**: Build release non-debug tanpa izin mencurigakan untuk meminimalkan peringatan Play Protect.
+            - **Katalog Master Barcode**: Penambahan dan penghapusan produk permanen langsung sinkron.
+            - **Multi-Database Barcode**: Dukungan pencarian online multi-sumber (OpenFoodFacts, OpenProductsFacts, OpenBeautyFacts).
             - **Realtime Sync**: Data stok, transaksi POS, buku kasbon, dan riwayat tersinkronisasi otomatis secara realtime.
-            - **Status Kasbon Otomatis**: Riwayat transaksi kasbon otomatis berganti status menjadi `Kasbon (Lunas)` saat hutang dilunasi.
-            - **Kustom Template Tagihan WA**: Template pesan penagihan kasbon via WhatsApp yang dapat dikustomisasi lengkap dengan tag variabel.
-            - **Pop-up Tagih WA Kustom**: Dialog bottom-sheet elegan untuk kirim tagihan WhatsApp dan simpan nomor telepon pelanggan.
+            - **Filter Chip Dinamis**: Highlight hijau berpindah mulus di kasir, riwayat, dan kasbon.
             - **Auto Kapitalisasi**: Pengetikan nama barang, kategori, dan pelanggan otomatis Title Case secara instan.
             - **Backup Database**: Unduh snapshot binary `warung.db` & ekspor CSV Excel.
-          files: android/app/build/outputs/apk/debug/*.apk
+          files: android/app/build/outputs/apk/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
