@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
                 new AlertDialog.Builder(MainActivity.this)
-                    .setTitle("WarungPro")
+                    .setTitle("Kasir Warung")
                     .setMessage(message)
                     .setPositiveButton(android.R.string.ok, (d, w) -> result.confirm())
                     .setCancelable(false)

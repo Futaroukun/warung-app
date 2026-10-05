@@ -93,7 +93,7 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WarungPro-APK
+          name: Kasir-Warung-APK
           path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
@@ -103,9 +103,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.2.0-build${{ github.run_number }}
-          name: WarungPro APK v1.2.0 (Build #${{ github.run_number }})
+          name: Kasir Warung APK v1.2.0 (Build #${{ github.run_number }})
           body: |
-            ## 📱 WarungPro - Aplikasi Kasir Warung Pintar
+            ## 📱 Kasir Warung - Aplikasi Kasir, Stok & Kasbon Pintar
             Build otomatis via GitHub Actions.
 
             ### ✨ Fitur Terbaru:
