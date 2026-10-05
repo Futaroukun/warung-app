@@ -1412,14 +1412,19 @@ let isScanning = false;
 let barcodeDetector = null;
 
 // Initialize native BarcodeDetector if available
+const LINEAR_1D_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf', 'codabar'];
+
+// Initialize native BarcodeDetector if available (hanya 1D linear barcode, tanpa QR kotak)
 if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
   try {
-    barcodeDetector = new window.BarcodeDetector({
-      formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code']
-    });
+    barcodeDetector = new window.BarcodeDetector({ formats: LINEAR_1D_FORMATS });
   } catch (e) {
     console.warn('BarcodeDetector format init fallback:', e);
-    barcodeDetector = new window.BarcodeDetector();
+    try {
+      barcodeDetector = new window.BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] });
+    } catch {
+      barcodeDetector = new window.BarcodeDetector();
+    }
   }
 }
 
@@ -1465,14 +1470,15 @@ async function startScanner(videoEl, onResult) {
 
     if (!barcodeDetector) {
       if ('BarcodeDetector' in window) {
-        barcodeDetector = new window.BarcodeDetector();
+        try {
+          barcodeDetector = new window.BarcodeDetector({ formats: LINEAR_1D_FORMATS });
+        } catch {
+          barcodeDetector = new window.BarcodeDetector();
+        }
       } else {
         throw new Error('BarcodeDetector API tidak aktif di browser ini. Masukkan barcode secara manual.');
       }
     }
-
-    let lastDetectedCode = '';
-    let lastDetectedTime = 0;
 
     const detectLoop = async () => {
       if (!isScanning) return;
@@ -1481,14 +1487,33 @@ async function startScanner(videoEl, onResult) {
         try {
           const barcodes = await barcodeDetector.detect(videoEl);
           if (barcodes && barcodes.length > 0 && isScanning) {
-            const rawValue = String(barcodes[0].rawValue || '').trim();
-            if (rawValue) {
-              // Hentikan kamera dan loop secara instan agar tidak terjadi double-scan
-              stopScanner();
-              playBeep();
-              navigator.vibrate?.([60]);
-              onResult(rawValue);
-              return;
+            // Filter HANYA barcode 1D garis panjang retail (EAN-13, dsb.)
+            // Abaikan barcode 2D kotak (QR Code, DataMatrix BPOM seperti (90)MD...)
+            const valid1DBarcodes = barcodes.filter(b => {
+              const fmt = (b.format || '').toLowerCase();
+              const val = String(b.rawValue || '').trim();
+
+              // Tolak format 2D kotak
+              if (['qr_code', 'data_matrix', 'aztec', 'pdf417'].includes(fmt)) return false;
+
+              // Tolak kode BPOM / GS1 DataMatrix 2D yang diawali (90) atau (01) atau URL web
+              if (val.startsWith('(90)') || val.startsWith('(01)') || val.startsWith('http://') || val.startsWith('https://')) {
+                return false;
+              }
+
+              return val.length > 0;
+            });
+
+            if (valid1DBarcodes.length > 0) {
+              const rawValue = String(valid1DBarcodes[0].rawValue || '').trim();
+              if (rawValue) {
+                // Hentikan kamera dan loop seketika untuk mencegah double-scan
+                stopScanner();
+                playBeep();
+                navigator.vibrate?.([60]);
+                onResult(rawValue);
+                return;
+              }
             }
           }
         } catch (err) {
