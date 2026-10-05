@@ -1098,6 +1098,7 @@
   border: 1px solid var(--border);
   color: var(--text-muted);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .btn-preset-mini:active {

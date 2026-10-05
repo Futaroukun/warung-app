@@ -943,13 +943,15 @@
         <label class="form-label" style="font-size: 11px; font-weight: 700; margin-bottom: 8px;">Jumlah Yang Ingin Ditambahkan:</label>
         
         <!-- Preset Qty Chips -->
-        <div style="display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;">
-          <button type="button" class="btn-preset-mini" onclick="setRestockQtyPreset(1)">+1</button>
-          <button type="button" class="btn-preset-mini" onclick="setRestockQtyPreset(5)">+5</button>
-          <button type="button" class="btn-preset-mini" onclick="setRestockQtyPreset(10)">+10</button>
-          <button type="button" class="btn-preset-mini" onclick="setRestockQtyPreset(12)">+12 (1 Lusin)</button>
-          <button type="button" class="btn-preset-mini" onclick="setRestockQtyPreset(24)">+24 (2 Lusin)</button>
-          <button type="button" class="btn-preset-mini" onclick="setRestockQtyPreset(40)">+40 (1 Dus)</button>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 6px;">
+          <button type="button" class="btn-preset-mini" style="white-space: nowrap;" onclick="setRestockQtyPreset(1)">+1</button>
+          <button type="button" class="btn-preset-mini" style="white-space: nowrap;" onclick="setRestockQtyPreset(5)">+5</button>
+          <button type="button" class="btn-preset-mini" style="white-space: nowrap;" onclick="setRestockQtyPreset(10)">+10</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px;">
+          <button type="button" class="btn-preset-mini" style="white-space: nowrap; font-size: 10px; padding: 7px 2px;" onclick="setRestockQtyPreset(12)">+12 (1 Lusin)</button>
+          <button type="button" class="btn-preset-mini" style="white-space: nowrap; font-size: 10px; padding: 7px 2px;" onclick="setRestockQtyPreset(24)">+24 (2 Lusin)</button>
+          <button type="button" class="btn-preset-mini" style="white-space: nowrap; font-size: 10px; padding: 7px 2px;" onclick="setRestockQtyPreset(40)">+40 (1 Dus)</button>
         </div>
 
         <!-- Custom Counter Input -->
@@ -1017,6 +1019,7 @@
       border: 1px solid var(--border);
       color: var(--text-muted);
       cursor: pointer;
+      white-space: nowrap;
     }
     .btn-preset-mini:active {
       background: var(--emerald-glow);
