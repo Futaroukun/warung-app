@@ -11,7 +11,6 @@ Berikut rincian catatan kasbon yang tercatat:
 Jika ada waktu luang, mohon dibantu pelunasannya ya Kak. Terima kasih banyak atas kerjasamanya! 😊`;
 
 async function checkSystemHealth() {
-  loadDebtTemplateSetting();
   loadOnlineBarcodeSetting();
   try {
     const res = await window.api.get('/system/health');
@@ -36,9 +35,11 @@ async function checkSystemHealth() {
   }
 }
 
-function loadDebtTemplateSetting() {
+function loadDebtTemplateSetting(force = false) {
   const el = document.getElementById('settingDebtTemplateText');
   if (!el) return;
+  // Never overwrite while the user is actively focused or holding backspace
+  if (!force && document.activeElement === el) return;
   const saved = typeof localStorage !== 'undefined' ? localStorage.getItem('custom_debt_reminder_template') : null;
   el.value = (saved && saved.trim()) ? saved : DEFAULT_DEBT_REMINDER_TEMPLATE;
 }

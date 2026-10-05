@@ -85,11 +85,51 @@ window.addEventListener('focus', () => {
   syncAllDataRealtime(true);
 });
 
+let previousTabBeforeSystem = 'pos';
+
+function toggleSettingsTab() {
+  const currentTab = window.appStore?.getState()?.activeTab || 'pos';
+  if (currentTab === 'system') {
+    switchMainTab(previousTabBeforeSystem || 'pos');
+  } else {
+    previousTabBeforeSystem = currentTab;
+    switchMainTab('system');
+  }
+}
+
 function switchMainTab(tab) {
+  const currentTab = window.appStore?.getState()?.activeTab || 'pos';
+  if (currentTab !== 'system' && tab === 'system') {
+    previousTabBeforeSystem = currentTab;
+  }
+
   // Update buttons
   document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.getElementById(`btnNav_${tab}`);
   if (activeBtn) activeBtn.classList.add('active');
+
+  // Update top header settings button (Toggle between gear icon & back arrow)
+  const topSettingsBtn = document.getElementById('btnTopSettings');
+  if (topSettingsBtn) {
+    if (tab === 'system') {
+      topSettingsBtn.title = 'Kembali';
+      topSettingsBtn.setAttribute('aria-label', 'Kembali');
+      topSettingsBtn.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      `;
+    } else {
+      topSettingsBtn.title = 'Pengaturan & Backup';
+      topSettingsBtn.setAttribute('aria-label', 'Pengaturan & Backup');
+      topSettingsBtn.innerHTML = `
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      `;
+    }
+  }
 
   // Update panels
   document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
@@ -104,7 +144,11 @@ function switchMainTab(tab) {
   if (tab === 'barcode') window.loadMasterBarcodes?.();
   if (tab === 'debts') window.loadDebts?.();
   if (tab === 'history') window.loadHistory?.();
-  if (tab === 'system') window.checkSystemHealth?.();
+  if (tab === 'system') {
+    window.loadDebtTemplateSetting?.();
+    window.loadOnlineBarcodeSetting?.();
+    window.checkSystemHealth?.();
+  }
 }
 
 // Checkout Modal Workflow
@@ -986,6 +1030,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Global mappings
 window.switchMainTab = switchMainTab;
+window.toggleSettingsTab = toggleSettingsTab;
 window.openCheckoutSheet = openCheckoutSheet;
 window.setCheckoutPaymentType = setCheckoutPaymentType;
 window.setQuickCash = setQuickCash;

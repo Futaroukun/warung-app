@@ -206,11 +206,18 @@
 .btn-add-circle {
   width: 38px;
   height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  max-width: 38px;
+  max-height: 38px;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
+  padding: 0;
   border-radius: 50%;
   background: var(--emerald);
   color: #04180f;
   border: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
