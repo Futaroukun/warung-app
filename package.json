@@ -7,7 +7,7 @@
     "start": "node server.js",
     "bundle": "node scripts/bundle-js.js",
     "test": "node --test tests/*.test.js",
-    "sync-assets": "node scripts/bundle-js.js && cp -r public/* android/app/src/main/assets/"
+    "sync-assets": "node scripts/bundle-js.js && node scripts/sync-android.js"
   },
   "keywords": [],
   "author": "",
