@@ -400,9 +400,20 @@
             <span id="checkoutActiveDebtCount" style="font-size: 10px; color: var(--text-sub);">0 Kasbon Aktif</span>
           </div>
 
-          <!-- Existing Active Customers List -->
-          <div id="checkoutCustomerSelectList" style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto; margin-bottom: 8px;">
-            <!-- Dynamically populated by renderCheckoutDebtCustomers() -->
+          <!-- Custom Dropdown Customer Select -->
+          <div class="custom-select-wrap" id="checkoutSelectWrap" style="margin-bottom: 8px;">
+            <div class="custom-select-box" id="checkoutDebtSelectTrigger" onclick="toggleCheckoutDebtDropdown()">
+              <span id="checkoutDebtSelectedText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Pilih Pelanggan Kasbon...</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="checkoutDebtSelectArrow"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="custom-dropdown-menu" id="checkoutDebtDropdownMenu" style="display: none;">
+              <div id="checkoutDebtDropdownItems"></div>
+              <div class="dropdown-item new-cust-item" onclick="onPickCheckoutNewCust()" style="border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0, 245, 155, 0.05);">
+                <div style="font-weight: 800; color: var(--emerald); display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 16px;">+</span> <span>Nama Pelanggan Baru</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Hidden input keeping track of final selected customer name & phone -->
@@ -536,9 +547,20 @@
           <span id="directDebtActiveCount" style="font-size: 10px; color: var(--text-sub);">0 Kasbon Aktif</span>
         </div>
 
-        <!-- Existing Active Customers List -->
-        <div id="directDebtCustomerSelectList" style="display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto; margin-bottom: 10px;">
-          <!-- Dynamically populated -->
+        <!-- Custom Dropdown Customer Select -->
+        <div class="custom-select-wrap" id="directDebtSelectWrap" style="margin-bottom: 12px;">
+          <div class="custom-select-box" id="directDebtSelectTrigger" onclick="toggleDirectDebtDropdown()">
+            <span id="directDebtSelectedText" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Pilih Pelanggan Kasbon...</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" id="directDebtSelectArrow"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="custom-dropdown-menu" id="directDebtDropdownMenu" style="display: none;">
+            <div id="directDebtDropdownItems"></div>
+            <div class="dropdown-item new-cust-item" onclick="onPickDirectNewCust()" style="border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0, 245, 155, 0.05);">
+              <div style="font-weight: 800; color: var(--emerald); display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 16px;">+</span> <span>Nama Pelanggan Baru</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <input type="hidden" id="directDebtName">

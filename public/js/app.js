@@ -136,63 +136,75 @@ function setCheckoutPaymentType(type) {
   }
 }
 
-function renderCheckoutDebtCustomers() {
-  const container = document.getElementById('checkoutCustomerSelectList');
-  if (!container) return;
+function toggleCheckoutDebtDropdown() {
+  const menu = document.getElementById('checkoutDebtDropdownMenu');
+  const trigger = document.getElementById('checkoutDebtSelectTrigger');
+  if (!menu) return;
+  const isHidden = menu.style.display === 'none' || menu.style.display === '';
+  menu.style.display = isHidden ? 'block' : 'none';
+  if (trigger) {
+    if (isHidden) trigger.classList.add('open');
+    else trigger.classList.remove('open');
+  }
+}
 
+function renderCheckoutDebtCustomers() {
+  const menuItems = document.getElementById('checkoutDebtDropdownItems');
   const countBadge = document.getElementById('checkoutActiveDebtCount');
   const debts = (window.appStore.getState().debts || []).filter(d => d.status === 'belum_lunas');
   
   if (countBadge) {
     countBadge.innerText = `${debts.length} Kasbon Aktif`;
   }
+  if (!menuItems) return;
+
+  if (debts.length === 0) {
+    menuItems.innerHTML = '<div style="padding: 10px 14px; font-size: 11px; color: var(--text-sub);">Tidak ada kasbon aktif</div>';
+    onPickCheckoutNewCust();
+    return;
+  }
 
   let html = '';
   debts.forEach(d => {
     const remaining = Math.max(0, d.amount - d.paid_amount);
-    const initial = (d.customer_name || 'U').trim().charAt(0).toUpperCase();
     html += `
-      <div class="customer-debt-tile" id="debtTile_${d.id}" onclick="selectCheckoutDebtCustomer(${JSON.stringify(d.customer_name)}, ${JSON.stringify(d.phone || '')}, ${remaining}, ${d.id})">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div class="tile-avatar">${initial}</div>
-          <div>
-            <div style="font-weight: 800; font-size: 13px; color: #fff;">${d.customer_name}</div>
-            <div style="font-size: 10px; color: var(--rose);">Sisa Kasbon: ${window.formatRp(remaining)}</div>
-          </div>
+      <div class="dropdown-item" id="checkoutDebtItem_${d.id}" onclick="selectCheckoutDebtCustomer(${JSON.stringify(d.customer_name)}, ${JSON.stringify(d.phone || '')}, ${remaining}, ${d.id})">
+        <div>
+          <div class="cust-name">${d.customer_name}</div>
+          <div style="font-size: 10px; color: var(--text-sub);">${d.phone || 'Tanpa no. HP'}</div>
         </div>
-        <div class="tile-radio-circle"></div>
+        <div style="font-size: 11px; font-weight: 800; color: var(--rose);">${window.formatRp(remaining)}</div>
       </div>
     `;
   });
+  menuItems.innerHTML = html;
 
-  html += `
-    <div class="customer-debt-tile" id="debtTile_new" onclick="selectCheckoutNewCustomer()">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <div class="tile-avatar new">+</div>
-        <div>
-          <div style="font-weight: 800; font-size: 13px; color: var(--emerald);">+ Nama Pelanggan Baru</div>
-          <div style="font-size: 10px; color: var(--text-sub);">Catat nama pelanggan baru</div>
-        </div>
-      </div>
-      <div class="tile-radio-circle"></div>
-    </div>
-  `;
-
-  container.innerHTML = html;
-
-  if (debts.length > 0) {
+  const currentSelected = document.getElementById('checkoutCustomerName')?.value;
+  const found = debts.find(d => d.customer_name === currentSelected);
+  if (found) {
+    const rem = Math.max(0, found.amount - found.paid_amount);
+    selectCheckoutDebtCustomer(found.customer_name, found.phone || '', rem, found.id);
+  } else {
     const first = debts[0];
     const rem = Math.max(0, first.amount - first.paid_amount);
     selectCheckoutDebtCustomer(first.customer_name, first.phone || '', rem, first.id);
-  } else {
-    selectCheckoutNewCustomer();
   }
 }
 
 function selectCheckoutDebtCustomer(name, phone, remaining, id) {
-  document.querySelectorAll('.customer-debt-tile').forEach(t => t.classList.remove('active'));
-  const tile = document.getElementById(`debtTile_${id}`);
-  if (tile) tile.classList.add('active');
+  const textEl = document.getElementById('checkoutDebtSelectedText');
+  if (textEl) {
+    textEl.innerHTML = `<span style="font-weight: 800; color: #fff;">${name}</span> <span style="font-size: 11px; color: var(--rose); margin-left: 4px;">(${window.formatRp(remaining)})</span>`;
+  }
+
+  const menu = document.getElementById('checkoutDebtDropdownMenu');
+  const trigger = document.getElementById('checkoutDebtSelectTrigger');
+  if (menu) menu.style.display = 'none';
+  if (trigger) trigger.classList.remove('open');
+
+  document.querySelectorAll('#checkoutDebtDropdownItems .dropdown-item').forEach(it => it.classList.remove('selected'));
+  const itemEl = document.getElementById(`checkoutDebtItem_${id}`);
+  if (itemEl) itemEl.classList.add('selected');
 
   const custInput = document.getElementById('checkoutCustomerName');
   const phoneInput = document.getElementById('checkoutCustomerPhone');
@@ -206,14 +218,22 @@ function selectCheckoutDebtCustomer(name, phone, remaining, id) {
   const notice = document.getElementById('checkoutDebtMergeNotice');
   if (notice) {
     notice.style.display = 'block';
-    notice.innerHTML = `💡 Belanjaan baru <b>${window.formatRp(cartTotal)}</b> akan otomatis ditambahkan ke kasbon <b>${name}</b>.<br>Total kasbon berjalan: <b style="color: #fff;">${window.formatRp(remaining + cartTotal)}</b>.`;
+    notice.innerHTML = `💡 Belanjaan baru <b>${window.formatRp(cartTotal)}</b> otomatis ditambahkan ke kasbon <b>${name}</b>.<br>Total kasbon berjalan: <b style="color: #fff;">${window.formatRp(remaining + cartTotal)}</b>.`;
   }
 }
 
-function selectCheckoutNewCustomer() {
-  document.querySelectorAll('.customer-debt-tile').forEach(t => t.classList.remove('active'));
-  const tile = document.getElementById('debtTile_new');
-  if (tile) tile.classList.add('active');
+function onPickCheckoutNewCust() {
+  const textEl = document.getElementById('checkoutDebtSelectedText');
+  if (textEl) {
+    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">+ Nama Pelanggan Baru</span>`;
+  }
+
+  const menu = document.getElementById('checkoutDebtDropdownMenu');
+  const trigger = document.getElementById('checkoutDebtSelectTrigger');
+  if (menu) menu.style.display = 'none';
+  if (trigger) trigger.classList.remove('open');
+
+  document.querySelectorAll('#checkoutDebtDropdownItems .dropdown-item').forEach(it => it.classList.remove('selected'));
 
   const newNameInput = document.getElementById('checkoutNewCustNameInput');
   const newPhoneInput = document.getElementById('checkoutNewCustPhoneInput');
@@ -231,6 +251,8 @@ function selectCheckoutNewCustomer() {
 
   if (newNameInput) newNameInput.focus();
 }
+
+const selectCheckoutNewCustomer = onPickCheckoutNewCust;
 
 function onNewCustomerNameChange(val) {
   const custInput = document.getElementById('checkoutCustomerName');
@@ -623,6 +645,8 @@ window.submitItemForm = submitItemForm;
 window.openPaySheet = openPaySheet;
 window.setPayPreset = setPayPreset;
 window.submitPayDebt = submitPayDebt;
+window.toggleCheckoutDebtDropdown = toggleCheckoutDebtDropdown;
+window.onPickCheckoutNewCust = onPickCheckoutNewCust;
 window.renderCheckoutDebtCustomers = renderCheckoutDebtCustomers;
 window.selectCheckoutDebtCustomer = selectCheckoutDebtCustomer;
 window.selectCheckoutNewCustomer = selectCheckoutNewCustomer;
@@ -633,3 +657,20 @@ window.removeCartItemInCheckout = removeCartItemInCheckout;
 window.openSuccessModal = openSuccessModal;
 window.onSuccessModalPrint = onSuccessModalPrint;
 window.onSuccessModalShareWa = onSuccessModalShareWa;
+
+// Click outside handler for dropdowns
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#checkoutSelectWrap')) {
+    const m = document.getElementById('checkoutDebtDropdownMenu');
+    const t = document.getElementById('checkoutDebtSelectTrigger');
+    if (m) m.style.display = 'none';
+    if (t) t.classList.remove('open');
+  }
+  if (!e.target.closest('#directDebtSelectWrap')) {
+    const m = document.getElementById('directDebtDropdownMenu');
+    const t = document.getElementById('directDebtSelectTrigger');
+    if (m) m.style.display = 'none';
+    if (t) t.classList.remove('open');
+  }
+});
+

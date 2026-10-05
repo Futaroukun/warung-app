@@ -182,63 +182,75 @@ function sendDebtReminderWhatsApp(debtId) {
   }
 }
 
-function renderDirectDebtCustomers() {
-  const container = document.getElementById('directDebtCustomerSelectList');
-  if (!container) return;
+function toggleDirectDebtDropdown() {
+  const menu = document.getElementById('directDebtDropdownMenu');
+  const trigger = document.getElementById('directDebtSelectTrigger');
+  if (!menu) return;
+  const isHidden = menu.style.display === 'none' || menu.style.display === '';
+  menu.style.display = isHidden ? 'block' : 'none';
+  if (trigger) {
+    if (isHidden) trigger.classList.add('open');
+    else trigger.classList.remove('open');
+  }
+}
 
+function renderDirectDebtCustomers() {
+  const menuItems = document.getElementById('directDebtDropdownItems');
   const countBadge = document.getElementById('directDebtActiveCount');
-  const debts = (window.appStore.getState().debts || []).filter(d => d.status === 'belum_lunas');
+  const debts = (window.appStore?.getState()?.debts || []).filter(d => d.status === 'belum_lunas');
   
   if (countBadge) {
     countBadge.innerText = `${debts.length} Kasbon Aktif`;
+  }
+  if (!menuItems) return;
+
+  if (debts.length === 0) {
+    menuItems.innerHTML = '<div style="padding: 10px 14px; font-size: 11px; color: var(--text-sub);">Tidak ada kasbon aktif</div>';
+    onPickDirectNewCust();
+    return;
   }
 
   let html = '';
   debts.forEach(d => {
     const remaining = Math.max(0, d.amount - d.paid_amount);
-    const initial = (d.customer_name || 'U').trim().charAt(0).toUpperCase();
     html += `
-      <div class="customer-debt-tile" id="directDebtTile_${d.id}" onclick="selectDirectDebtCustomer(${JSON.stringify(d.customer_name)}, ${JSON.stringify(d.phone || '')}, ${remaining}, ${d.id})">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div class="tile-avatar">${initial}</div>
-          <div>
-            <div style="font-weight: 800; font-size: 13px; color: #fff;">${d.customer_name}</div>
-            <div style="font-size: 10px; color: var(--rose);">Sisa Kasbon: ${window.formatRp(remaining)}</div>
-          </div>
+      <div class="dropdown-item" id="directDebtItem_${d.id}" onclick="selectDirectDebtCustomer(${JSON.stringify(d.customer_name)}, ${JSON.stringify(d.phone || '')}, ${remaining}, ${d.id})">
+        <div>
+          <div class="cust-name">${d.customer_name}</div>
+          <div style="font-size: 10px; color: var(--text-sub);">${d.phone || 'Tanpa no. HP'}</div>
         </div>
-        <div class="tile-radio-circle"></div>
+        <div style="font-size: 11px; font-weight: 800; color: var(--rose);">${window.formatRp(remaining)}</div>
       </div>
     `;
   });
+  menuItems.innerHTML = html;
 
-  html += `
-    <div class="customer-debt-tile" id="directDebtTile_new" onclick="selectDirectDebtNewCustomer()">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <div class="tile-avatar new">+</div>
-        <div>
-          <div style="font-weight: 800; font-size: 13px; color: var(--emerald);">+ Nama Pelanggan Baru</div>
-          <div style="font-size: 10px; color: var(--text-sub);">Catat kasbon orang baru</div>
-        </div>
-      </div>
-      <div class="tile-radio-circle"></div>
-    </div>
-  `;
-
-  container.innerHTML = html;
-
-  if (debts.length > 0) {
+  const currentSelected = document.getElementById('directDebtName')?.value;
+  const found = debts.find(d => d.customer_name === currentSelected);
+  if (found) {
+    const rem = Math.max(0, found.amount - found.paid_amount);
+    selectDirectDebtCustomer(found.customer_name, found.phone || '', rem, found.id);
+  } else {
     const first = debts[0];
     const rem = Math.max(0, first.amount - first.paid_amount);
     selectDirectDebtCustomer(first.customer_name, first.phone || '', rem, first.id);
-  } else {
-    selectDirectDebtNewCustomer();
   }
 }
 
 function selectDirectDebtCustomer(name, phone, remaining, id) {
-  document.querySelectorAll('#directDebtCustomerSelectList .customer-debt-tile').forEach(t => t.classList.remove('active'));
-  const tile = document.getElementById(`directDebtTile_${id}`);
-  if (tile) tile.classList.add('active');
+  const textEl = document.getElementById('directDebtSelectedText');
+  if (textEl) {
+    textEl.innerHTML = `<span style="font-weight: 800; color: #fff;">${name}</span> <span style="font-size: 11px; color: var(--rose); margin-left: 4px;">(${window.formatRp(remaining)})</span>`;
+  }
+
+  const menu = document.getElementById('directDebtDropdownMenu');
+  const trigger = document.getElementById('directDebtSelectTrigger');
+  if (menu) menu.style.display = 'none';
+  if (trigger) trigger.classList.remove('open');
+
+  document.querySelectorAll('#directDebtDropdownItems .dropdown-item').forEach(it => it.classList.remove('selected'));
+  const itemEl = document.getElementById(`directDebtItem_${id}`);
+  if (itemEl) itemEl.classList.add('selected');
 
   const nameInput = document.getElementById('directDebtName');
   const phoneInput = document.getElementById('directDebtPhone');
@@ -251,10 +263,18 @@ function selectDirectDebtCustomer(name, phone, remaining, id) {
   updateDirectDebtNotice(remaining, name);
 }
 
-function selectDirectDebtNewCustomer() {
-  document.querySelectorAll('#directDebtCustomerSelectList .customer-debt-tile').forEach(t => t.classList.remove('active'));
-  const tile = document.getElementById('directDebtTile_new');
-  if (tile) tile.classList.add('active');
+function onPickDirectNewCust() {
+  const textEl = document.getElementById('directDebtSelectedText');
+  if (textEl) {
+    textEl.innerHTML = `<span style="font-weight: 800; color: var(--emerald);">+ Nama Pelanggan Baru</span>`;
+  }
+
+  const menu = document.getElementById('directDebtDropdownMenu');
+  const trigger = document.getElementById('directDebtSelectTrigger');
+  if (menu) menu.style.display = 'none';
+  if (trigger) trigger.classList.remove('open');
+
+  document.querySelectorAll('#directDebtDropdownItems .dropdown-item').forEach(it => it.classList.remove('selected'));
 
   const newName = document.getElementById('directDebtNewCustNameInput');
   const newPhone = document.getElementById('directDebtNewCustPhoneInput');
@@ -272,6 +292,8 @@ function selectDirectDebtNewCustomer() {
 
   if (newName) newName.focus();
 }
+
+const selectDirectDebtNewCustomer = onPickDirectNewCust;
 
 function onDirectDebtNewNameChange(val) {
   const nameInput = document.getElementById('directDebtName');
@@ -361,6 +383,8 @@ if (typeof window !== 'undefined') {
   window.loadDebts = loadDebts;
   window.renderDebtsUI = renderDebtsUI;
   window.deleteDebt = deleteDebt;
+  window.toggleDirectDebtDropdown = toggleDirectDebtDropdown;
+  window.onPickDirectNewCust = onPickDirectNewCust;
   window.renderDirectDebtCustomers = renderDirectDebtCustomers;
   window.selectDirectDebtCustomer = selectDirectDebtCustomer;
   window.selectDirectDebtNewCustomer = selectDirectDebtNewCustomer;
@@ -378,6 +402,8 @@ if (typeof module !== 'undefined' && module.exports) {
     loadDebts,
     renderDebtsUI,
     deleteDebt,
+    toggleDirectDebtDropdown,
+    onPickDirectNewCust,
     renderDirectDebtCustomers,
     selectDirectDebtCustomer,
     selectDirectDebtNewCustomer,
