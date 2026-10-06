@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorium Tema & Warna - Warung App</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <style>
+    :root {
+      /* Dynamic Theme Variables - Controlled by JS */
+      --bg-base: #07090e;
+      --bg-surface: #10141f;
+      --bg-card: #131826;
+      --bg-elevated: #182032;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: #00f59b;
+      --text: #ffffff;
+      --text-muted: #cbd5e1;
+      --text-sub: #64748b;
+      --emerald: #00f59b;
+      --primary: #8b5cf6;
+      --amber: #ffaa00;
+      --rose: #ff3b5c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: #06080d;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    .top-nav {
+      background: #0b0f17;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+
+    .brand-badge {
+      background: rgba(0, 245, 155, 0.15);
+      color: #00f59b;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 99px;
+      border: 1px solid rgba(0, 245, 155, 0.3);
+      text-transform: uppercase;
+    }
+
+    .btn-back {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-back:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    /* Main Container Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      flex: 1;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Left Panel: Controls */
+    .controls-panel {
+      background: #0d121c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: fit-content;
+    }
+
+    .panel-section-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Preset Chips Grid */
+    .presets-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .preset-card {
+      background: #121824;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: left;
+    }
+
+    .preset-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      background: #172030;
+    }
+
+    .preset-card.active {
+      border-color: var(--border-focus);
+      background: rgba(0, 245, 155, 0.08);
+      box-shadow: 0 0 12px rgba(0, 245, 155, 0.2);
+    }
+
+    .preset-name {
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .preset-swatches {
+      display: flex;
+      gap: 5px;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Custom Pickers Form */
+    .pickers-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .picker-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #121824;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .picker-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .picker-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .color-input-bubble {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      padding: 0;
+    }
+
+    .hex-text-input {
+      background: #090d14;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-family: monospace;
+      font-size: 11px;
+      font-weight: 700;
+      width: 72px;
+      padding: 5px 6px;
+      border-radius: 6px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    /* Action Buttons */
+    .btn-apply-theme {
+      background: var(--emerald);
+      color: #04180f;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(0, 245, 155, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-apply-theme:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* Right Panel: Live Mockup */
+    .preview-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preview-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #94a3b8;
+    }
+
+    /* Mockup Frame (Mirip Layar HP Kasir) */
+    .mockup-container {
+      background: var(--bg-base);
+      border: 1.5px solid var(--border);
+      border-radius: 24px;
+      padding: 18px;
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Mockup Header */
+    .mock-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mock-store-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .mock-date {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    /* Hero Summary Card */
+    .mock-hero {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mock-hero-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-sub);
+    }
+
+    .mock-hero-amount {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--emerald);
+      letter-spacing: -0.5px;
+    }
+
+    .mock-hero-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      border-top: 1px solid var(--border);
+      padding-top: 8px;
+    }
+
+    /* POS Products Grid */
+    .mock-items-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mock-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .mock-item-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.25;
+    }
+
+    .mock-item-stock {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-sub);
+    }
+
+    .mock-item-price {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--emerald);
+    }
+
+    .mock-item-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 7px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    /* Mock Kasbon Card */
+    .mock-debt-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mock-debt-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .mock-debt-sub {
+      font-size: 10px;
+      color: var(--text-sub);
+    }
+
+    .mock-debt-badge {
+      background: rgba(255, 59, 92, 0.15);
+      color: var(--rose);
+      border: 1px solid rgba(255, 59, 92, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    /* Mock Cart Dock */
+    .mock-cart-bar {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mock-cart-total {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .mock-pay-btn {
+      background: var(--emerald);
+      color: #04180f;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    /* Notification Toast */
+    .toast-popup {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #101726;
+      border: 1.5px solid var(--emerald);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="top-nav">
+    <div class="brand-title">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.3">
+        <circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/>
+      </svg>
+      <span>Laboratorium Warna & Tema Warung</span>
+      <span class="brand-badge">Live Tester</span>
+    </div>
+    <a href="/" class="btn-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Kembali ke Kasir Warung</span>
+    </a>
+  </header>
+
+  <!-- Main Work Area -->
+  <main class="main-grid">
+
+    <!-- Controls Panel (Left) -->
+    <aside class="controls-panel">
+      <div>
+        <div class="panel-section-title">
+          <span>Pilih Preset Warna Siap Pakai</span>
+        </div>
+        <div class="presets-grid" id="presetsGrid">
+          <!-- Dynamically generated preset cards -->
+        </div>
+      </div>
+
+      <div>
+        <div class="panel-section-title">
+          <span>Kustomisasi Warna Bebas</span>
+          <button type="button" onclick="resetToCurrentPreset()" style="background:none; border:none; color:var(--emerald); font-size:11px; font-weight:700; cursor:pointer;">Reset</button>
+        </div>
+        <div class="pickers-list" id="pickersList">
+          <!-- Dynamically generated color pickers -->
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+        <button type="button" class="btn-apply-theme" onclick="saveAndApplyTheme()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Terapkan ke Warung App</span>
+        </button>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button type="button" class="btn-secondary" onclick="copyCssVariables()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span>Salin CSS</span>
+          </button>
+          <button type="button" class="btn-secondary" onclick="resetToFactoryDefault()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Reset Awal</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Live Preview Panel (Right) -->
+    <section class="preview-panel">
+      <div class="preview-header">
+        <div class="preview-title">Simulasi Tampilan Layar Kasir HP (Realtime Preview)</div>
+        <span style="font-size: 11px; color: var(--text-sub);">Warna berubah otomatis saat dipilih</span>
+      </div>
+
+      <!-- Mockup Mobile Screen -->
+      <div class="mockup-container" id="mockupScreen">
+        <!-- Mock Header -->
+        <div class="mock-header">
+          <div>
+            <div class="mock-store-name">Warung Berkah Jaya</div>
+            <div class="mock-date">Selasa, 06 Oktober 2026 • Buka</div>
+          </div>
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: var(--bg-surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+        </div>
+
+        <!-- Mock Hero Summary -->
+        <div class="mock-hero">
+          <div class="mock-hero-title">Total Omzet Penjualan Hari Ini</div>
+          <div class="mock-hero-amount">Rp 485.000</div>
+          <div class="mock-hero-row">
+            <span style="color: var(--text-sub);">32 Transaksi Selesai</span>
+            <span style="color: var(--emerald); font-weight: 800;">Laba Bersih: Rp 98.500</span>
+          </div>
+        </div>
+
+        <!-- Mock POS Product Grid -->
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Katalog Produk Cepat</div>
+        <div class="mock-items-grid">
+          <div class="mock-item-card">
+            <div>
+              <div class="mock-item-name">Indomie Goreng 85g</div>
+              <div class="mock-item-stock">Stok: 48 pcs</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+              <div class="mock-item-price">Rp 3.500</div>
+              <button class="mock-item-btn" type="button">+ Tambah</button>
+            </div>
+          </div>
+
+          <div class="mock-item-card">
+            <div>
+              <div class="mock-item-name">Kopi Kapal Api Mix</div>
+              <div class="mock-item-stock">Stok: 24 sachet</div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+              <div class="mock-item-price">Rp 2.000</div>
+              <button class="mock-item-btn" type="button">+ Tambah</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mock Kasbon Card -->
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Catatan Kasbon Pelanggan</div>
+        <div class="mock-debt-card">
+          <div>
+            <div class="mock-debt-name">Pak Ahmad (Tetangga)</div>
+            <div class="mock-debt-sub">Rokok & Minyak Goreng • Sisa Kasbon:</div>
+          </div>
+          <div class="mock-debt-badge">
+            Rp 45.000
+          </div>
+        </div>
+
+        <!-- Mock Cart Floating Dock -->
+        <div class="mock-cart-bar">
+          <div>
+            <div style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Keranjang Belanja</div>
+            <div class="mock-cart-total">2 Item (Rp 5.500)</div>
+          </div>
+          <button class="mock-pay-btn" type="button">Bayar Kasir</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast-popup" id="toastPopup">
+    <span>✓ Pesan berhasil</span>
+  </div>
+
+  <script>
+    // 8 Pilihan Palet Warna Eksklusif Warung/POS
+    const PRESETS = [
+      {
+        id: 'neon-mint',
+        name: 'Cyber Neon Mint (Default)',
+        colors: {
+          '--bg-base': '#07090e',
+          '--bg-surface': '#10141f',
+          '--bg-card': '#131826',
+          '--border': 'rgba(255, 255, 255, 0.08)',
+          '--border-focus': '#00f59b',
+          '--text': '#ffffff',
+          '--text-sub': '#64748b',
+          '--emerald': '#00f59b',
+          '--primary': '#8b5cf6',
+          '--amber': '#ffaa00',
+          '--rose': '#ff3b5c'
+        }
+      },
+      {
+        id: 'tokopedia-emerald',
+        name: 'Merchant Emerald (Hijau)',
+        colors: {
+          '--bg-base': '#05120d',
+          '--bg-surface': '#0a1f17',
+          '--bg-card': '#0e291f',
+          '--border': 'rgba(255, 255, 255, 0.08)',
+          '--border-focus': '#10b981',
+          '--text': '#ffffff',
+          '--text-sub': '#719b88',
+          '--emerald': '#10b981',
+          '--primary': '#059669',
+          '--amber': '#f59e0b',
+          '--rose': '#f43f5e'
+        }
+      },
+      {
+        id: 'ocean-sapphire',
+        name: 'Sapphire Ocean (Biru FinTech)',
+        colors: {
+          '--bg-base': '#070c18',
+          '--bg-surface': '#0e182e',
+          '--bg-card': '#12203d',
+          '--border': 'rgba(255, 255, 255, 0.08)',
+          '--border-focus': '#38bdf8',
+          '--text': '#ffffff',
+          '--text-sub': '#647ea3',
+          '--emerald': '#38bdf8',
+          '--primary': '#2563eb',
+          '--amber': '#fbbf24',
+          '--rose': '#f43f5e'
+        }
+      },
+      {
+        id: 'warm-coffee',
+        name: 'Warm Coffee (Warung Hangat)',
+        colors: {
+          '--bg-base': '#0f0c08',
+          '--bg-surface': '#1c150f',
+          '--bg-card': '#261e16',
+          '--border': 'rgba(255, 255, 255, 0.08)',
+          '--border-focus': '#f59e0b',
+          '--text': '#ffffff',
+          '--text-sub': '#9c8a77',
+          '--emerald': '#f59e0b',
+          '--primary': '#d97706',
+          '--amber': '#fcd34d',
+          '--rose': '#ef4444'
+        }
+      },
+      {
+        id: 'royal-amethyst',
+        name: 'Royal Amethyst (Ungu Mewah)',
+        colors: {
+          '--bg-base': '#0a0714',
+          '--bg-surface': '#140f26',
+          '--bg-card': '#1c1536',
+          '--border': 'rgba(255, 255, 255, 0.08)',
+          '--border-focus': '#c084fc',
+          '--text': '#ffffff',
+          '--text-sub': '#8e79a8',
+          '--emerald': '#c084fc',
+          '--primary': '#9333ea',
+          '--amber': '#f59e0b',
+          '--rose': '#f43f5e'
+        }
+      },
+      {
+        id: 'crimson-ruby',
+        name: 'Crimson Ruby (Merah Kontras)',
+        colors: {
+          '--bg-base': '#120507',
+          '--bg-surface': '#210c10',
+          '--bg-card': '#2e1217',
+          '--border': 'rgba(255, 255, 255, 0.08)',
+          '--border-focus': '#fb7185',
+          '--text': '#ffffff',
+          '--text-sub': '#9f7078',
+          '--emerald': '#fb7185',
+          '--primary': '#e11d48',
+          '--amber': '#f59e0b',
+          '--rose': '#ff2a51'
+        }
+      },
+      {
+        id: 'nordic-slate',
+        name: 'Nordic Slate (Monochrome Redup)',
+        colors: {
+          '--bg-base': '#090d16',
+          '--bg-surface': '#131b2c',
+          '--bg-card': '#19243b',
+          '--border': 'rgba(255, 255, 255, 0.08)',
+          '--border-focus': '#2dd4bf',
+          '--text': '#f1f5f9',
+          '--text-sub': '#64748b',
+          '--emerald': '#2dd4bf',
+          '--primary': '#0d9488',
+          '--amber': '#fbbf24',
+          '--rose': '#f87171'
+        }
+      },
+      {
+        id: 'clean-light',
+        name: 'Clean Daylight (Mode Terang)',
+        colors: {
+          '--bg-base': '#f1f5f9',
+          '--bg-surface': '#ffffff',
+          '--bg-card': '#ffffff',
+          '--border': 'rgba(0, 0, 0, 0.08)',
+          '--border-focus': '#059669',
+          '--text': '#0f172a',
+          '--text-sub': '#64748b',
+          '--emerald': '#059669',
+          '--primary': '#2563eb',
+          '--amber': '#d97706',
+          '--rose': '#e11d48'
+        }
+      }
+    ];
+
+    const COLOR_ITEMS = [
+      { key: '--bg-base', label: 'Background Utama' },
+      { key: '--bg-surface', label: 'Latar Kartu & Menu' },
+      { key: '--bg-card', label: 'Latar Produk' },
+      { key: '--emerald', label: 'Aksen Utama & Omzet' },
+      { key: '--primary', label: 'Tombol Aksi (+Item)' },
+      { key: '--rose', label: 'Warna Kasbon / Peringatan' },
+      { key: '--text', label: 'Warna Teks Utama' }
+    ];
+
+    let currentThemeState = { ...PRESETS[0].colors };
+    let activePresetId = 'neon-mint';
+
+    // Inisialisasi
+    function init() {
+      // Cek apakah ada tema tersimpan di localStorage
+      const saved = localStorage.getItem('warung_custom_theme');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          currentThemeState = { ...currentThemeState, ...parsed };
+          activePresetId = null; // custom
+        } catch (_) {}
+      }
+
+      renderPresetCards();
+      renderPickers();
+      applyVariablesToDom(currentThemeState);
+    }
+
+    function renderPresetCards() {
+      const container = document.getElementById('presetsGrid');
+      container.innerHTML = PRESETS.map(p => `
+        <button type="button" class="preset-card ${activePresetId === p.id ? 'active' : ''}" onclick="selectPreset('${p.id}')">
+          <div class="preset-name">${p.name}</div>
+          <div class="preset-swatches">
+            <span class="swatch" style="background: ${p.colors['--bg-base']};"></span>
+            <span class="swatch" style="background: ${p.colors['--bg-surface']};"></span>
+            <span class="swatch" style="background: ${p.colors['--emerald']};"></span>
+            <span class="swatch" style="background: ${p.colors['--primary']};"></span>
+          </div>
+        </button>
+      `).join('');
+    }
+
+    function renderPickers() {
+      const container = document.getElementById('pickersList');
+      container.innerHTML = COLOR_ITEMS.map(item => {
+        const val = currentThemeState[item.key] || '#ffffff';
+        const hex = val.startsWith('#') ? val : '#00f59b';
+        return `
+          <div class="picker-row">
+            <span class="picker-label">${item.label}</span>
+            <div class="picker-input-wrap">
+              <input type="color" class="color-input-bubble" value="${hex}" oninput="onColorChange('${item.key}', this.value)">
+              <input type="text" class="hex-text-input" id="hex_${item.key.replace('--','')}" value="${hex}" onchange="onHexTextChange('${item.key}', this.value)">
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectPreset(presetId) {
+      const found = PRESETS.find(p => p.id === presetId);
+      if (!found) return;
+      activePresetId = presetId;
+      currentThemeState = { ...found.colors };
+      applyVariablesToDom(currentThemeState);
+      renderPresetCards();
+      renderPickers();
+      showToast(`Preset "${found.name}" dipilih`);
+    }
+
+    function onColorChange(key, hex) {
+      activePresetId = null;
+      currentThemeState[key] = hex;
+      if (key === '--emerald') {
+        currentThemeState['--border-focus'] = hex;
+      }
+      applyVariablesToDom(currentThemeState);
+      renderPresetCards();
+      const txt = document.getElementById(`hex_${key.replace('--','')}`);
+      if (txt) txt.value = hex.toUpperCase();
+    }
+
+    function onHexTextChange(key, text) {
+      let clean = text.trim();
+      if (!clean.startsWith('#')) clean = '#' + clean;
+      if (/^#[0-9A-Fa-f]{6}$/.test(clean)) {
+        onColorChange(key, clean);
+      }
+    }
+
+    function applyVariablesToDom(colors) {
+      Object.keys(colors).forEach(k => {
+        document.documentElement.style.setProperty(k, colors[k]);
+      });
+    }
+
+    function saveAndApplyTheme() {
+      localStorage.setItem('warung_custom_theme', JSON.stringify(currentThemeState));
+      showToast('✓ Tema berhasil disimpan ke Warung App!');
+    }
+
+    function resetToFactoryDefault() {
+      localStorage.removeItem('warung_custom_theme');
+      selectPreset('neon-mint');
+      showToast('Tema dikembalikan ke setelan bawaan');
+    }
+
+    function resetToCurrentPreset() {
+      selectPreset(activePresetId || 'neon-mint');
+    }
+
+    function copyCssVariables() {
+      let css = ':root {\n';
+      Object.keys(currentThemeState).forEach(k => {
+        css += `  ${k}: ${currentThemeState[k]};\n`;
+      });
+      css += '}';
+
+      navigator.clipboard.writeText(css).then(() => {
+        showToast('✓ Kode CSS disalin ke clipboard');
+      }).catch(() => {
+        showToast('Gagal menyalin CSS');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastPopup');
+      if (!toast) return;
+      toast.innerHTML = `<span>${msg}</span>`;
+      toast.style.display = 'flex';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 2500);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

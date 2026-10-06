@@ -16,6 +16,25 @@
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/components.css">
   <link rel="stylesheet" href="/css/print.css">
+
+  <!-- Immediate Theme Loader (Prevent FOUT) -->
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('warung_custom_theme');
+        if (saved) {
+          const theme = JSON.parse(saved);
+          Object.keys(theme).forEach(function(k) {
+            document.documentElement.style.setProperty(k, theme[k]);
+          });
+          if (theme['--bg-base']) {
+            const metaTheme = document.querySelector('meta[name="theme-color"]');
+            if (metaTheme) metaTheme.setAttribute('content', theme['--bg-base']);
+          }
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <div class="app-viewport">
@@ -345,6 +364,30 @@
             <span style="font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px; background: rgba(0, 245, 155, 0.12); color: var(--emerald); border: 1px solid rgba(0, 245, 155, 0.25);">Official Creator</span>
           </div>
           <div id="sysUptimeInfo" style="font-size: 11px; color: var(--text-sub); margin-top: 10px; text-align: right;">Sesi Aktif: -</div>
+        </div>
+
+        <!-- Kartu Tema & Laboratorium Warna (Live Web) -->
+        <div class="system-card" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+            <div style="flex: 1;">
+              <h3 style="font-size: 14px; font-weight: 800; margin-bottom: 4px; color: var(--emerald); display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+                <span>Tema & Palet Warna Warung</span>
+              </h3>
+              <p style="font-size: 11px; color: var(--text-sub); margin: 0; line-height: 1.4;">
+                Uji 8 preset palet warna siap pakai (Tokopedia Emerald, Sapphire Blue, Warm Coffee, dll.) atau atur racikan warna bebas dengan live preview kasir interaktif.
+              </p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <a href="/theme-preview.html" class="btn btn-primary" style="flex: 1; padding: 12px 14px; font-size: 12px; font-weight: 800; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span>Buka Laboratorium Warna (Live Web)</span>
+            </a>
+            <button type="button" class="btn" onclick="resetCustomTheme()" style="background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-sub); padding: 12px 14px; font-size: 12px; font-weight: 700; border-radius: var(--radius-sm);" title="Kembalikan ke tema bawaan">
+              Reset Bawaan
+            </button>
+          </div>
         </div>
 
         <!-- Kartu 2: Fitur Auto-Fetch Barcode Online -->

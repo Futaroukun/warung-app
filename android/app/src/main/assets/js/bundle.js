@@ -5097,6 +5097,41 @@ window.fetchAndFillOnlineName = fetchAndFillOnlineName;
 window.triggerRealtimeSync = triggerRealtimeSync;
 window.syncAllDataRealtime = syncAllDataRealtime;
 
+// Theme Synchronization & Management
+function applyStoredTheme() {
+  try {
+    const saved = localStorage.getItem('warung_custom_theme');
+    if (saved) {
+      const theme = JSON.parse(saved);
+      Object.keys(theme).forEach((k) => {
+        document.documentElement.style.setProperty(k, theme[k]);
+      });
+      if (theme['--bg-base']) {
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute('content', theme['--bg-base']);
+      }
+    }
+  } catch (err) {}
+}
+
+function resetCustomTheme() {
+  if (confirm('Kembalikan tema ke setelan warna bawaan (Cyber Neon Mint)?')) {
+    localStorage.removeItem('warung_custom_theme');
+    location.reload();
+  }
+}
+window.resetCustomTheme = resetCustomTheme;
+
+window.addEventListener('storage', (e) => {
+  if (e.key === 'warung_custom_theme') {
+    if (e.newValue) {
+      applyStoredTheme();
+    } else {
+      location.reload();
+    }
+  }
+});
+
 // Click outside handler for dropdowns
 document.addEventListener('click', (e) => {
   if (!e.target.closest('#checkoutSelectWrap')) {
