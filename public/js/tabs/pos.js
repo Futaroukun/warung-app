@@ -226,13 +226,20 @@ function setScannerMode(mode) {
   scannerCurrentMode = mode || 'kasir';
   const btnKasir = document.getElementById('btnScannerModeKasir');
   const btnRestock = document.getElementById('btnScannerModeRestock');
+  const hudEl = document.getElementById('scannerRestockHud');
+  const openListBtn = document.getElementById('btnScannerOpenRestockList');
+
   if (btnKasir && btnRestock) {
     if (scannerCurrentMode === 'restock') {
       btnRestock.classList.add('active');
       btnKasir.classList.remove('active');
+      if (hudEl) hudEl.style.display = 'flex';
+      if (openListBtn) openListBtn.style.display = 'block';
     } else {
       btnKasir.classList.add('active');
       btnRestock.classList.remove('active');
+      if (hudEl) hudEl.style.display = 'none';
+      if (openListBtn) openListBtn.style.display = 'none';
     }
   }
 }
@@ -248,7 +255,15 @@ async function handleBarcodeScanned(barcode) {
   }
   lastBarcodeScanTimestamp = now;
 
-  // Tutup scanner dan matikan stream kamera secara instan
+  // Jika sedang Mode Restok / Kulakan: jangan matikan kamera, langsung teruskan ke handler kulakan
+  if (scannerCurrentMode === 'restock') {
+    if (window.onRestockBarcodeScanned) {
+      await window.onRestockBarcodeScanned(cleanBarcode);
+      return;
+    }
+  }
+
+  // Tutup scanner dan matikan stream kamera secara instan (untuk Mode Kasir)
   if (window.closeBarcodeScanner) {
     window.closeBarcodeScanner();
   } else {

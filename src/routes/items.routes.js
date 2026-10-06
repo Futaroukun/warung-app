@@ -9,6 +9,8 @@ function createItemsRouter(db) {
 
   router.get('/', controller.getAll);
   router.get('/barcode/:barcode', controller.getByBarcode);
+  router.get('/restocks', controller.getRestocks);
+  router.post('/restock-batch', controller.batchRestock);
   router.get('/:id', controller.getById);
   router.post('/', controller.create);
   router.put('/:id', controller.update);

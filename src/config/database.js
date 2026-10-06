@@ -74,6 +74,26 @@ function initTables(db) {
       qty INTEGER NOT NULL,
       subtotal INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS restocks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      invoice_no TEXT UNIQUE,
+      total_amount INTEGER DEFAULT 0,
+      total_items INTEGER DEFAULT 0,
+      notes TEXT DEFAULT '',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS restock_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      restock_id INTEGER NOT NULL REFERENCES restocks(id) ON DELETE CASCADE,
+      item_id INTEGER NOT NULL,
+      item_name TEXT NOT NULL,
+      qty INTEGER NOT NULL,
+      buy_price INTEGER DEFAULT 0,
+      sell_price INTEGER DEFAULT 0,
+      subtotal INTEGER DEFAULT 0
+    );
   `);
 }
 
@@ -91,6 +111,8 @@ function initIndices(db) {
     CREATE INDEX IF NOT EXISTS idx_debts_status ON debts(status);
     CREATE INDEX IF NOT EXISTS idx_debts_customer ON debts(customer_name);
     CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON debt_payments(debt_id);
+    CREATE INDEX IF NOT EXISTS idx_restocks_created_at ON restocks(created_at);
+    CREATE INDEX IF NOT EXISTS idx_restock_items_restock_id ON restock_items(restock_id);
   `);
 }
 

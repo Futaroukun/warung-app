@@ -71,6 +71,24 @@ class ItemsController {
       next(err);
     }
   };
+
+  batchRestock = (req, res, next) => {
+    try {
+      const result = this.service.batchRestock(req.body);
+      res.status(201).json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getRestocks = (req, res, next) => {
+    try {
+      const result = this.service.getRestocks(req.query);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 module.exports = { ItemsController };

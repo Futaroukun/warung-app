@@ -70,4 +70,17 @@ test('Frontend Store & Utilities', async (t) => {
     assert.equal(await fetchOnlineBarcodeProduct('123'), null);
     assert.equal(await fetchOnlineBarcodeProduct(null), null);
   });
+
+  await t.test('fetchOnlineBarcodeProduct resolves Indonesian FMCG barcodes and prefixes', async () => {
+    const res = await fetchOnlineBarcodeProduct('8999909015838');
+    assert.ok(res);
+    assert.equal(res.name, 'Dji Sam Soe Magnum Filter 12');
+    assert.equal(res.category, 'Rokok');
+    assert.equal(res.brand, 'Dji Sam Soe');
+
+    const prefixRes = await fetchOnlineBarcodeProduct('8999909999999');
+    assert.ok(prefixRes);
+    assert.equal(prefixRes.category, 'Rokok');
+    assert.ok(prefixRes.isPrefixHint);
+  });
 });

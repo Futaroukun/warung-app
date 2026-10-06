@@ -98,13 +98,16 @@ function playBeep() {
   }
 }
 
-async function startScanner(videoEl, onResult) {
+async function startScanner(videoEl, onResult, options = {}) {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     throw new Error('Kamera tidak didukung pada browser ini');
   }
 
   stopScanner();
   currentVideoEl = videoEl;
+
+  let lastContinuousBarcode = '';
+  let lastContinuousTime = 0;
 
   if (videoEl) {
     videoEl.muted = true;
@@ -124,7 +127,8 @@ async function startScanner(videoEl, onResult) {
       video: {
         facingMode: 'environment',
         width: { ideal: 1280 },
-        height: { ideal: 720 }
+        height: { ideal: 720 },
+        advanced: [{ focusMode: 'continuous' }]
       },
       audio: false
     });
@@ -172,15 +176,56 @@ async function startScanner(videoEl, onResult) {
               return val.length > 0;
             });
 
-            if (valid1DBarcodes.length > 0) {
-              const rawValue = String(valid1DBarcodes[0].rawValue || '').trim();
+            // Saring barcode berdasarkan batas jarak & area bidik tengah (ROI)
+            const targetedBarcodes = valid1DBarcodes.filter(b => {
+              if (b.boundingBox && videoEl && videoEl.videoWidth > 0 && videoEl.videoHeight > 0) {
+                const box = b.boundingBox;
+                const vWidth = videoEl.videoWidth;
+                const vHeight = videoEl.videoHeight;
+
+                // 1. Batas Jarak Maksimal: Barcode harus berukuran minimal 16% dari frame
+                // Barcode kecil yang jauh di belakang meja diabaikan
+                const maxDimRatio = Math.max(box.width / vWidth, box.height / vHeight);
+                if (maxDimRatio < 0.16) {
+                  return false;
+                }
+
+                // 2. Area Bidik Tengah (ROI): Titik tengah barcode harus di dalam area bidik
+                const centerX = box.x + (box.width / 2);
+                const centerY = box.y + (box.height / 2);
+                if (centerX < vWidth * 0.10 || centerX > vWidth * 0.90 ||
+                    centerY < vHeight * 0.10 || centerY > vHeight * 0.90) {
+                  return false;
+                }
+              }
+              return true;
+            });
+
+            if (targetedBarcodes.length > 0) {
+              const rawValue = String(targetedBarcodes[0].rawValue || '').trim();
               if (rawValue) {
-                // Hentikan kamera dan loop seketika untuk mencegah double-scan
-                stopScanner();
-                playBeep();
-                navigator.vibrate?.([60]);
-                onResult(rawValue);
-                return;
+                const now = Date.now();
+                if (options && options.continuous) {
+                  // Mode continuous (Kulakan): cegah scan ganda barcode yang sama dalam 1.2 detik, beda barcode min 500ms
+                  if (lastContinuousBarcode === rawValue && (now - lastContinuousTime < 1300)) {
+                    // Skip duplicate frame for same barcode
+                  } else if (now - lastContinuousTime < 500) {
+                    // Skip too rapid inter-frame transition
+                  } else {
+                    lastContinuousBarcode = rawValue;
+                    lastContinuousTime = now;
+                    playBeep();
+                    navigator.vibrate?.([60]);
+                    onResult(rawValue, { continuous: true });
+                  }
+                } else {
+                  // Hentikan kamera dan loop seketika untuk mencegah double-scan
+                  stopScanner();
+                  playBeep();
+                  navigator.vibrate?.([60]);
+                  onResult(rawValue, { continuous: false });
+                  return;
+                }
               }
             }
           }
@@ -223,13 +268,76 @@ function stopScanner() {
   if (loadingText) loadingText.style.display = 'none';
 }
 
+function showFocusIndicator(x, y) {
+  const container = document.getElementById('scannerViewfinderContainer');
+  if (!container) return;
+
+  const old = container.querySelector('.camera-focus-ring');
+  if (old) old.remove();
+
+  const ring = document.createElement('div');
+  ring.className = 'camera-focus-ring';
+  ring.style.left = `${x}px`;
+  ring.style.top = `${y}px`;
+  container.appendChild(ring);
+
+  requestAnimationFrame(() => {
+    ring.classList.add('focused');
+  });
+
+  setTimeout(() => {
+    ring.classList.add('fade-out');
+    setTimeout(() => ring.remove(), 400);
+  }, 600);
+}
+
+async function triggerCameraFocus(clientX, clientY) {
+  showFocusIndicator(clientX, clientY);
+
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    try { navigator.vibrate(25); } catch (_) {}
+  }
+
+  if (!activeStream) return;
+  const track = activeStream.getVideoTracks()[0];
+  if (!track || !track.applyConstraints) return;
+
+  try {
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if (caps.focusMode && Array.isArray(caps.focusMode)) {
+      if (caps.focusMode.includes('single-shot')) {
+        await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+      } else if (caps.focusMode.includes('continuous')) {
+        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+      }
+    } else {
+      await track.applyConstraints({
+        advanced: [{ focusMode: 'continuous' }]
+      });
+    }
+  } catch (err) {
+    // Focus constraint fallback
+  }
+}
+
+function onScannerViewfinderTap(event) {
+  const container = document.getElementById('scannerViewfinderContainer');
+  if (!container) return;
+  const rect = container.getBoundingClientRect();
+  const relX = event.clientX - rect.left;
+  const relY = event.clientY - rect.top;
+  triggerCameraFocus(relX, relY);
+}
+
 if (typeof window !== 'undefined') {
   window.startScanner = startScanner;
   window.stopScanner = stopScanner;
   window.playBeep = playBeep;
   window.unlockAudio = unlockAudio;
+  window.triggerCameraFocus = triggerCameraFocus;
+  window.onScannerViewfinderTap = onScannerViewfinderTap;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { startScanner, stopScanner, playBeep, unlockAudio };
+  module.exports = { startScanner, stopScanner, playBeep, unlockAudio, triggerCameraFocus, onScannerViewfinderTap };
 }

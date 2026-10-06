@@ -713,14 +713,15 @@ function openBarcodeScanner(mode = 'kasir') {
     window.setScannerMode(mode);
   }
 
+  const isRestock = mode === 'restock';
   const loadingText = document.getElementById('scannerLoadingText');
   if (loadingText) loadingText.style.display = 'flex';
   videoEl.style.opacity = '0';
 
   window.openSheet('sheetScanner');
-  window.startScanner(videoEl, (barcode) => {
-    window.handleBarcodeScanned?.(barcode);
-  }).catch(err => {
+  window.startScanner(videoEl, (barcode, meta) => {
+    window.handleBarcodeScanned?.(barcode, meta);
+  }, { continuous: isRestock }).catch(err => {
     window.showToast(err.message || 'Gagal membuka kamera', 'error');
     window.closeSheet('sheetScanner');
   });
@@ -1082,6 +1083,10 @@ document.addEventListener('click', (e) => {
     const t = document.getElementById('directDebtSelectTrigger');
     if (m) m.style.display = 'none';
     if (t) t.classList.remove('open');
+  }
+  if (!e.target.closest('#batchRestockSearchField') && !e.target.closest('#batchRestockDropdown')) {
+    const d = document.getElementById('batchRestockDropdown');
+    if (d) d.style.display = 'none';
   }
 });
 

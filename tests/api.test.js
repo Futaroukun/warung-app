@@ -79,6 +79,32 @@ test('Integration API Endpoints', async (t) => {
     assert.equal(res.data.data.today_transactions, 1);
   });
 
+  await t.test('POST /api/items/restock-batch restocks items in batch', async () => {
+    const restockRes = await request('/api/items/restock-batch', {
+      method: 'POST',
+      body: JSON.stringify({
+        notes: 'Restock Grosir',
+        items: [
+          { id: createdItemId, qty: 20, buy_price: 14500 }
+        ]
+      })
+    });
+    assert.equal(restockRes.status, 201);
+    assert.equal(restockRes.data.success, true);
+    assert.equal(restockRes.data.data.total_items, 20);
+    assert.equal(restockRes.data.data.total_amount, 290000);
+
+    // Verify stock & price increased
+    const itemRes = await request(`/api/items/${createdItemId}`);
+    assert.equal(itemRes.data.data.stock, 65); // 45 + 20
+    assert.equal(itemRes.data.data.buy_price, 14500);
+
+    const listRes = await request('/api/items/restocks');
+    assert.equal(listRes.status, 200);
+    assert.equal(listRes.data.success, true);
+    assert.ok(listRes.data.data.length >= 1);
+  });
+
   await new Promise(resolve => server.close(resolve));
   db.close();
   if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);

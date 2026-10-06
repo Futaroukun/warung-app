@@ -1217,5 +1217,30 @@
   box-shadow: 0 2px 8px rgba(0, 245, 155, 0.35);
 }
 
+/* Tap-to-Focus Ring Indicator */
+.camera-focus-ring {
+  position: absolute;
+  width: 58px;
+  height: 58px;
+  border: 2px solid var(--emerald);
+  box-shadow: 0 0 12px rgba(0, 245, 155, 0.8), inset 0 0 6px rgba(0, 245, 155, 0.4);
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 10;
+  transform: translate(-50%, -50%) scale(1.35);
+  opacity: 0.95;
+  transition: transform 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.35s ease;
+}
+
+.camera-focus-ring.focused {
+  transform: translate(-50%, -50%) scale(1);
+  border-color: #00f59b;
+}
+
+.camera-focus-ring.fade-out {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+}
+
 
 

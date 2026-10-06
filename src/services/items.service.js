@@ -180,6 +180,159 @@ class ItemsService {
       return { id: Number(id), deleted: true, permanent: false };
     }
   }
+
+  generateRestockInvoiceNo() {
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const timestamp = Date.now().toString().slice(-6);
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    return `KUL-${dateStr}-${timestamp}-${randomSuffix}`;
+  }
+
+  batchRestock({ items, notes = '' } = {}) {
+    if (!Array.isArray(items) || items.length === 0) {
+      const err = new Error('Daftar barang kulakan kosong');
+      err.status = 400;
+      throw err;
+    }
+
+    this.db.exec('BEGIN TRANSACTION');
+
+    try {
+      let totalAmount = 0;
+      let totalItems = 0;
+      const restockItemRecords = [];
+      const invoiceNo = this.generateRestockInvoiceNo();
+
+      const insertRestockStmt = this.db.prepare(`
+        INSERT INTO restocks (invoice_no, total_amount, total_items, notes, created_at)
+        VALUES (?, ?, ?, ?, datetime('now', 'localtime'))
+      `);
+
+      const insertRestockItemStmt = this.db.prepare(`
+        INSERT INTO restock_items (restock_id, item_id, item_name, qty, buy_price, sell_price, subtotal)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `);
+
+      const updateItemStmt = this.db.prepare(`
+        UPDATE items
+        SET stock = stock + ?,
+            buy_price = CASE WHEN ? > 0 THEN ? ELSE buy_price END,
+            sell_price = CASE WHEN ? > 0 THEN ? ELSE sell_price END,
+            is_active = 1,
+            updated_at = datetime('now', 'localtime')
+        WHERE id = ?
+      `);
+
+      for (const entry of items) {
+        let item = null;
+        if (entry.id) {
+          item = this.db.prepare('SELECT * FROM items WHERE id = ?').get(entry.id);
+        } else if (entry.barcode) {
+          item = this.getByBarcode(entry.barcode, true);
+        }
+
+        if (!item) {
+          if (entry.name && entry.name.trim()) {
+            item = this.create({
+              name: entry.name,
+              barcode: entry.barcode || null,
+              category: entry.category || 'Umum',
+              buy_price: entry.buy_price || 0,
+              sell_price: entry.sell_price || 0,
+              stock: 0,
+              unit: entry.unit || 'pcs'
+            });
+          } else {
+            const err = new Error(`Barang ${entry.id || entry.barcode || ''} tidak ditemukan`);
+            err.status = 404;
+            throw err;
+          }
+        }
+
+        const qty = Number(entry.qty);
+        if (isNaN(qty) || qty <= 0) {
+          const err = new Error(`Jumlah stok masuk untuk "${item.name}" harus lebih dari 0`);
+          err.status = 400;
+          throw err;
+        }
+
+        const newBuyPrice = entry.buy_price !== undefined && entry.buy_price !== null && !isNaN(entry.buy_price) && Number(entry.buy_price) >= 0
+          ? Number(entry.buy_price)
+          : (item.buy_price || 0);
+
+        const newSellPrice = entry.sell_price !== undefined && entry.sell_price !== null && !isNaN(entry.sell_price) && Number(entry.sell_price) >= 0
+          ? Number(entry.sell_price)
+          : 0;
+
+        const subtotal = newBuyPrice * qty;
+        totalAmount += subtotal;
+        totalItems += qty;
+
+        restockItemRecords.push({
+          itemId: item.id,
+          name: item.name,
+          qty,
+          buyPrice: newBuyPrice,
+          sellPrice: newSellPrice,
+          subtotal
+        });
+      }
+
+      const restockResult = insertRestockStmt.run(
+        invoiceNo,
+        totalAmount,
+        totalItems,
+        notes ? notes.trim() : ''
+      );
+      const restockId = restockResult.lastInsertRowid;
+
+      for (const rec of restockItemRecords) {
+        insertRestockItemStmt.run(
+          restockId,
+          rec.itemId,
+          rec.name,
+          rec.qty,
+          rec.buyPrice,
+          rec.sellPrice,
+          rec.subtotal
+        );
+
+        updateItemStmt.run(
+          rec.qty,
+          rec.buyPrice,
+          rec.buyPrice,
+          rec.sellPrice,
+          rec.sellPrice,
+          rec.itemId
+        );
+      }
+
+      this.db.exec('COMMIT');
+
+      const restockData = this.db.prepare('SELECT * FROM restocks WHERE id = ?').get(restockId);
+      const itemsData = this.db.prepare('SELECT * FROM restock_items WHERE restock_id = ?').all(restockId);
+
+      return {
+        ...restockData,
+        items: itemsData
+      };
+    } catch (err) {
+      this.db.exec('ROLLBACK');
+      throw err;
+    }
+  }
+
+  getRestocks({ limit = 30, offset = 0 } = {}) {
+    const list = this.db.prepare(`
+      SELECT * FROM restocks ORDER BY created_at DESC LIMIT ? OFFSET ?
+    `).all(Number(limit), Number(offset));
+
+    const getItemsStmt = this.db.prepare('SELECT * FROM restock_items WHERE restock_id = ?');
+    return list.map(r => ({
+      ...r,
+      items: getItemsStmt.all(r.id)
+    }));
+  }
 }
 
 module.exports = { ItemsService };

@@ -49,9 +49,103 @@ function autoCapitalizeSentences(str) {
   return str.toString().replace(/(^|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
 }
 
+const INDONESIA_KNOWN_BARCODES = {
+  // Rokok & Tembakau (Dikecualikan oleh Open Food Facts)
+  '8999909015838': { name: 'Dji Sam Soe Magnum Filter 12', category: 'Rokok', brand: 'Dji Sam Soe' },
+  '8999909005402': { name: 'Sampoerna A Mild 16', category: 'Rokok', brand: 'Sampoerna' },
+  '8999909000100': { name: 'Dji Sam Soe 234 Kretek 12', category: 'Rokok', brand: 'Dji Sam Soe' },
+  '8999909005006': { name: 'Sampoerna Hijau 12', category: 'Rokok', brand: 'Sampoerna' },
+  '8999909020009': { name: 'Marlboro Merah 20', category: 'Rokok', brand: 'Marlboro' },
+  '8999909020016': { name: 'Marlboro Gold Lights 20', category: 'Rokok', brand: 'Marlboro' },
+  '8999909020023': { name: 'Marlboro Filter Black 20', category: 'Rokok', brand: 'Marlboro' },
+  '8992770001007': { name: 'Gudang Garam Surya 16', category: 'Rokok', brand: 'Gudang Garam' },
+  '8992770001014': { name: 'Gudang Garam Surya 12', category: 'Rokok', brand: 'Gudang Garam' },
+  '8992770014007': { name: 'Gudang Garam International 12', category: 'Rokok', brand: 'Gudang Garam' },
+  '8992770020008': { name: 'Gudang Garam Merah King Size 12', category: 'Rokok', brand: 'Gudang Garam' },
+  '8992770000017': { name: 'Gudang Garam Signature 12', category: 'Rokok', brand: 'Gudang Garam' },
+  '8992388111005': { name: 'Djarum Super 12', category: 'Rokok', brand: 'Djarum' },
+  '8992388111012': { name: 'Djarum Super 16', category: 'Rokok', brand: 'Djarum' },
+  '8992388121004': { name: 'LA Lights 16', category: 'Rokok', brand: 'Djarum' },
+  '8992388121011': { name: 'LA Bold 20', category: 'Rokok', brand: 'Djarum' },
+  '8992388131003': { name: 'Djarum Coklat Kretek 12', category: 'Rokok', brand: 'Djarum' },
+  '8992388141002': { name: 'Djarum 76 Kretek 12', category: 'Rokok', brand: 'Djarum' },
+  '8997232230005': { name: 'Esse Change Juicy 20', category: 'Rokok', brand: 'Esse' },
+  '8997232230012': { name: 'Esse Change Double 20', category: 'Rokok', brand: 'Esse' },
+  '8997232230029': { name: 'Esse Berry Pop 20', category: 'Rokok', brand: 'Esse' },
+  '8997232230036': { name: 'Camel Option Purple 20', category: 'Rokok', brand: 'Camel' },
+  '8997232230043': { name: 'Camel Yellow 20', category: 'Rokok', brand: 'Camel' },
+
+  // Kopi, Teh & Minuman Sachet
+  '8999999522108': { name: 'Kopi Kapal Api Special Mix 24g', category: 'Minuman', brand: 'Kapal Api' },
+  '8991389220015': { name: 'Kopi Good Day Mocacinno 20g', category: 'Minuman', brand: 'Good Day' },
+  '8991389220022': { name: 'Kopi Good Day Cappuccino 25g', category: 'Minuman', brand: 'Good Day' },
+  '8999908000002': { name: 'Kopi ABC Susu 31g', category: 'Minuman', brand: 'ABC' },
+  '8992753220018': { name: 'Teh Pucuk Harum 350ml', category: 'Minuman', brand: 'Teh Pucuk' },
+  '8992753220025': { name: 'Kopiko 78C Coffee Latte 240ml', category: 'Minuman', brand: 'Kopiko' },
+  '8996001600269': { name: 'Le Minerale Air Mineral 600ml', category: 'Minuman', brand: 'Le Minerale' },
+  '8996001300008': { name: 'Aqua Air Mineral 600ml', category: 'Minuman', brand: 'Aqua' },
+  '8996001300015': { name: 'Aqua Air Mineral 1500ml', category: 'Minuman', brand: 'Aqua' },
+  '8992736110016': { name: 'Ultra Milk Cokelat 250ml', category: 'Minuman', brand: 'Ultra Milk' },
+  '8992736110023': { name: 'Ultra Milk Full Cream 250ml', category: 'Minuman', brand: 'Ultra Milk' },
+  '8992736210013': { name: 'Teh Kotak Jasmine 300ml', category: 'Minuman', brand: 'Teh Kotak' },
+
+  // Mie Instan & Makanan Ringan
+  '8991002105206': { name: 'Indomie Mi Goreng 85g', category: 'Makanan', brand: 'Indomie' },
+  '8991002105213': { name: 'Indomie Kuah Ayam Bawang 69g', category: 'Makanan', brand: 'Indomie' },
+  '8991002105220': { name: 'Indomie Kuah Soto Mie 70g', category: 'Makanan', brand: 'Indomie' },
+  '8998866200259': { name: 'Mie Sedaap Goreng 90g', category: 'Makanan', brand: 'Mie Sedaap' },
+  '8998866200266': { name: 'Mie Sedaap Soto 75g', category: 'Makanan', brand: 'Mie Sedaap' },
+  '8992753110012': { name: 'Beng-Beng Wafer Coklat 25g', category: 'Makanan', brand: 'Beng-Beng' },
+  '8992753110029': { name: 'Roma Sari Gandum 115g', category: 'Makanan', brand: 'Roma' },
+  '8992753110036': { name: 'Roma Kelapa 300g', category: 'Makanan', brand: 'Roma' },
+
+  // Kebutuhan Rumah Tangga & Obat Warung
+  '8992761110014': { name: 'Promag Tablet Kunyah Blister', category: 'Obat', brand: 'Promag' },
+  '8992761120013': { name: 'Tolak Angin Cair Sido Muncul', category: 'Obat', brand: 'Tolak Angin' },
+  '8999999120007': { name: 'Pepsodent Pencegah Gigi Berlubang 120g', category: 'Perawatan', brand: 'Pepsodent' },
+  '8999999230003': { name: 'Lifebuoy Sabun Mandi Batang 110g', category: 'Perawatan', brand: 'Lifebuoy' },
+  '8998838110012': { name: 'Mama Lemon Jeruk Nipis 780ml', category: 'Kebersihan', brand: 'Mama Lemon' },
+  '8998838220019': { name: 'Daia Deterjen Bunga 850g', category: 'Kebersihan', brand: 'Daia' },
+  '8998838330016': { name: 'So Klin Pewangi Pouch 800ml', category: 'Kebersihan', brand: 'So Klin' }
+};
+
+const INDONESIA_PREFIX_DIRECTORIES = [
+  { prefix: '8999909', brand: 'Sampoerna / Dji Sam Soe', category: 'Rokok' },
+  { prefix: '8992770', brand: 'Gudang Garam', category: 'Rokok' },
+  { prefix: '8992388', brand: 'Djarum', category: 'Rokok' },
+  { prefix: '8997232', brand: 'KT&G / Esse', category: 'Rokok' },
+  { prefix: '8991002', brand: 'Indofood CBP', category: 'Makanan' },
+  { prefix: '8991001', brand: 'Indofood', category: 'Makanan' },
+  { prefix: '8998866', brand: 'Wings Food', category: 'Makanan' },
+  { prefix: '8998838', brand: 'Wings Care', category: 'Kebersihan' },
+  { prefix: '8992753', brand: 'Mayora', category: 'Makanan' },
+  { prefix: '8991389', brand: 'Santos Jaya Abadi / Kapal Api', category: 'Minuman' },
+  { prefix: '8999908', brand: 'ABC Kogen', category: 'Minuman' },
+  { prefix: '8996001', brand: 'Danone / Aqua', category: 'Minuman' },
+  { prefix: '8992736', brand: 'Ultra Jaya', category: 'Minuman' },
+  { prefix: '8992761', brand: 'Kalbe Farma', category: 'Obat' },
+  { prefix: '8999999', brand: 'Unilever', category: 'Perawatan' },
+  { prefix: '8999996', brand: 'Unilever', category: 'Perawatan' },
+  { prefix: '8992999', brand: 'Orang Tua (OT)', category: 'Makanan' },
+  { prefix: '8997003', brand: 'Frisian Flag', category: 'Minuman' },
+  { prefix: '8993005', brand: 'Nestle', category: 'Makanan' }
+];
+
 async function fetchOnlineBarcodeProduct(barcode) {
   if (!barcode || String(barcode).trim().length < 6) return null;
   const clean = String(barcode).trim();
+
+  // 1. Cek kamus produk ritel & warung Indonesia
+  if (INDONESIA_KNOWN_BARCODES[clean]) {
+    const item = INDONESIA_KNOWN_BARCODES[clean];
+    return {
+      name: item.name,
+      category: item.category || 'Umum',
+      brand: item.brand || ''
+    };
+  }
+
+  // 2. Query online Open Food / Products / Beauty Facts
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
   const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
 
@@ -97,6 +191,18 @@ async function fetchOnlineBarcodeProduct(barcode) {
     return result;
   } catch (err) {
     if (timeoutId) clearTimeout(timeoutId);
+
+    // 3. Fallback cerdas: Deteksi Produsen & Kategori via GS1 Indonesia Prefix
+    const prefixMatch = INDONESIA_PREFIX_DIRECTORIES.find(p => clean.startsWith(p.prefix));
+    if (prefixMatch) {
+      return {
+        name: `Produk ${prefixMatch.brand}`,
+        category: prefixMatch.category || 'Umum',
+        brand: prefixMatch.brand || '',
+        isPrefixHint: true
+      };
+    }
+
     return null;
   }
 }
@@ -1638,13 +1744,16 @@ function playBeep() {
   }
 }
 
-async function startScanner(videoEl, onResult) {
+async function startScanner(videoEl, onResult, options = {}) {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     throw new Error('Kamera tidak didukung pada browser ini');
   }
 
   stopScanner();
   currentVideoEl = videoEl;
+
+  let lastContinuousBarcode = '';
+  let lastContinuousTime = 0;
 
   if (videoEl) {
     videoEl.muted = true;
@@ -1664,7 +1773,8 @@ async function startScanner(videoEl, onResult) {
       video: {
         facingMode: 'environment',
         width: { ideal: 1280 },
-        height: { ideal: 720 }
+        height: { ideal: 720 },
+        advanced: [{ focusMode: 'continuous' }]
       },
       audio: false
     });
@@ -1712,15 +1822,56 @@ async function startScanner(videoEl, onResult) {
               return val.length > 0;
             });
 
-            if (valid1DBarcodes.length > 0) {
-              const rawValue = String(valid1DBarcodes[0].rawValue || '').trim();
+            // Saring barcode berdasarkan batas jarak & area bidik tengah (ROI)
+            const targetedBarcodes = valid1DBarcodes.filter(b => {
+              if (b.boundingBox && videoEl && videoEl.videoWidth > 0 && videoEl.videoHeight > 0) {
+                const box = b.boundingBox;
+                const vWidth = videoEl.videoWidth;
+                const vHeight = videoEl.videoHeight;
+
+                // 1. Batas Jarak Maksimal: Barcode harus berukuran minimal 16% dari frame
+                // Barcode kecil yang jauh di belakang meja diabaikan
+                const maxDimRatio = Math.max(box.width / vWidth, box.height / vHeight);
+                if (maxDimRatio < 0.16) {
+                  return false;
+                }
+
+                // 2. Area Bidik Tengah (ROI): Titik tengah barcode harus di dalam area bidik
+                const centerX = box.x + (box.width / 2);
+                const centerY = box.y + (box.height / 2);
+                if (centerX < vWidth * 0.10 || centerX > vWidth * 0.90 ||
+                    centerY < vHeight * 0.10 || centerY > vHeight * 0.90) {
+                  return false;
+                }
+              }
+              return true;
+            });
+
+            if (targetedBarcodes.length > 0) {
+              const rawValue = String(targetedBarcodes[0].rawValue || '').trim();
               if (rawValue) {
-                // Hentikan kamera dan loop seketika untuk mencegah double-scan
-                stopScanner();
-                playBeep();
-                navigator.vibrate?.([60]);
-                onResult(rawValue);
-                return;
+                const now = Date.now();
+                if (options && options.continuous) {
+                  // Mode continuous (Kulakan): cegah scan ganda barcode yang sama dalam 1.2 detik, beda barcode min 500ms
+                  if (lastContinuousBarcode === rawValue && (now - lastContinuousTime < 1300)) {
+                    // Skip duplicate frame for same barcode
+                  } else if (now - lastContinuousTime < 500) {
+                    // Skip too rapid inter-frame transition
+                  } else {
+                    lastContinuousBarcode = rawValue;
+                    lastContinuousTime = now;
+                    playBeep();
+                    navigator.vibrate?.([60]);
+                    onResult(rawValue, { continuous: true });
+                  }
+                } else {
+                  // Hentikan kamera dan loop seketika untuk mencegah double-scan
+                  stopScanner();
+                  playBeep();
+                  navigator.vibrate?.([60]);
+                  onResult(rawValue, { continuous: false });
+                  return;
+                }
               }
             }
           }
@@ -1763,15 +1914,78 @@ function stopScanner() {
   if (loadingText) loadingText.style.display = 'none';
 }
 
+function showFocusIndicator(x, y) {
+  const container = document.getElementById('scannerViewfinderContainer');
+  if (!container) return;
+
+  const old = container.querySelector('.camera-focus-ring');
+  if (old) old.remove();
+
+  const ring = document.createElement('div');
+  ring.className = 'camera-focus-ring';
+  ring.style.left = `${x}px`;
+  ring.style.top = `${y}px`;
+  container.appendChild(ring);
+
+  requestAnimationFrame(() => {
+    ring.classList.add('focused');
+  });
+
+  setTimeout(() => {
+    ring.classList.add('fade-out');
+    setTimeout(() => ring.remove(), 400);
+  }, 600);
+}
+
+async function triggerCameraFocus(clientX, clientY) {
+  showFocusIndicator(clientX, clientY);
+
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    try { navigator.vibrate(25); } catch (_) {}
+  }
+
+  if (!activeStream) return;
+  const track = activeStream.getVideoTracks()[0];
+  if (!track || !track.applyConstraints) return;
+
+  try {
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if (caps.focusMode && Array.isArray(caps.focusMode)) {
+      if (caps.focusMode.includes('single-shot')) {
+        await track.applyConstraints({ advanced: [{ focusMode: 'single-shot' }] });
+      } else if (caps.focusMode.includes('continuous')) {
+        await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+      }
+    } else {
+      await track.applyConstraints({
+        advanced: [{ focusMode: 'continuous' }]
+      });
+    }
+  } catch (err) {
+    // Focus constraint fallback
+  }
+}
+
+function onScannerViewfinderTap(event) {
+  const container = document.getElementById('scannerViewfinderContainer');
+  if (!container) return;
+  const rect = container.getBoundingClientRect();
+  const relX = event.clientX - rect.left;
+  const relY = event.clientY - rect.top;
+  triggerCameraFocus(relX, relY);
+}
+
 if (typeof window !== 'undefined') {
   window.startScanner = startScanner;
   window.stopScanner = stopScanner;
   window.playBeep = playBeep;
   window.unlockAudio = unlockAudio;
+  window.triggerCameraFocus = triggerCameraFocus;
+  window.onScannerViewfinderTap = onScannerViewfinderTap;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { startScanner, stopScanner, playBeep, unlockAudio };
+  module.exports = { startScanner, stopScanner, playBeep, unlockAudio, triggerCameraFocus, onScannerViewfinderTap };
 }
 
 
@@ -2171,13 +2385,20 @@ function setScannerMode(mode) {
   scannerCurrentMode = mode || 'kasir';
   const btnKasir = document.getElementById('btnScannerModeKasir');
   const btnRestock = document.getElementById('btnScannerModeRestock');
+  const hudEl = document.getElementById('scannerRestockHud');
+  const openListBtn = document.getElementById('btnScannerOpenRestockList');
+
   if (btnKasir && btnRestock) {
     if (scannerCurrentMode === 'restock') {
       btnRestock.classList.add('active');
       btnKasir.classList.remove('active');
+      if (hudEl) hudEl.style.display = 'flex';
+      if (openListBtn) openListBtn.style.display = 'block';
     } else {
       btnKasir.classList.add('active');
       btnRestock.classList.remove('active');
+      if (hudEl) hudEl.style.display = 'none';
+      if (openListBtn) openListBtn.style.display = 'none';
     }
   }
 }
@@ -2193,7 +2414,15 @@ async function handleBarcodeScanned(barcode) {
   }
   lastBarcodeScanTimestamp = now;
 
-  // Tutup scanner dan matikan stream kamera secara instan
+  // Jika sedang Mode Restok / Kulakan: jangan matikan kamera, langsung teruskan ke handler kulakan
+  if (scannerCurrentMode === 'restock') {
+    if (window.onRestockBarcodeScanned) {
+      await window.onRestockBarcodeScanned(cleanBarcode);
+      return;
+    }
+  }
+
+  // Tutup scanner dan matikan stream kamera secara instan (untuk Mode Kasir)
   if (window.closeBarcodeScanner) {
     window.closeBarcodeScanner();
   } else {
@@ -2498,6 +2727,303 @@ async function submitQuickRestock() {
   }
 }
 
+let batchRestockItems = [];
+
+function openBatchRestockModal() {
+  renderBatchRestockUI();
+  window.openSheet?.('sheetBatchRestock');
+  const searchInput = document.getElementById('batchRestockSearchField');
+  if (searchInput) {
+    searchInput.value = '';
+    setTimeout(() => searchInput.focus(), 200);
+  }
+}
+
+function renderBatchRestockUI() {
+  const container = document.getElementById('batchRestockListContainer');
+  const badgeEl = document.getElementById('batchRestockItemsCountBadge');
+  const summaryItemsEl = document.getElementById('batchRestockSummaryItems');
+  const summaryTotalEl = document.getElementById('batchRestockSummaryTotal');
+
+  const totalKinds = batchRestockItems.length;
+  const totalQty = batchRestockItems.reduce((acc, it) => acc + (Number(it.qty) || 0), 0);
+  const totalAmount = batchRestockItems.reduce((acc, it) => acc + ((Number(it.qty) || 0) * (Number(it.buy_price) || 0)), 0);
+
+  if (badgeEl) badgeEl.innerText = `${totalKinds} Barang (${totalQty} pcs)`;
+  if (summaryItemsEl) summaryItemsEl.innerText = `${totalKinds} jenis (${totalQty} pcs)`;
+  if (summaryTotalEl) summaryTotalEl.innerText = window.formatRp ? window.formatRp(totalAmount) : `Rp ${totalAmount.toLocaleString('id-ID')}`;
+
+  const hudCount = document.getElementById('scannerRestockCount');
+  const hudBtnCount = document.getElementById('scannerRestockCountBtn');
+  if (hudCount) hudCount.innerText = totalKinds;
+  if (hudBtnCount) hudBtnCount.innerText = totalKinds;
+
+  if (!container) return;
+
+  if (batchRestockItems.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 36px 16px; color: var(--text-sub);">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--bg-surface); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </div>
+        <div style="font-weight: 700; color: #fff; font-size: 13px;">Daftar Kulakan Masih Kosong</div>
+        <div style="font-size: 11px; margin-top: 4px;">Ketik nama produk di atas atau klik <b>Scan Kamera</b> untuk menambah barang beruntun.</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = batchRestockItems.map(item => {
+    const subtotal = (Number(item.qty) || 0) * (Number(item.buy_price) || 0);
+    return `
+      <div class="batch-restock-card" style="background: var(--bg-surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 13px; font-weight: 800; color: #fff; line-height: 1.3;">${item.name}</div>
+            <div style="display: flex; gap: 6px; align-items: center; margin-top: 3px; font-size: 10px;">
+              <span style="font-family: monospace; color: var(--emerald); background: rgba(0, 245, 155, 0.1); padding: 1px 5px; border-radius: 4px;">${item.barcode || 'Tanpa Barcode'}</span>
+              <span style="color: var(--text-sub);">Stok Sekarang: <b>${item.current_stock || 0} ${item.unit || 'pcs'}</b></span>
+            </div>
+          </div>
+          <button type="button" class="btn-icon-subtle" onclick="removeBatchRestockItem(${item.id})" title="Hapus dari kulakan" style="padding: 4px; color: var(--rose);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; background: var(--bg-card); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border);">
+          <span style="font-size: 11px; font-weight: 700; color: var(--text-sub);">Masuk (+):</span>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <button type="button" class="btn" onclick="adjustBatchRestockQty(${item.id}, -1)" style="width: 30px; height: 30px; padding: 0; font-size: 16px; font-weight: 800; background: var(--bg-surface); border: 1px solid var(--border); color: #fff; border-radius: 6px;">−</button>
+            <input type="number" min="1" value="${item.qty}" onchange="updateBatchRestockQty(${item.id}, this.value)" style="width: 52px; height: 30px; text-align: center; font-weight: 800; font-size: 14px; background: var(--bg-base); border: 1px solid var(--border); color: var(--emerald); border-radius: 6px;">
+            <button type="button" class="btn" onclick="adjustBatchRestockQty(${item.id}, 1)" style="width: 30px; height: 30px; padding: 0; font-size: 16px; font-weight: 800; background: var(--bg-surface); border: 1px solid var(--border); color: #fff; border-radius: 6px;">+</button>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button type="button" onclick="adjustBatchRestockQty(${item.id}, 6)" style="font-size: 10px; font-weight: 700; padding: 4px 6px; border-radius: 6px; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer;">+6</button>
+            <button type="button" onclick="adjustBatchRestockQty(${item.id}, 12)" style="font-size: 10px; font-weight: 700; padding: 4px 6px; border-radius: 6px; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer;">+12</button>
+            <button type="button" onclick="adjustBatchRestockQty(${item.id}, 24)" style="font-size: 10px; font-weight: 700; padding: 4px 6px; border-radius: 6px; background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer;">+24</button>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div>
+            <span style="font-size: 10px; font-weight: 700; color: var(--text-sub); display: block; margin-bottom: 2px;">Modal / HPP Satuan:</span>
+            <input type="number" min="0" value="${item.buy_price}" onchange="updateBatchRestockBuyPrice(${item.id}, this.value)" style="width: 100%; height: 32px; padding: 4px 8px; font-size: 12px; font-weight: 700; background: var(--bg-card); border: 1px solid var(--border); color: var(--amber); border-radius: 6px;">
+          </div>
+          <div>
+            <span style="font-size: 10px; font-weight: 700; color: var(--text-sub); display: block; margin-bottom: 2px;">Subtotal Biaya Modal:</span>
+            <div style="height: 32px; display: flex; align-items: center; font-size: 13px; font-weight: 800; color: var(--emerald); padding-left: 2px;">
+              ${window.formatRp ? window.formatRp(subtotal) : 'Rp ' + subtotal.toLocaleString('id-ID')}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function addBatchRestockItem(item, addQty = 1) {
+  if (!item) return;
+  const existing = batchRestockItems.find(i => Number(i.id) === Number(item.id));
+  if (existing) {
+    existing.qty = Math.max(1, (Number(existing.qty) || 0) + addQty);
+  } else {
+    batchRestockItems.unshift({
+      id: item.id,
+      name: item.name,
+      barcode: item.barcode || '',
+      category: item.category || 'Umum',
+      current_stock: item.stock || 0,
+      unit: item.unit || 'pcs',
+      qty: Math.max(1, Number(addQty) || 1),
+      buy_price: item.buy_price || 0,
+      sell_price: item.sell_price || 0
+    });
+  }
+  renderBatchRestockUI();
+}
+
+function updateBatchRestockQty(itemId, val) {
+  const item = batchRestockItems.find(i => Number(i.id) === Number(itemId));
+  if (!item) return;
+  item.qty = Math.max(1, Number(val) || 1);
+  renderBatchRestockUI();
+}
+
+function adjustBatchRestockQty(itemId, step) {
+  const item = batchRestockItems.find(i => Number(i.id) === Number(itemId));
+  if (!item) return;
+  item.qty = Math.max(1, (Number(item.qty) || 0) + step);
+  renderBatchRestockUI();
+}
+
+function updateBatchRestockBuyPrice(itemId, val) {
+  const item = batchRestockItems.find(i => Number(i.id) === Number(itemId));
+  if (!item) return;
+  item.buy_price = Math.max(0, Number(val) || 0);
+  renderBatchRestockUI();
+}
+
+function removeBatchRestockItem(itemId) {
+  batchRestockItems = batchRestockItems.filter(i => Number(i.id) !== Number(itemId));
+  renderBatchRestockUI();
+}
+
+function clearBatchRestockList() {
+  if (batchRestockItems.length === 0) return;
+  batchRestockItems = [];
+  renderBatchRestockUI();
+  window.showToast?.('Daftar barang kulakan dikosongkan', 'info');
+}
+
+function startContinuousRestockScan() {
+  window.closeSheet?.('sheetBatchRestock');
+  window.openBarcodeScanner?.('restock');
+}
+
+function finishRestockScanning() {
+  window.closeBarcodeScanner?.();
+  openBatchRestockModal();
+}
+
+async function onRestockBarcodeScanned(barcode) {
+  const cleanBarcode = String(barcode || '').trim();
+  if (!cleanBarcode) return;
+
+  let found = masterBarcodes.find(i => String(i.barcode || '').trim() === cleanBarcode);
+  if (!found) {
+    const activeItems = window.appStore?.getState()?.items || [];
+    found = activeItems.find(i => String(i.barcode || '').trim() === cleanBarcode);
+  }
+
+  if (!found && window.api) {
+    try {
+      const res = await window.api.get(`/items/barcode/${encodeURIComponent(cleanBarcode)}?include_all=true`);
+      if (res && res.success && res.data) {
+        found = res.data;
+      }
+    } catch (_) {}
+  }
+
+  if (found) {
+    addBatchRestockItem(found, 1);
+    const existing = batchRestockItems.find(i => Number(i.id) === Number(found.id));
+    const currentQty = existing ? existing.qty : 1;
+
+    // Update camera HUD in real-time
+    const hudEl = document.getElementById('scannerRestockHud');
+    const hudTitle = document.getElementById('scannerRestockHudTitle');
+    const hudSub = document.getElementById('scannerRestockHudSub');
+    if (hudEl) hudEl.style.display = 'flex';
+    if (hudTitle) hudTitle.innerText = found.name;
+    if (hudSub) hudSub.innerText = `+1 Masuk Kulakan (Total: ${currentQty} ${found.unit || 'pcs'})`;
+
+    window.showToast?.(`[Kulakan] +1 ${found.name}`, 'success');
+  } else {
+    window.closeBarcodeScanner?.();
+    window.openItemSheet?.({ barcode: cleanBarcode, stock: 12 });
+    window.showToast?.(`Barcode ${cleanBarcode} belum terdaftar. Silakan daftarkan produk.`, 'warning');
+  }
+}
+
+function onBatchRestockSearchInput(query) {
+  const dropdown = document.getElementById('batchRestockDropdown');
+  if (!dropdown) return;
+  const q = (query || '').toLowerCase().trim();
+  if (!q) {
+    dropdown.style.display = 'none';
+    dropdown.innerHTML = '';
+    return;
+  }
+
+  const matches = masterBarcodes.filter(i => 
+    (i.name || '').toLowerCase().includes(q) ||
+    (i.barcode || '').toLowerCase().includes(q)
+  ).slice(0, 8);
+
+  if (matches.length === 0) {
+    dropdown.style.display = 'block';
+    dropdown.innerHTML = `
+      <div style="padding: 10px 12px; font-size: 12px; color: var(--text-sub); text-align: center;">
+        Produk tidak ditemukan.
+      </div>
+    `;
+    return;
+  }
+
+  dropdown.style.display = 'block';
+  dropdown.innerHTML = matches.map(item => `
+    <div onclick="selectBatchRestockSearchResult(${item.id})" style="padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; hover: background: var(--bg-surface);">
+      <div>
+        <div style="font-size: 13px; font-weight: 700; color: #fff;">${item.name}</div>
+        <div style="font-size: 10px; color: var(--text-sub); font-family: monospace;">${item.barcode || 'Tanpa Barcode'} | Stok: ${item.stock || 0}</div>
+      </div>
+      <div style="font-size: 12px; font-weight: 800; color: var(--emerald);">
+        + Masuk
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectBatchRestockSearchResult(itemId) {
+  const item = masterBarcodes.find(i => Number(i.id) === Number(itemId));
+  if (item) {
+    addBatchRestockItem(item, 1);
+    window.showToast?.(`+1 ${item.name} masuk daftar kulakan`, 'success');
+  }
+  const searchInput = document.getElementById('batchRestockSearchField');
+  const dropdown = document.getElementById('batchRestockDropdown');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
+  if (dropdown) {
+    dropdown.style.display = 'none';
+    dropdown.innerHTML = '';
+  }
+}
+
+async function submitBatchRestock() {
+  if (batchRestockItems.length === 0) {
+    window.showToast?.('Daftar barang kulakan masih kosong', 'warning');
+    return;
+  }
+
+  const notesInput = document.getElementById('batchRestockNotesInput');
+  const notes = notesInput ? notesInput.value.trim() : '';
+
+  const payload = {
+    notes,
+    items: batchRestockItems.map(i => ({
+      id: i.id,
+      qty: Number(i.qty) || 1,
+      buy_price: Number(i.buy_price) || 0,
+      sell_price: Number(i.sell_price) || 0
+    }))
+  };
+
+  try {
+    const res = await window.api.post('/items/restock-batch', payload);
+    if (res && res.success) {
+      const totalPcs = batchRestockItems.reduce((acc, it) => acc + (Number(it.qty) || 0), 0);
+      const totalRp = batchRestockItems.reduce((acc, it) => acc + ((Number(it.qty) || 0) * (Number(it.buy_price) || 0)), 0);
+
+      window.closeSheet?.('sheetBatchRestock');
+      batchRestockItems = [];
+      if (notesInput) notesInput.value = '';
+
+      window.showToast?.(`Kulakan sukses: +${totalPcs} pcs stok masuk (Total: ${window.formatRp ? window.formatRp(totalRp) : 'Rp ' + totalRp})`, 'success');
+
+      // Refresh stores and views
+      loadMasterBarcodes();
+      window.loadItems?.();
+      window.loadDashboard?.();
+      window.triggerRealtimeSync?.('batch_restock_completed');
+    }
+  } catch (err) {
+    window.showToast?.(err.message || 'Gagal menyimpan kulakan', 'error');
+  }
+}
+
 function deleteMasterBarcode(id, name) {
   if (window.showConfirmModal) {
     window.showConfirmModal({
@@ -2544,6 +3070,22 @@ if (typeof window !== 'undefined') {
   window.adjustRestockQtyStep = adjustRestockQtyStep;
   window.submitQuickRestock = submitQuickRestock;
   window.deleteMasterBarcode = deleteMasterBarcode;
+
+  // Batch Restock exports
+  window.openBatchRestockModal = openBatchRestockModal;
+  window.renderBatchRestockUI = renderBatchRestockUI;
+  window.addBatchRestockItem = addBatchRestockItem;
+  window.updateBatchRestockQty = updateBatchRestockQty;
+  window.adjustBatchRestockQty = adjustBatchRestockQty;
+  window.updateBatchRestockBuyPrice = updateBatchRestockBuyPrice;
+  window.removeBatchRestockItem = removeBatchRestockItem;
+  window.clearBatchRestockList = clearBatchRestockList;
+  window.submitBatchRestock = submitBatchRestock;
+  window.onBatchRestockSearchInput = onBatchRestockSearchInput;
+  window.selectBatchRestockSearchResult = selectBatchRestockSearchResult;
+  window.startContinuousRestockScan = startContinuousRestockScan;
+  window.finishRestockScanning = finishRestockScanning;
+  window.onRestockBarcodeScanned = onRestockBarcodeScanned;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -2553,7 +3095,11 @@ if (typeof module !== 'undefined' && module.exports) {
     setBarcodeFilter,
     openQuickRestockModal,
     submitQuickRestock,
-    deleteMasterBarcode
+    deleteMasterBarcode,
+    openBatchRestockModal,
+    renderBatchRestockUI,
+    addBatchRestockItem,
+    submitBatchRestock
   };
 }
 
@@ -4194,14 +4740,15 @@ function openBarcodeScanner(mode = 'kasir') {
     window.setScannerMode(mode);
   }
 
+  const isRestock = mode === 'restock';
   const loadingText = document.getElementById('scannerLoadingText');
   if (loadingText) loadingText.style.display = 'flex';
   videoEl.style.opacity = '0';
 
   window.openSheet('sheetScanner');
-  window.startScanner(videoEl, (barcode) => {
-    window.handleBarcodeScanned?.(barcode);
-  }).catch(err => {
+  window.startScanner(videoEl, (barcode, meta) => {
+    window.handleBarcodeScanned?.(barcode, meta);
+  }, { continuous: isRestock }).catch(err => {
     window.showToast(err.message || 'Gagal membuka kamera', 'error');
     window.closeSheet('sheetScanner');
   });
@@ -4563,6 +5110,10 @@ document.addEventListener('click', (e) => {
     const t = document.getElementById('directDebtSelectTrigger');
     if (m) m.style.display = 'none';
     if (t) t.classList.remove('open');
+  }
+  if (!e.target.closest('#batchRestockSearchField') && !e.target.closest('#batchRestockDropdown')) {
+    const d = document.getElementById('batchRestockDropdown');
+    if (d) d.style.display = 'none';
   }
 });
 
