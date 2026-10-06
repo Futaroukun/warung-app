@@ -5,8 +5,9 @@ class SalesService {
 
   generateInvoiceNo() {
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const timestamp = Date.now().toString().slice(-6);
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    return `INV-${dateStr}-${randomSuffix}`;
+    return `INV-${dateStr}-${timestamp}-${randomSuffix}`;
   }
 
   getAll({ limit = 50, offset = 0, date } = {}) {

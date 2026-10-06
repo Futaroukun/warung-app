@@ -9,6 +9,10 @@ const { SalesService } = require('../src/services/sales.service');
 test('SalesService: atomic transaction and stock deduction', async (t) => {
   const testDbPath = path.join(__dirname, 'test-sales.db');
   if (fs.existsSync(testDbPath)) fs.unlinkSync(testDbPath);
+  ['wal', 'shm'].forEach(ext => {
+    const file = `${testDbPath}-${ext}`;
+    if (fs.existsSync(file)) fs.unlinkSync(file);
+  });
   const db = getDb(testDbPath);
   const itemsService = new ItemsService(db);
   const salesService = new SalesService(db);
@@ -53,6 +57,11 @@ test('SalesService: atomic transaction and stock deduction', async (t) => {
   });
 
   await t.test('Merges multiple POS debt transactions for same customer into one active debt', () => {
+    // Reset state before debt tests to guarantee test isolation
+    db.prepare('DELETE FROM sale_items').run();
+    db.prepare('DELETE FROM sales').run();
+    db.prepare('DELETE FROM debts').run();
+
     const sale1 = salesService.createTransaction({
       items: [{ id: item2.id, qty: 1 }],
       payment_type: 'debt',
