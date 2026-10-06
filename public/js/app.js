@@ -705,6 +705,7 @@ function onSuccessModalShareWa() {
 
 // Scanner Sheet Control
 function openBarcodeScanner(mode = 'kasir') {
+  window.unlockAudio?.();
   const videoEl = document.getElementById('scannerVideo');
   if (!videoEl) return;
 

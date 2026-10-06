@@ -284,8 +284,6 @@ async function handleBarcodeScanned(barcode) {
   if (found) {
     // A. MODE TAMBAH STOK (RESTOK)
     if (scannerCurrentMode === 'restock') {
-      window.playBeep?.();
-      navigator.vibrate?.([60]);
       if (window.openQuickRestockModal) {
         window.openQuickRestockModal(found);
       }

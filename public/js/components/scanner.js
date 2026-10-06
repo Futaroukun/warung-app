@@ -21,21 +21,80 @@ if (typeof window !== 'undefined' && 'BarcodeDetector' in window) {
   }
 }
 
+let audioCtx = null;
+
+function getAudioContext() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!audioCtx) {
+      audioCtx = new AudioContextClass();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+    return audioCtx;
+  } catch (e) {
+    return null;
+  }
+}
+
+function unlockAudio() {
+  const ctx = getAudioContext();
+  if (ctx && ctx.state === 'suspended') {
+    ctx.resume().catch(() => {});
+  }
+}
+
+// User-gesture listener untuk pre-unlock AudioContext pada browser mobile / Android WebView
+if (typeof window !== 'undefined') {
+  const unlock = () => {
+    unlockAudio();
+    window.removeEventListener('click', unlock);
+    window.removeEventListener('touchstart', unlock);
+  };
+  window.addEventListener('click', unlock, { once: true, passive: true });
+  window.addEventListener('touchstart', unlock, { once: true, passive: true });
+}
+
 function playBeep() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+
+    const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(1800, ctx.currentTime);
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.12);
-    osc.connect(gain);
+
+    // Bunyi "niiittt" khas barcode scanner kasir supermarket / minimarket
+    // Frekuensi 2700 Hz (standar nada piezo buzzer barcode scanner)
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(2700, now);
+
+    // Filter halus agar suara tidak pecah sekaligus menjaga nada tinggi tetap renyah
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(4500, now);
+
+    // Envelope suara "niiittt": attack tajam (3ms), sustain stabil (87ms), release bersih (20ms) -> Total ~110ms
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.4, now + 0.003);
+    gain.gain.setValueAtTime(0.4, now + 0.09);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.11);
+
+    osc.connect(filter);
+    filter.connect(gain);
     gain.connect(ctx.destination);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.12);
+
+    osc.start(now);
+    osc.stop(now + 0.11);
   } catch (e) {
-    // Audio context not allowed or unsupported
+    console.warn('Barcode beep audio error:', e);
   }
 }
 
@@ -168,8 +227,9 @@ if (typeof window !== 'undefined') {
   window.startScanner = startScanner;
   window.stopScanner = stopScanner;
   window.playBeep = playBeep;
+  window.unlockAudio = unlockAudio;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { startScanner, stopScanner, playBeep };
+  module.exports = { startScanner, stopScanner, playBeep, unlockAudio };
 }
