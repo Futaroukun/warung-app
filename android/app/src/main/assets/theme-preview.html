@@ -2,24 +2,25 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laboratorium Tema & Warna - Warung App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Studio Tema & Warna - Warung App</title>
   <link rel="icon" type="image/png" href="icon.png">
   <style>
     :root {
-      /* Dynamic Theme Variables - Controlled by JS */
-      --bg-base: #07090e;
-      --bg-surface: #10141f;
-      --bg-card: #131826;
-      --bg-elevated: #182032;
+      --bg-base: #080c14;
+      --bg-surface: #0f172a;
+      --bg-card: #131e33;
+      --bg-elevated: #1e293b;
+      --bg-inset: #090d16;
       --border: rgba(255, 255, 255, 0.08);
       --border-focus: #00f59b;
-      --text: #ffffff;
+      --text: #f8fafc;
       --text-muted: #cbd5e1;
       --text-sub: #64748b;
       --emerald: #00f59b;
+      --btn-text: #04180f;
       --primary: #8b5cf6;
-      --amber: #ffaa00;
+      --amber: #f59e0b;
       --rose: #ff3b5c;
     }
 
@@ -32,8 +33,8 @@
     }
 
     body {
-      background: #06080d;
-      color: #fff;
+      background: #06090e;
+      color: #f8fafc;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -41,9 +42,9 @@
 
     /* Top Navigation */
     .top-nav {
-      background: #0b0f17;
+      background: #0a0e17;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 14px 20px;
+      padding: 12px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -53,11 +54,11 @@
     }
 
     .brand-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       color: #fff;
     }
 
@@ -66,7 +67,7 @@
       color: #00f59b;
       font-size: 10px;
       font-weight: 800;
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 99px;
       border: 1px solid rgba(0, 245, 155, 0.3);
       text-transform: uppercase;
@@ -79,12 +80,12 @@
       text-decoration: none;
       font-size: 12px;
       font-weight: 700;
-      padding: 8px 14px;
-      border-radius: 10px;
+      padding: 7px 12px;
+      border-radius: 9px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
+      gap: 5px;
+      transition: background 0.15s;
     }
 
     .btn-back:hover {
@@ -95,18 +96,20 @@
     /* Main Container Grid */
     .main-grid {
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 370px 1fr;
       flex: 1;
-      gap: 20px;
-      padding: 20px;
-      max-width: 1400px;
+      gap: 18px;
+      padding: 16px;
+      max-width: 1300px;
       margin: 0 auto;
       width: 100%;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 860px) {
       .main-grid {
         grid-template-columns: 1fr;
+        padding: 12px;
+        gap: 16px;
       }
     }
 
@@ -114,24 +117,39 @@
     .controls-panel {
       background: #0d121c;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 18px;
-      padding: 20px;
+      border-radius: 16px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
       height: fit-content;
     }
 
-    .panel-section-title {
-      font-size: 12px;
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.6px;
       color: #94a3b8;
-      margin-bottom: 10px;
+    }
+
+    .group-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin: 8px 0 6px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 6px;
     }
 
     /* Preset Chips Grid */
@@ -139,36 +157,39 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
+      margin-bottom: 4px;
     }
 
     .preset-card {
       background: #121824;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 10px 12px;
+      border: 1.5px solid rgba(255, 255, 255, 0.08);
+      border-radius: 11px;
+      padding: 9px 10px;
       cursor: pointer;
-      transition: all 0.2s;
       display: flex;
       flex-direction: column;
       gap: 6px;
       text-align: left;
+      transition: border-color 0.15s, background 0.15s;
     }
 
     .preset-card:hover {
       border-color: rgba(255, 255, 255, 0.2);
-      background: #172030;
     }
 
     .preset-card.active {
-      border-color: var(--border-focus);
+      border-color: #00f59b;
       background: rgba(0, 245, 155, 0.08);
-      box-shadow: 0 0 12px rgba(0, 245, 155, 0.2);
+      box-shadow: 0 0 10px rgba(0, 245, 155, 0.25);
     }
 
     .preset-name {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
-      color: #fff;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .preset-swatches {
@@ -177,17 +198,18 @@
     }
 
     .swatch {
-      width: 14px;
-      height: 14px;
+      width: 13px;
+      height: 13px;
       border-radius: 50%;
       border: 1px solid rgba(255, 255, 255, 0.2);
+      flex-shrink: 0;
     }
 
     /* Custom Pickers Form */
     .pickers-list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 7px;
     }
 
     .picker-row {
@@ -195,13 +217,13 @@
       justify-content: space-between;
       align-items: center;
       background: #121824;
-      padding: 8px 12px;
-      border-radius: 10px;
+      padding: 7px 10px;
+      border-radius: 9px;
       border: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .picker-label {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       color: #e2e8f0;
     }
@@ -209,28 +231,38 @@
     .picker-input-wrap {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .color-input-bubble {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
       border: none;
       cursor: pointer;
       background: transparent;
       padding: 0;
+      -webkit-appearance: none;
+    }
+
+    .color-input-bubble::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    .color-input-bubble::-webkit-color-swatch {
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 6px;
     }
 
     .hex-text-input {
       background: #090d14;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       color: #fff;
       font-family: monospace;
       font-size: 11px;
       font-weight: 700;
-      width: 72px;
-      padding: 5px 6px;
+      width: 68px;
+      padding: 4px 6px;
       border-radius: 6px;
       text-align: center;
       text-transform: uppercase;
@@ -238,40 +270,40 @@
 
     /* Action Buttons */
     .btn-apply-theme {
-      background: var(--emerald);
+      background: #00f59b;
       color: #04180f;
       border: none;
-      padding: 14px;
-      border-radius: 12px;
+      padding: 12px;
+      border-radius: 11px;
       font-size: 13px;
-      font-weight: 800;
+      font-weight: 900;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 15px rgba(0, 245, 155, 0.3);
-      transition: all 0.2s;
+      gap: 7px;
+      box-shadow: 0 4px 14px rgba(0, 245, 155, 0.3);
+      transition: filter 0.15s;
     }
 
     .btn-apply-theme:hover {
       filter: brightness(1.1);
-      transform: translateY(-1px);
     }
 
     .btn-secondary {
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: #cbd5e1;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 12px;
+      padding: 9px;
+      border-radius: 9px;
+      font-size: 11.5px;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 5px;
+      transition: background 0.15s;
     }
 
     .btn-secondary:hover {
@@ -283,7 +315,7 @@
     .preview-panel {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
 
     .preview-header {
@@ -293,26 +325,27 @@
     }
 
     .preview-title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 800;
       color: #94a3b8;
     }
 
-    /* Mockup Frame (Mirip Layar HP Kasir) */
+    /* Mockup Mobile Screen Frame */
     .mockup-container {
       background: var(--bg-base);
       border: 1.5px solid var(--border);
-      border-radius: 24px;
-      padding: 18px;
-      max-width: 480px;
+      border-radius: 22px;
+      padding: 16px;
+      max-width: 440px;
       width: 100%;
       margin: 0 auto;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.6);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       position: relative;
       overflow: hidden;
+      transition: background 0.05s, border-color 0.05s;
     }
 
     /* Mockup Header */
@@ -320,18 +353,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 12px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
     }
 
     .mock-store-name {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 900;
       color: var(--text);
     }
 
     .mock-date {
-      font-size: 11px;
+      font-size: 10.5px;
       color: var(--text-sub);
     }
 
@@ -339,22 +372,22 @@
     .mock-hero {
       background: var(--bg-surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
+      border-radius: 14px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .mock-hero-title {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       text-transform: uppercase;
       color: var(--text-sub);
     }
 
     .mock-hero-amount {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 900;
       color: var(--emerald);
       letter-spacing: -0.5px;
@@ -372,35 +405,35 @@
     .mock-items-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 9px;
     }
 
     .mock-item-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 13px;
+      padding: 11px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
     }
 
     .mock-item-name {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 800;
       color: var(--text);
       line-height: 1.25;
     }
 
     .mock-item-stock {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
       color: var(--text-sub);
     }
 
     .mock-item-price {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 900;
       color: var(--emerald);
     }
@@ -409,36 +442,32 @@
       background: var(--primary);
       color: #fff;
       border: none;
-      padding: 7px;
-      border-radius: 8px;
-      font-size: 11px;
+      padding: 6px 8px;
+      border-radius: 7px;
+      font-size: 10.5px;
       font-weight: 800;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
     }
 
     /* Mock Kasbon Card */
     .mock-debt-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px 14px;
+      border-radius: 13px;
+      padding: 10px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .mock-debt-name {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
       color: var(--text);
     }
 
     .mock-debt-sub {
-      font-size: 10px;
+      font-size: 9.5px;
       color: var(--text-sub);
     }
 
@@ -446,9 +475,9 @@
       background: rgba(255, 59, 92, 0.15);
       color: var(--rose);
       border: 1px solid rgba(255, 59, 92, 0.3);
-      padding: 4px 8px;
+      padding: 3px 7px;
       border-radius: 6px;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
     }
 
@@ -456,46 +485,47 @@
     .mock-cart-bar {
       background: var(--bg-surface);
       border: 1.5px solid var(--border);
-      border-radius: 16px;
-      padding: 12px 16px;
+      border-radius: 14px;
+      padding: 11px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .mock-cart-total {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 900;
       color: var(--text);
     }
 
     .mock-pay-btn {
       background: var(--emerald);
-      color: #04180f;
+      color: var(--btn-text);
       border: none;
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-size: 13px;
+      padding: 9px 16px;
+      border-radius: 9px;
+      font-size: 12px;
       font-weight: 900;
       cursor: pointer;
     }
 
-    /* Notification Toast */
+    /* Toast Notification */
     .toast-popup {
       position: fixed;
       bottom: 24px;
-      right: 24px;
-      background: #101726;
-      border: 1.5px solid var(--emerald);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #fff;
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 12px;
       font-weight: 700;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
       display: none;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       z-index: 1000;
     }
   </style>
@@ -505,15 +535,15 @@
   <!-- Top Navigation Header -->
   <header class="top-nav">
     <div class="brand-title">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.3">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00f59b" stroke-width="2.3">
         <circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/>
       </svg>
-      <span>Laboratorium Warna & Tema Warung</span>
-      <span class="brand-badge">Live Tester</span>
+      <span>Studio Tema Warung</span>
+      <span class="brand-badge">Live</span>
     </div>
     <a href="/" class="btn-back">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-      <span>Kembali ke Kasir Warung</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Kembali ke Kasir</span>
     </a>
   </header>
 
@@ -523,38 +553,38 @@
     <!-- Controls Panel (Left) -->
     <aside class="controls-panel">
       <div>
-        <div class="panel-section-title">
-          <span>Pilih Preset Warna Siap Pakai</span>
+        <div class="section-header">
+          <span class="section-title">Pilih Preset Tema</span>
         </div>
-        <div class="presets-grid" id="presetsGrid">
-          <!-- Dynamically generated preset cards -->
-        </div>
+
+        <div class="group-label">🌙 Tema Gelap (4)</div>
+        <div class="presets-grid" id="darkPresetsGrid"></div>
+
+        <div class="group-label">☀️ Tema Terang (4)</div>
+        <div class="presets-grid" id="lightPresetsGrid"></div>
       </div>
 
       <div>
-        <div class="panel-section-title">
-          <span>Kustomisasi Warna Bebas</span>
-          <button type="button" onclick="resetToCurrentPreset()" style="background:none; border:none; color:var(--emerald); font-size:11px; font-weight:700; cursor:pointer;">Reset</button>
+        <div class="section-header">
+          <span class="section-title">Kustomisasi Bebas</span>
+          <button type="button" onclick="resetToActivePreset()" style="background:none; border:none; color:var(--emerald); font-size:11px; font-weight:700; cursor:pointer;">Reset</button>
         </div>
-        <div class="pickers-list" id="pickersList">
-          <!-- Dynamically generated color pickers -->
-        </div>
+        <div class="pickers-list" id="pickersList"></div>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
         <button type="button" class="btn-apply-theme" onclick="saveAndApplyTheme()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>Terapkan ke Warung App</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Terapkan Tema</span>
         </button>
-
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
           <button type="button" class="btn-secondary" onclick="copyCssVariables()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
             <span>Salin CSS</span>
           </button>
           <button type="button" class="btn-secondary" onclick="resetToFactoryDefault()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-            <span>Reset Awal</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Reset Default</span>
           </button>
         </div>
       </div>
@@ -563,8 +593,8 @@
     <!-- Live Preview Panel (Right) -->
     <section class="preview-panel">
       <div class="preview-header">
-        <div class="preview-title">Simulasi Tampilan Layar Kasir HP (Realtime Preview)</div>
-        <span style="font-size: 11px; color: var(--text-sub);">Warna berubah otomatis saat dipilih</span>
+        <div class="preview-title">Simulasi Layar Kasir HP</div>
+        <span style="font-size: 11px; color: #94a3b8;">Realtime Live</span>
       </div>
 
       <!-- Mockup Mobile Screen -->
@@ -575,23 +605,23 @@
             <div class="mock-store-name">Warung Berkah Jaya</div>
             <div class="mock-date">Selasa, 06 Oktober 2026 • Buka</div>
           </div>
-          <div style="width: 32px; height: 32px; border-radius: 10px; background: var(--bg-surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <div style="width: 30px; height: 30px; border-radius: 9px; background: var(--bg-surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2.3"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           </div>
         </div>
 
         <!-- Mock Hero Summary -->
         <div class="mock-hero">
-          <div class="mock-hero-title">Total Omzet Penjualan Hari Ini</div>
+          <div class="mock-hero-title">Omzet Hari Ini</div>
           <div class="mock-hero-amount">Rp 485.000</div>
           <div class="mock-hero-row">
-            <span style="color: var(--text-sub);">32 Transaksi Selesai</span>
-            <span style="color: var(--emerald); font-weight: 800;">Laba Bersih: Rp 98.500</span>
+            <span style="color: var(--text-sub);">32 Transaksi</span>
+            <span style="color: var(--emerald); font-weight: 800;">Laba: Rp 98.500</span>
           </div>
         </div>
 
         <!-- Mock POS Product Grid -->
-        <div style="font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Katalog Produk Cepat</div>
+        <div style="font-size: 10.5px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Katalog Produk</div>
         <div class="mock-items-grid">
           <div class="mock-item-card">
             <div>
@@ -617,11 +647,11 @@
         </div>
 
         <!-- Mock Kasbon Card -->
-        <div style="font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Catatan Kasbon Pelanggan</div>
+        <div style="font-size: 10.5px; font-weight: 800; color: var(--text-sub); text-transform: uppercase;">Kasbon Pelanggan</div>
         <div class="mock-debt-card">
           <div>
             <div class="mock-debt-name">Pak Ahmad (Tetangga)</div>
-            <div class="mock-debt-sub">Rokok & Minyak Goreng • Sisa Kasbon:</div>
+            <div class="mock-debt-sub">Rokok & Minyak Goreng</div>
           </div>
           <div class="mock-debt-badge">
             Rp 45.000
@@ -631,7 +661,7 @@
         <!-- Mock Cart Floating Dock -->
         <div class="mock-cart-bar">
           <div>
-            <div style="font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Keranjang Belanja</div>
+            <div style="font-size: 9.5px; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Keranjang</div>
             <div class="mock-cart-total">2 Item (Rp 5.500)</div>
           </div>
           <button class="mock-pay-btn" type="button">Bayar Kasir</button>
@@ -642,184 +672,239 @@
   </main>
 
   <div class="toast-popup" id="toastPopup">
-    <span>✓ Pesan berhasil</span>
+    <span>✓ Pesan</span>
   </div>
 
   <script>
-    // 8 Pilihan Palet Warna Eksklusif Warung/POS
-    const PRESETS = [
+    // 4 PRESET GELAP & 4 PRESET TERANG
+    const DARK_PRESETS = [
       {
-        id: 'neon-mint',
-        name: 'Cyber Neon Mint (Default)',
+        id: 'dark-neon-mint',
+        name: 'Cyber Neon Mint',
         colors: {
-          '--bg-base': '#07090e',
-          '--bg-surface': '#10141f',
-          '--bg-card': '#131826',
+          '--bg-base': '#080c14',
+          '--bg-surface': '#0f172a',
+          '--bg-card': '#131e33',
+          '--bg-elevated': '#1e293b',
+          '--bg-inset': '#090d16',
           '--border': 'rgba(255, 255, 255, 0.08)',
           '--border-focus': '#00f59b',
-          '--text': '#ffffff',
+          '--text': '#f8fafc',
+          '--text-muted': '#cbd5e1',
           '--text-sub': '#64748b',
           '--emerald': '#00f59b',
+          '--btn-text': '#04180f',
           '--primary': '#8b5cf6',
-          '--amber': '#ffaa00',
+          '--amber': '#f59e0b',
           '--rose': '#ff3b5c'
         }
       },
       {
-        id: 'tokopedia-emerald',
-        name: 'Merchant Emerald (Hijau)',
+        id: 'dark-sapphire',
+        name: 'Midnight Sapphire',
         colors: {
-          '--bg-base': '#05120d',
-          '--bg-surface': '#0a1f17',
-          '--bg-card': '#0e291f',
-          '--border': 'rgba(255, 255, 255, 0.08)',
-          '--border-focus': '#10b981',
-          '--text': '#ffffff',
-          '--text-sub': '#719b88',
-          '--emerald': '#10b981',
-          '--primary': '#059669',
-          '--amber': '#f59e0b',
-          '--rose': '#f43f5e'
-        }
-      },
-      {
-        id: 'ocean-sapphire',
-        name: 'Sapphire Ocean (Biru FinTech)',
-        colors: {
-          '--bg-base': '#070c18',
-          '--bg-surface': '#0e182e',
-          '--bg-card': '#12203d',
-          '--border': 'rgba(255, 255, 255, 0.08)',
+          '--bg-base': '#070e1c',
+          '--bg-surface': '#0c1830',
+          '--bg-card': '#112244',
+          '--bg-elevated': '#1a305e',
+          '--bg-inset': '#060b17',
+          '--border': 'rgba(255, 255, 255, 0.09)',
           '--border-focus': '#38bdf8',
-          '--text': '#ffffff',
-          '--text-sub': '#647ea3',
+          '--text': '#f0f6ff',
+          '--text-muted': '#bfdbfe',
+          '--text-sub': '#60a5fa',
           '--emerald': '#38bdf8',
+          '--btn-text': '#081a30',
           '--primary': '#2563eb',
           '--amber': '#fbbf24',
           '--rose': '#f43f5e'
         }
       },
       {
-        id: 'warm-coffee',
-        name: 'Warm Coffee (Warung Hangat)',
+        id: 'dark-amethyst',
+        name: 'Obsidian Amethyst',
         colors: {
-          '--bg-base': '#0f0c08',
-          '--bg-surface': '#1c150f',
-          '--bg-card': '#261e16',
-          '--border': 'rgba(255, 255, 255, 0.08)',
-          '--border-focus': '#f59e0b',
-          '--text': '#ffffff',
-          '--text-sub': '#9c8a77',
-          '--emerald': '#f59e0b',
-          '--primary': '#d97706',
-          '--amber': '#fcd34d',
-          '--rose': '#ef4444'
-        }
-      },
-      {
-        id: 'royal-amethyst',
-        name: 'Royal Amethyst (Ungu Mewah)',
-        colors: {
-          '--bg-base': '#0a0714',
-          '--bg-surface': '#140f26',
-          '--bg-card': '#1c1536',
+          '--bg-base': '#0c0814',
+          '--bg-surface': '#160f24',
+          '--bg-card': '#1f1533',
+          '--bg-elevated': '#2d1f4a',
+          '--bg-inset': '#09060f',
           '--border': 'rgba(255, 255, 255, 0.08)',
           '--border-focus': '#c084fc',
-          '--text': '#ffffff',
-          '--text-sub': '#8e79a8',
+          '--text': '#faf5ff',
+          '--text-muted': '#e9d5ff',
+          '--text-sub': '#a855f7',
           '--emerald': '#c084fc',
+          '--btn-text': '#180b29',
           '--primary': '#9333ea',
           '--amber': '#f59e0b',
           '--rose': '#f43f5e'
         }
       },
       {
-        id: 'crimson-ruby',
-        name: 'Crimson Ruby (Merah Kontras)',
+        id: 'dark-warm-amber',
+        name: 'Charcoal Amber',
         colors: {
-          '--bg-base': '#120507',
-          '--bg-surface': '#210c10',
-          '--bg-card': '#2e1217',
+          '--bg-base': '#120e0b',
+          '--bg-surface': '#1e1713',
+          '--bg-card': '#2a201a',
+          '--bg-elevated': '#3b2e25',
+          '--bg-inset': '#0d0a08',
           '--border': 'rgba(255, 255, 255, 0.08)',
-          '--border-focus': '#fb7185',
-          '--text': '#ffffff',
-          '--text-sub': '#9f7078',
-          '--emerald': '#fb7185',
-          '--primary': '#e11d48',
-          '--amber': '#f59e0b',
-          '--rose': '#ff2a51'
-        }
-      },
-      {
-        id: 'nordic-slate',
-        name: 'Nordic Slate (Monochrome Redup)',
-        colors: {
-          '--bg-base': '#090d16',
-          '--bg-surface': '#131b2c',
-          '--bg-card': '#19243b',
-          '--border': 'rgba(255, 255, 255, 0.08)',
-          '--border-focus': '#2dd4bf',
-          '--text': '#f1f5f9',
-          '--text-sub': '#64748b',
-          '--emerald': '#2dd4bf',
-          '--primary': '#0d9488',
-          '--amber': '#fbbf24',
-          '--rose': '#f87171'
-        }
-      },
-      {
-        id: 'clean-light',
-        name: 'Clean Daylight (Mode Terang)',
-        colors: {
-          '--bg-base': '#f1f5f9',
-          '--bg-surface': '#ffffff',
-          '--bg-card': '#ffffff',
-          '--border': 'rgba(0, 0, 0, 0.08)',
-          '--border-focus': '#059669',
-          '--text': '#0f172a',
-          '--text-sub': '#64748b',
-          '--emerald': '#059669',
-          '--primary': '#2563eb',
-          '--amber': '#d97706',
-          '--rose': '#e11d48'
+          '--border-focus': '#f59e0b',
+          '--text': '#fffbeb',
+          '--text-muted': '#fde68a',
+          '--text-sub': '#d97706',
+          '--emerald': '#f59e0b',
+          '--btn-text': '#241405',
+          '--primary': '#ea580c',
+          '--amber': '#fcd34d',
+          '--rose': '#ef4444'
         }
       }
     ];
 
-    const COLOR_ITEMS = [
-      { key: '--bg-base', label: 'Background Utama' },
-      { key: '--bg-surface', label: 'Latar Kartu & Menu' },
-      { key: '--bg-card', label: 'Latar Produk' },
-      { key: '--emerald', label: 'Aksen Utama & Omzet' },
-      { key: '--primary', label: 'Tombol Aksi (+Item)' },
-      { key: '--rose', label: 'Warna Kasbon / Peringatan' },
-      { key: '--text', label: 'Warna Teks Utama' }
+    const LIGHT_PRESETS = [
+      {
+        id: 'light-snow-emerald',
+        name: 'Clean Snow Emerald',
+        colors: {
+          '--bg-base': '#f1f5f9',
+          '--bg-surface': '#ffffff',
+          '--bg-card': '#ffffff',
+          '--bg-elevated': '#e2e8f0',
+          '--bg-inset': '#f8fafc',
+          '--border': 'rgba(0, 0, 0, 0.09)',
+          '--border-focus': '#059669',
+          '--text': '#0f172a',
+          '--text-muted': '#334155',
+          '--text-sub': '#64748b',
+          '--emerald': '#059669',
+          '--btn-text': '#ffffff',
+          '--primary': '#10b981',
+          '--amber': '#d97706',
+          '--rose': '#e11d48'
+        }
+      },
+      {
+        id: 'light-frost-blue',
+        name: 'Nordic Frost Blue',
+        colors: {
+          '--bg-base': '#f0f4f8',
+          '--bg-surface': '#ffffff',
+          '--bg-card': '#ffffff',
+          '--bg-elevated': '#dbeafe',
+          '--bg-inset': '#f8fafc',
+          '--border': 'rgba(15, 23, 42, 0.08)',
+          '--border-focus': '#0284c7',
+          '--text': '#0f172a',
+          '--text-muted': '#1e293b',
+          '--text-sub': '#475569',
+          '--emerald': '#0284c7',
+          '--btn-text': '#ffffff',
+          '--primary': '#2563eb',
+          '--amber': '#d97706',
+          '--rose': '#e11d48'
+        }
+      },
+      {
+        id: 'light-cream-caramel',
+        name: 'Warm Cream Latte',
+        colors: {
+          '--bg-base': '#f7f4ee',
+          '--bg-surface': '#ffffff',
+          '--bg-card': '#ffffff',
+          '--bg-elevated': '#eee8dc',
+          '--bg-inset': '#faf7f2',
+          '--border': 'rgba(60, 40, 20, 0.09)',
+          '--border-focus': '#b45309',
+          '--text': '#291e14',
+          '--text-muted': '#453324',
+          '--text-sub': '#786048',
+          '--emerald': '#b45309',
+          '--btn-text': '#ffffff',
+          '--primary': '#c2410c',
+          '--amber': '#d97706',
+          '--rose': '#dc2626'
+        }
+      },
+      {
+        id: 'light-silver-slate',
+        name: 'Minimal Silver Slate',
+        colors: {
+          '--bg-base': '#f8fafc',
+          '--bg-surface': '#ffffff',
+          '--bg-card': '#ffffff',
+          '--bg-elevated': '#e2e8f0',
+          '--bg-inset': '#f1f5f9',
+          '--border': 'rgba(0, 0, 0, 0.08)',
+          '--border-focus': '#475569',
+          '--text': '#090d16',
+          '--text-muted': '#1e293b',
+          '--text-sub': '#64748b',
+          '--emerald': '#0f766e',
+          '--btn-text': '#ffffff',
+          '--primary': '#475569',
+          '--amber': '#b45309',
+          '--rose': '#be123c'
+        }
+      }
     ];
 
-    let currentThemeState = { ...PRESETS[0].colors };
-    let activePresetId = 'neon-mint';
+    const ALL_PRESETS = [...DARK_PRESETS, ...LIGHT_PRESETS];
+
+    const COLOR_ITEMS = [
+      { key: '--bg-base', label: 'Latar Belakang Dasar' },
+      { key: '--bg-surface', label: 'Latar Panel & Header' },
+      { key: '--bg-card', label: 'Latar Kartu Barang' },
+      { key: '--emerald', label: 'Aksen Utama & Omzet' },
+      { key: '--primary', label: 'Tombol Aksi (+Tambah)' },
+      { key: '--rose', label: 'Kasbon & Peringatan' },
+      { key: '--text', label: 'Warna Teks Utama' },
+      { key: '--text-sub', label: 'Warna Teks Sub/Info' }
+    ];
+
+    let currentThemeState = { ...DARK_PRESETS[0].colors };
+    let activePresetId = 'dark-neon-mint';
+    let animationFrameId = null;
+
+    // Helper: Hitung kontras terang/gelap
+    function isLightColor(hexStr) {
+      if (!hexStr || !hexStr.startsWith('#') || hexStr.length < 7) return false;
+      const r = parseInt(hexStr.substr(1, 2), 16) || 0;
+      const g = parseInt(hexStr.substr(3, 2), 16) || 0;
+      const b = parseInt(hexStr.substr(5, 2), 16) || 0;
+      const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+      return yiq >= 140;
+    }
 
     // Inisialisasi
     function init() {
-      // Cek apakah ada tema tersimpan di localStorage
       const saved = localStorage.getItem('warung_custom_theme');
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           currentThemeState = { ...currentThemeState, ...parsed };
-          activePresetId = null; // custom
+          const matched = ALL_PRESETS.find(p => p.colors['--bg-base'] === parsed['--bg-base'] && p.colors['--emerald'] === parsed['--emerald']);
+          activePresetId = matched ? matched.id : null;
         } catch (_) {}
       }
 
-      renderPresetCards();
+      renderPresets();
       renderPickers();
       applyVariablesToDom(currentThemeState);
     }
 
-    function renderPresetCards() {
-      const container = document.getElementById('presetsGrid');
-      container.innerHTML = PRESETS.map(p => `
-        <button type="button" class="preset-card ${activePresetId === p.id ? 'active' : ''}" onclick="selectPreset('${p.id}')">
+    function renderPresets() {
+      renderPresetGroup('darkPresetsGrid', DARK_PRESETS);
+      renderPresetGroup('lightPresetsGrid', LIGHT_PRESETS);
+    }
+
+    function renderPresetGroup(elementId, presetsList) {
+      const container = document.getElementById(elementId);
+      if (!container) return;
+      container.innerHTML = presetsList.map(p => `
+        <button type="button" class="preset-card ${activePresetId === p.id ? 'active' : ''}" id="card_${p.id}" onclick="selectPreset('${p.id}')">
           <div class="preset-name">${p.name}</div>
           <div class="preset-swatches">
             <span class="swatch" style="background: ${p.colors['--bg-base']};"></span>
@@ -833,15 +918,17 @@
 
     function renderPickers() {
       const container = document.getElementById('pickersList');
+      if (!container) return;
       container.innerHTML = COLOR_ITEMS.map(item => {
         const val = currentThemeState[item.key] || '#ffffff';
         const hex = val.startsWith('#') ? val : '#00f59b';
+        const cleanId = item.key.replace('--','');
         return `
           <div class="picker-row">
             <span class="picker-label">${item.label}</span>
             <div class="picker-input-wrap">
-              <input type="color" class="color-input-bubble" value="${hex}" oninput="onColorChange('${item.key}', this.value)">
-              <input type="text" class="hex-text-input" id="hex_${item.key.replace('--','')}" value="${hex}" onchange="onHexTextChange('${item.key}', this.value)">
+              <input type="color" class="color-input-bubble" id="picker_${cleanId}" value="${hex}" oninput="onColorChangeFast('${item.key}', this.value)">
+              <input type="text" class="hex-text-input" id="hex_${cleanId}" value="${hex}" onchange="onHexTextFast('${item.key}', this.value)">
             </div>
           </div>
         `;
@@ -849,55 +936,100 @@
     }
 
     function selectPreset(presetId) {
-      const found = PRESETS.find(p => p.id === presetId);
+      const found = ALL_PRESETS.find(p => p.id === presetId);
       if (!found) return;
       activePresetId = presetId;
       currentThemeState = { ...found.colors };
+
+      // Update active highlight pada tombol preset tanpa rebuild innerHTML
+      document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      const activeCard = document.getElementById(`card_${presetId}`);
+      if (activeCard) activeCard.classList.add('active');
+
       applyVariablesToDom(currentThemeState);
-      renderPresetCards();
-      renderPickers();
+      syncPickerValues();
       showToast(`Preset "${found.name}" dipilih`);
     }
 
-    function onColorChange(key, hex) {
-      activePresetId = null;
+    // Zero-lag instant handler menggunakan requestAnimationFrame
+    function onColorChangeFast(key, hex) {
+      // Hapus status preset aktif secara visual tanpa rebuild DOM
+      if (activePresetId) {
+        document.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+        activePresetId = null;
+      }
+
       currentThemeState[key] = hex;
+
+      // Otomatis sinkronisasi kontras cerdas
+      if (key === '--bg-base') {
+        const isLight = isLightColor(hex);
+        currentThemeState['--border'] = isLight ? 'rgba(0, 0, 0, 0.09)' : 'rgba(255, 255, 255, 0.08)';
+        currentThemeState['--bg-inset'] = isLight ? '#f8fafc' : '#090d16';
+        currentThemeState['--bg-elevated'] = isLight ? '#e2e8f0' : '#1e293b';
+      }
+
       if (key === '--emerald') {
         currentThemeState['--border-focus'] = hex;
+        currentThemeState['--btn-text'] = isLightColor(hex) ? '#04180f' : '#ffffff';
       }
-      applyVariablesToDom(currentThemeState);
-      renderPresetCards();
-      const txt = document.getElementById(`hex_${key.replace('--','')}`);
-      if (txt) txt.value = hex.toUpperCase();
+
+      // Update text input box instan
+      const hexInput = document.getElementById(`hex_${key.replace('--','')}`);
+      if (hexInput) hexInput.value = hex.toUpperCase();
+
+      // Batch DOM style update ke monitor refresh rate (60/120fps)
+      if (!animationFrameId) {
+        animationFrameId = requestAnimationFrame(() => {
+          applyVariablesToDom(currentThemeState);
+          animationFrameId = null;
+        });
+      }
     }
 
-    function onHexTextChange(key, text) {
+    function onHexTextFast(key, text) {
       let clean = text.trim();
       if (!clean.startsWith('#')) clean = '#' + clean;
       if (/^#[0-9A-Fa-f]{6}$/.test(clean)) {
-        onColorChange(key, clean);
+        const picker = document.getElementById(`picker_${key.replace('--','')}`);
+        if (picker) picker.value = clean;
+        onColorChangeFast(key, clean);
       }
     }
 
+    function syncPickerValues() {
+      COLOR_ITEMS.forEach(item => {
+        const val = currentThemeState[item.key];
+        if (val && val.startsWith('#')) {
+          const cleanId = item.key.replace('--','');
+          const p = document.getElementById(`picker_${cleanId}`);
+          const h = document.getElementById(`hex_${cleanId}`);
+          if (p) p.value = val;
+          if (h) h.value = val.toUpperCase();
+        }
+      });
+    }
+
     function applyVariablesToDom(colors) {
+      const doc = document.documentElement;
       Object.keys(colors).forEach(k => {
-        document.documentElement.style.setProperty(k, colors[k]);
+        doc.style.setProperty(k, colors[k]);
       });
     }
 
     function saveAndApplyTheme() {
       localStorage.setItem('warung_custom_theme', JSON.stringify(currentThemeState));
-      showToast('✓ Tema berhasil disimpan ke Warung App!');
+      showToast('✓ Tema berhasil disimpan ke Kasir Warung!');
     }
 
     function resetToFactoryDefault() {
       localStorage.removeItem('warung_custom_theme');
-      selectPreset('neon-mint');
+      selectPreset('dark-neon-mint');
       showToast('Tema dikembalikan ke setelan bawaan');
     }
 
-    function resetToCurrentPreset() {
-      selectPreset(activePresetId || 'neon-mint');
+    function resetToActivePreset() {
+      selectPreset(activePresetId || 'dark-neon-mint');
     }
 
     function copyCssVariables() {
@@ -921,7 +1053,7 @@
       toast.style.display = 'flex';
       setTimeout(() => {
         toast.style.display = 'none';
-      }, 2500);
+      }, 2000);
     }
 
     window.onload = init;

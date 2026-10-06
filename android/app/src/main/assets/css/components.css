@@ -7,12 +7,12 @@
    1. DASHBOARD & HERO SECTION
    ============================================================ */
 .hero-revenue-card {
-  background: linear-gradient(135deg, #102a45 0%, #0d1e33 100%);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 16px 18px;
   margin-bottom: 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-card);
 }
 
 .hero-card-header {
@@ -27,12 +27,12 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: #93c5fd;
+  color: var(--text-sub);
 }
 
 .hero-tag {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
+  background: rgba(0, 245, 155, 0.12);
+  color: var(--emerald);
   font-size: 11px;
   font-weight: 800;
   padding: 2px 8px;
@@ -42,7 +42,7 @@
 .hero-amount {
   font-size: 26px;
   font-weight: 900;
-  color: #ffffff;
+  color: var(--text);
   letter-spacing: -0.5px;
   margin-bottom: 14px;
 }
@@ -51,13 +51,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--border);
   padding-top: 10px;
 }
 
 .hero-sub-label {
   font-size: 10px;
-  color: #94a3b8;
+  color: var(--text-sub);
   display: block;
 }
 
@@ -395,7 +395,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #090e18;
+  background: var(--bg-inset);
   padding: 6px 10px;
   border-radius: var(--radius-sm);
 }
@@ -410,7 +410,7 @@
 .price-value, .price-tag {
   font-size: 13px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text);
 }
 
 .price-modal {
@@ -640,7 +640,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #090e18;
+  background: var(--bg-inset);
   padding: 8px 10px;
   border-radius: var(--radius-sm);
 }
@@ -660,7 +660,7 @@
 .btn-debt-action {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  color: #ffffff;
+  color: var(--text);
   padding: 7px 12px;
   border-radius: 8px;
   font-size: 11px;
@@ -674,7 +674,7 @@
 
 .btn-debt-action.pay {
   background: var(--emerald);
-  color: #04180f;
+  color: var(--btn-text, #04180f);
   border: none;
 }
 
@@ -987,7 +987,7 @@
 }
 
 .sheet-box {
-  background: #0f172a;
+  background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 20px 20px 0 0;
   width: 100%;
@@ -1017,7 +1017,7 @@
 .sheet-title {
   font-size: 15px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text);
 }
 
 .sheet-body {
@@ -1041,7 +1041,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
-  color: #ffffff;
+  color: var(--text);
   font-size: 13px;
   font-weight: 600;
   outline: none;
@@ -1067,7 +1067,7 @@
 
 .btn-primary, .btn-solid-primary {
   background: var(--emerald);
-  color: #04180f;
+  color: var(--btn-text, #04180f);
 }
 
 .btn-pay-mode, .pay-mode-btn {
